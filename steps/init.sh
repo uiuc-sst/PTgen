@@ -57,13 +57,16 @@ createdataset () {
 		>&2 echo "ERROR: Empty argument used with createdataset. Call with either \"train\",\"dev\" or \"test\"";
 		exit 1
 	fi
-	if [[ "$1" == train* ]]; then
+	if [[ "$1" == train ]]; then
 		LANG=( "${TRAIN_LANG[@]}" )
 		dtype="train"
-	elif [[ "$1" == dev* ]]; then
+	elif [[ "$1" == dev ]]; then
 		LANG=( "${DEV_LANG[@]}" )
 		dtype="dev"
-	elif [[ "$1" == eval* ]]; then
+	elif [[ "$1" == adapt ]]; then
+		LANG=( "${DEV_LANG[@]}" )
+		dtype="train"
+	elif [[ "$1" == eval ]]; then
 		LANG=( "${EVAL_LANG[@]}" )
 		dtype="test"
 	else

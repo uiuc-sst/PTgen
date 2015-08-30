@@ -30,6 +30,7 @@ phonelm=$DATA/langmodels/$DEV_LANG_NAME/bigram.fst
 ### data splits
 trainids=$EXPLOCAL/lists/train
 testids=$EXPLOCAL/lists/dev
+adaptids=$EXPLOCAL/lists/adapt
 priortrainfile=$trainids
 
 ### local files
@@ -42,6 +43,7 @@ mergedir=$EXPLOCAL/mergedir
 mergefstdir=$EXPLOCAL/mergefstdir
 splittrainids=$EXPLOCAL/lists/trainids
 splittestids=$EXPLOCAL/lists/testids
+splitadaptids=$EXPLOCAL/lists/adaptids
 Pstyle=simple # simple, letctxt or phnletctxt (Stage 6)
 initcarmel=$EXPLOCAL/carmel/$Pstyle
 carmeltraintxt=$EXPLOCAL/carmel/training.txt
@@ -86,9 +88,11 @@ alignertofstopt="--switchpenalty $alignswitchpenalty"
 
 ### flags: comment out to disable
 
+makeGTPLM=1
 #makeTPLM=1
+#decode_for_adapt=1
 #evaloracle=1
-#debug=1
+debug=1
 
 ##########################################################
 # the stage number for run.sh to start from

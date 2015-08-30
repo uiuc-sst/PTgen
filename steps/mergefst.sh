@@ -11,7 +11,7 @@ mkdir -p $mergefstdir
 showprogress init 100 ""
 for ip in `seq 1 $nparallel`; do
 	(
-	for uttid in `cat $splittrainids.$ip $splittestids.$ip`; do
+	for uttid in `cat $splittrainids.$ip $splittestids.$ip $splitadaptids.$ip`; do
 		if [[ -s $mergedir/$uttid.txt ]] ; then
 			showprogress go
 			convert-aligner-to-fst.pl `echo $alignertofstopt` < $mergedir/$uttid.txt \

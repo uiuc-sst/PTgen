@@ -71,13 +71,18 @@ if [[ $startstage -le $stage ]]; then
 	createdataset train > $trainids
 	mkdir -p "$(dirname "$testids")"
 	createdataset dev > $testids
+	mkdir -p "$(dirname "$adaptids")"
+	createdataset adapt > $adaptids
 	split -n r/$nparallel $testids  $tmpdir/split-test. 
 	split -n r/$nparallel $trainids $tmpdir/split-train.
+	split -n r/$nparallel $adaptids $tmpdir/split-adapt.
 	mkdir -p "$(dirname "$splittestids")"
 	mkdir -p "$(dirname "$splittrainids")"
+	mkdir -p "$(dirname "$splitadaptids")"
 	for i in `seq 1 $nparallel`; do
 		mv `ls $tmpdir/split-test.* | head -1` ${splittestids}.$i
 		mv `ls $tmpdir/split-train.* | head -1` ${splittrainids}.$i
+		mv `ls $tmpdir/split-adapt.* | head -1` ${splitadaptids}.$i
 	done
 else
 	usingfile "$(dirname "$splittestids")" "Test & Train ID lists in"
@@ -235,10 +240,14 @@ fi
 # both with (GTPLM) and without (TPLM) a language model
 ((stage++))
 if [[ $startstage -le $stage ]]; then
-	if [[ -n $makeTPLM ]]; then
-		TPLMtext="and TPLM"
+	if [[ -n $makeTPLM && -n $makeGTPLM ]]; then
+		msgtext="GTPLM and TPLM"
+	elif [[ -n $makeTPLM ]]; then
+		msgtext="TPLM"
+	elif [[ -n $makeGTPLM ]]; then
+		msgtext="GTPLM"
 	fi
-	>&2 echo -n "Creating decoded lattices GTPLM $TPLMtext"
+	>&2 echo -n "Creating decoded lattices $msgtext"
 	if [[ -z $Mscale ]]; then
 		Mscale=1
 	fi
@@ -254,8 +263,12 @@ fi
 # Stand-alone evaluation of the GTPLM lattices
 ((stage++))
 if [[ $startstage -le $stage ]]; then
-	>&2 echo "Evaluating decoded lattices"
-	evaluate_PTs.sh $1 | tee $evaloutput >&2
+	if [[ -n $decode_for_adapt ]]; then
+		>&2 echo "Not evaluating PTs (adaptation mode)"
+	else
+		>&2 echo "Evaluating decoded lattices"
+		evaluate_PTs.sh $1 | tee $evaloutput >&2
+	fi
 else
 	>&2 echo "Nothing to do!"
 fi

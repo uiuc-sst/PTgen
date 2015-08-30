@@ -9,7 +9,7 @@ create-distances.pl > $aligndist
 showprogress init 100 ""
 for ip in `seq 1 $nparallel`; do
 	(
-	for uttid in `cat $splittrainids.$ip $splittestids.$ip`; do
+	for uttid in `cat $splittrainids.$ip $splittestids.$ip $splitadaptids.$ip`; do
 		showprogress go
 		if [[ -s $mergedir/$uttid.txt && `grep "$delimsymbol" $mergedir/$uttid.txt | wc -l` == $nparts ]]; then
 			continue;
