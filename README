@@ -1,0 +1,12 @@
+After checking out the repository, from the top directory:
+
+cd src
+make
+
+Edit settings file appropriately. A sample file is in 
+settings_sample. Make sure all the required files within $DATA
+exist.
+
+To generate PTs, run:
+
+run.sh settings_sample

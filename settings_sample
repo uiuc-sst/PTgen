@@ -1,0 +1,97 @@
+### training/test languages
+ALL_LANGS=(AR CA DT HG MD SW UR)
+TRAIN_LANG=(AR CA DT HG MD UR)
+DEV_LANG=(SW)
+DEV_LANG_NAME=swahili
+
+### directories
+
+ROOT=~/ws15
+DATA=$ROOT/data
+EXP=/home/preethi/Tmp/Exp
+EXPLOCAL=$EXP/$DEV_LANG_NAME-X
+tmproot=/tmp
+
+## Data 
+LISTDIR=$DATA/lists
+TRANSDIR=$DATA/nativetranscripts
+TURKERTEXT=$DATA/mturk/batchfiles
+langmap=$LISTDIR/langcodes.txt
+evalreffile=$TRANSDIR/$DEV_LANG_NAME/dev_text
+
+### alphabets
+engdict=$DATA/let2phn/eng_dict.txt
+engalphabet=$DATA/let2phn/englets.vocab
+phnalphabet=$DATA/phonesets/univ.compact.txt
+
+#phonelm=$DATA/langmodels/$DEV_LANG_NAME/unigram.fst 			
+phonelm=$DATA/langmodels/$DEV_LANG_NAME/bigram.fst
+
+### data splits
+trainids=$EXPLOCAL/lists/train
+testids=$EXPLOCAL/lists/dev
+priortrainfile=$trainids
+
+### local files
+
+reffile=$EXPLOCAL/ref_train_text
+transcripts=$EXPLOCAL/transcripts.txt
+simfile=$EXPLOCAL/simscores.txt
+aligndist=$EXPLOCAL/aligndists.txt
+mergedir=$EXPLOCAL/mergedir
+mergefstdir=$EXPLOCAL/mergefstdir
+splittrainids=$EXPLOCAL/lists/trainids
+splittestids=$EXPLOCAL/lists/testids
+Pstyle=simple # simple, letctxt or phnletctxt (Stage 6)
+initcarmel=$EXPLOCAL/carmel/$Pstyle
+carmeltraintxt=$EXPLOCAL/carmel/training.txt
+decodelatdir=$EXPLOCAL/decode
+hypfile=$EXPLOCAL/hypotheses.txt
+evaloutput=$EXPLOCAL/eval.txt
+Gfst=$EXPLOCAL/${DEV_LANG_NAME}.G.fst
+Tfst=$EXPLOCAL/T.fst
+Pfst=$EXPLOCAL/P.fst
+Lfst=$EXPLOCAL/L.fst
+TPLfst=$EXPLOCAL/TPL.fst
+GTPLfst=$EXPLOCAL/GTPL.fst
+
+### parameters
+
+delimsymbol='%'
+disambigdel='#2'
+disambigins='#3'
+phneps='<eps>'
+leteps='-'
+gapsymbol='_'
+Nturkers=10
+nparts=4
+topN=4
+nparallel=8
+alignswitchpenalty=1	# Stage 6
+nrand=12				# Stage 7
+Pscale=1				# Stage 9
+Gscale=1				# Stage 10
+Lscale=1				# Stage 11
+Tnumins=10				# Stage 12
+Tnumdel=5				# Stage 12
+Mscale=1				# Stage 14
+prunewt=2				# Stage 15
+
+### algorithmic options
+
+#carmelinitopt="--$Pstyle --startwith=$EXPLOCAL/simple.trained"
+carmelinitopt="--$Pstyle"
+aligneropt="--dist $aligndist --empty $gapsymbol"
+alignertofstopt="--switchpenalty $alignswitchpenalty"
+
+### flags: comment out to disable
+
+#makeTPLM=1
+#evaloracle=1
+#debug=1
+
+##########################################################
+# the stage number for run.sh to start from
+startstage=9
+##########################################################
+
