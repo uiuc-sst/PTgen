@@ -1,3 +1,6 @@
+# Recipe to create and evaluate probabilistic transcriptions
+# generated using mismatched crowds.
+
 After checking out the repository, from the top directory:
 
 cd src
