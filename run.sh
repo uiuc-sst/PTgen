@@ -55,35 +55,22 @@ fi
 # Data filtering step
 ((stage++))
 if [[ $startstage -le $stage ]]; then
-	>&2 echo "Creating transcript similarity scores"
+	>&2 echo -n "Creating transcript similarity scores..."
 	mkdir -p "$(dirname "$simfile")"
 	compute_turker_similarity $transcripts > $simfile
+	>&2 echo " Done"
 else
 	usingfile $simfile "Transcript similarity scores"
 fi
 
 ## STAGE 3 ##
-# Data preparation
+# Data lists preparation
 ((stage++))
 if [[ $startstage -le $stage ]]; then
 	>&2 echo "Creating training/test data splits for parallel jobs"
-	mkdir -p "$(dirname "$trainids")"
-	createdataset train > $trainids
-	mkdir -p "$(dirname "$testids")"
-	createdataset dev > $testids
-	mkdir -p "$(dirname "$adaptids")"
-	createdataset adapt > $adaptids
-	split -n r/$nparallel $testids  $tmpdir/split-test. 
-	split -n r/$nparallel $trainids $tmpdir/split-train.
-	split -n r/$nparallel $adaptids $tmpdir/split-adapt.
-	mkdir -p "$(dirname "$splittestids")"
-	mkdir -p "$(dirname "$splittrainids")"
-	mkdir -p "$(dirname "$splitadaptids")"
-	for i in `seq 1 $nparallel`; do
-		mv `ls $tmpdir/split-test.* | head -1` ${splittestids}.$i
-		mv `ls $tmpdir/split-train.* | head -1` ${splittrainids}.$i
-		mv `ls $tmpdir/split-adapt.* | head -1` ${splitadaptids}.$i
-	done
+	datatype=train create-datasplits.sh $1
+	datatype=dev create-datasplits.sh $1
+	datatype=adapt create-datasplits.sh $1
 else
 	usingfile "$(dirname "$splittestids")" "Test & Train ID lists in"
 fi
