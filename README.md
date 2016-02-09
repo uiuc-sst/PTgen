@@ -10,9 +10,11 @@ The technique is described in this [AAAI paper](http://www.ifp.illinois.edu/~pjy
 
 Install [OpenFST](http://www.openfst.org/) and [carmel](http://www.isi.edu/licensed-sw/carmel).
 
-`git clone https://github.com/ws15code/PTgen`
-`cd src`
-`make`
+```
+git clone https://github.com/ws15code/PTgen
+cd src
+make
+```
 
 # How to create and test PT's
 
