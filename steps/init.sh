@@ -1,13 +1,14 @@
 #!/bin/bash
 
 set -e # exit if there is any error
+
 scriptname=`basename "$0"`
 
 if [[ $# -ne 1 ]]; then
-	echo "Usage: $scriptname <settings file>";
+	echo "Usage: $scriptname settings_file.";
 	exit 1
 fi
-[ ! -f $1 ] && echo "settings file \"$1\" is missing" && exit 1;
+[ ! -f $1 ] && echo "$scriptname ERROR: no settings file \"$1\"." && exit 1;
 . $1
 
 mktmpdir() {
@@ -22,13 +23,11 @@ mktmpdir() {
 }
 
 usingfile () {
-	filename=$1
-	if [[ ! -e $filename ]]; then
-		>&2 echo "ERROR: \"$filename\" not found"
+	if [[ ! -e $1 ]]; then
+		>&2 echo "$scriptname ERROR: no file \"$1\"."
 		exit 1
-	else
-		>&2 echo "USING: $2 \"$filename\""
 	fi
+	>&2 echo "USING: $2 \"$1\""
 }
 
 showprogress () {
@@ -50,4 +49,3 @@ showprogress () {
 			;;
 	esac
 }
-

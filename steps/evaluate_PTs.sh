@@ -28,7 +28,7 @@ for ip in `seq 1 $nparallel`; do
 		latfile=$decodelatdir/${uttid}.GTPLM.fst
 
 		if [[ ! -s $latfile ]]; then
-			>&2 echo -e "\nERROR: missing file $latfile. Exiting."
+			>&2 echo -e "\nevaluate_PTs.sh ERROR: missing file $latfile. Exiting."
 			exit 1
 		fi
 

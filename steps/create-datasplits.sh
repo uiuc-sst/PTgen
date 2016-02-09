@@ -30,7 +30,7 @@ eval)
 	splitids_file=$splittestids
 	;;
 *)
-	>&2 echo "ERROR: Invalid data split type: \"$datatype\". Should be [eval|dev|train|adapt]."
+	>&2 echo "create-datasplits.sh ERROR: Data split type \"$datatype\" should be [eval|dev|train|adapt]."
 	exit 1
 esac
 

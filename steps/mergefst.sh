@@ -3,7 +3,7 @@
 . $INIT_STEPS
 
 if [[ ! -d $mergedir ]] ; then
-	>&2 echo "ERROR: Directory $mergedir not found!"
+	>&2 echo "mergefst.sh ERROR: no directory $mergedir."
 	exit 1
 fi
 
@@ -19,7 +19,7 @@ for ip in `seq 1 $nparallel`; do
 				| fstcompile --isymbols=$engalphabet --osymbols=$engalphabet \
 				| fstarcsort --sort_type=ilabel - > $mergefstdir/${uttid}.M.fst
 		else
-			>&2 echo -e -n "\nWARNING: Skipping utterance $uttid "
+			>&2 echo -e -n "\nmergefst.sh WARNING: Skipping utterance $uttid."
 		fi
 	done
 	) &
