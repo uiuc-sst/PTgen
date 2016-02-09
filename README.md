@@ -19,12 +19,11 @@ make
 # How to create and test PT's
 
 Edit the settings file, e.g. `settings_sample`.
-
-Set `startstage=1`.
-
-Make sure all the required files within `$DATA` exist.
+- Set `nparallel` to 1 or 2 fewer than the number of your computer's CPU cores.
+- Ensure that `startstage=1`.
+- Make sure all the required files within `$DATA` exist.
 
 `run.sh settings_sample`
 
-If you encounter errors and fix them, you can resume `run.sh` partway through
-by changing `startstage` to a value larger than 1.
+If you encounter errors and fix them, you can save time by starting `run.sh` partway through:
+change `startstage` to one past the last completed stage.
