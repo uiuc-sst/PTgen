@@ -8,7 +8,7 @@ The technique is described in this [AAAI paper](http://www.ifp.illinois.edu/~pjy
 
 # How to build on Ubuntu
 
-Install [OpenFST](http://www.openfst.org/) and [carmel](http://www.isi.edu/licensed-sw/carmel).
+Install [OpenFST](http://www.openfst.org/), [Carmel](http://www.isi.edu/licensed-sw/carmel), and at least the `compute-wer` executable of [Kaldi](https://github.com/kaldi-asr/kaldi).
 
 ```
 git clone https://github.com/ws15code/PTgen
