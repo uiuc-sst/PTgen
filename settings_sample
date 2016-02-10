@@ -6,16 +6,19 @@ DEV_LANG_NAME=swahili
 
 ### directories
 
-ROOT=~/ws15
-DATA=$ROOT/data
-EXP=/home/preethi/Tmp/Exp
+#ROOT=~/ws15
+#DATA=$ROOT/data
+#EXP=/home/preethi/Tmp/Exp
+ROOT=/home/camilleg/PTgen
+DATA=$ROOT/data-WS15
+EXP=/home/camilleg/Tmp/Exp
 EXPLOCAL=$EXP/$DEV_LANG_NAME-X
 tmproot=/tmp
 
 ## Data 
 LISTDIR=$DATA/lists
 TRANSDIR=$DATA/nativetranscripts
-TURKERTEXT=$DATA/mturk/batchfiles
+TURKERTEXT=$DATA/batchfiles
 langmap=$LISTDIR/langcodes.txt
 evalreffile=$TRANSDIR/$DEV_LANG_NAME/dev_text
 
@@ -68,16 +71,16 @@ gapsymbol='_'
 Nturkers=10
 nparts=4
 topN=4
-nparallel=8
+nparallel=10
 alignswitchpenalty=1	# Stage 6
-nrand=12				# Stage 7
-Pscale=1				# Stage 9
-Gscale=1				# Stage 10
-Lscale=1				# Stage 11
-Tnumins=10				# Stage 12
-Tnumdel=5				# Stage 12
-Mscale=1				# Stage 14
-prunewt=2				# Stage 15
+nrand=12		# Stage 7
+Pscale=1		# Stage 9
+Gscale=1		# Stage 10
+Lscale=1		# Stage 11
+Tnumins=10		# Stage 12
+Tnumdel=5		# Stage 12
+Mscale=1		# Stage 14
+prunewt=2		# Stage 15
 
 ### algorithmic options
 
@@ -98,4 +101,3 @@ debug=1
 # the stage number for run.sh to start from
 startstage=1
 ##########################################################
-
