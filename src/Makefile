@@ -1,17 +1,19 @@
-CC=g++
-CFLAGS=-Wall -O3
 INSTALLDIR=../steps/
+FSTDIR=/usr/local/include # for fst/compat.h
 
+CC=g++
+CFLAGS=-Wall -O3 -I$(FSTDIR)
 
 SRCS := $(wildcard *.cc)
 BINS := $(SRCS:%.cc=%)
-
 
 all: $(BINS) install
 
 $(BINS): % : %.cc
 	@$(CC) $(CFLAGS) $< -o $@
-	@echo "Compiled "$<" successfully!"
+	@echo "Compiled "$<"."
 
 install: $(BINS)
-	mv $(BINS) $(INSTALLDIR)
+	cp -u $(BINS) $(INSTALLDIR)
+
+.PHONY: install
