@@ -48,14 +48,21 @@ if [[ -z $startstage ]]; then
 	startstage=1;
 fi
 
+if [[ -z $endstage ]]; then
+	endstage=1000; #large number
+fi
+
 ## STAGE 1 ##
 # Preprocess transcripts obtained from crowd workers
 stage=1
-if [[ $startstage -le $stage ]]; then
+if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	mkdir -p "$(dirname "$transcripts")"
 	showprogress init 1 "Creating processed transcripts."
 	for L in "${ALL_LANGS[@]}"; do
-		preprocess_turker_transcripts.pl --multiletter $engdict < $TURKERTEXT/${L}/batchfile
+		if [[ -n $rmprefix ]]; then
+			prefixarg="--rmprefix $rmprefix"
+		fi
+		preprocess_turker_transcripts.pl --multiletter $engdict $prefixarg < $TURKERTEXT/${L}/batchfile
 		showprogress go
 	done > $transcripts
 	showprogress end "Done"
@@ -66,10 +73,11 @@ fi
 ## STAGE 2 ##
 # Filter data
 ((stage++))
-if [[ $startstage -le $stage ]]; then
+if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo -n "Creating transcript similarity scores... "
 	mkdir -p "$(dirname "$simfile")"
-	compute_turker_similarity $transcripts > $simfile
+	grep "#" $transcripts > $tmpdir/transcripts 
+	compute_turker_similarity $tmpdir/transcripts > $simfile
 	>&2 echo " Done"
 else
 	usingfile $simfile "Transcript similarity scores"
@@ -78,11 +86,11 @@ fi
 ## STAGE 3 ##
 # Prepare data lists
 ((stage++))
-if [[ $startstage -le $stage ]]; then
+if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo "Creating training/test data splits for parallel jobs"
-	datatype=train create-datasplits.sh $1
-	datatype=dev create-datasplits.sh $1
-	datatype=adapt create-datasplits.sh $1
+	datatype='train' create-datasplits.sh $1
+	datatype='test' create-datasplits.sh $1
+	datatype='adapt' create-datasplits.sh $1
 else
 	usingfile "$(dirname "$splittestids")" "Test & Train ID lists in"
 fi
@@ -90,7 +98,7 @@ fi
 ## STAGE 4 ##
 # Merge text from crowd workers
 ((stage++))
-if [[ $startstage -le $stage ]]; then
+if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo -n "Creating merged transcripts "
 	mergetxt.sh $1
 else
@@ -100,7 +108,7 @@ fi
 ## STAGE 5 ##
 # Convert merged text into merged FST sausage-style structures
 ((stage++))
-if [[ $startstage -le $stage ]]; then
+if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo -n "Creating merged transcript FSTs (unscaled) "
 	mergefst.sh $1
 else
@@ -110,7 +118,7 @@ fi
 ## STAGE 6 ##
 # Initialize the phone-2-letter model (P)
 ((stage++))
-if [[ $startstage -le $stage ]]; then
+if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]; then
 	>&2 echo -n "Creating untrained phone-2-letter model ($Pstyle style)"
 	mkdir -p "$(dirname "$initcarmel")"
 	create-initcarmel.pl `echo $carmelinitopt` $phnalphabet $engalphabet $delimsymbol > $initcarmel
@@ -122,7 +130,7 @@ fi
 ## STAGE 7 ##
 # Create training data to learn phone-2-letter mappings defined in P
 ((stage++))
-if [[ $startstage -le $stage ]]; then
+if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]; then
 	>&2 echo "Creating carmel training data"
 	for L in ${TRAIN_LANG[@]}; do
 		cat $TRANSDIR/${L}/ref_train 
@@ -135,7 +143,7 @@ fi
 ## STAGE 8 ##
 # EM-train P
 ((stage++))
-if [[ $startstage -le $stage ]]; then
+if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]; then
 	>&2 echo -n "Starting carmel training (output in $tmpdir/carmelout) "
 	carmel -\? --train-cascade -t -f 1 -M 20 -HJ $carmeltraintxt $initcarmel 2>&1 \
 		| tee $tmpdir/carmelout | awk '/^i=|^Computed/ {printf "."; fflush (stdout)}' >&2
@@ -153,7 +161,7 @@ fi
 # Represent P as an OpenFst style FST
 # Optionally, scale weights in P with $Pscale
 ((stage++))
-if [[ $startstage -le $stage ]]; then
+if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo -n "Creating P (phone-2-letter FST) in openFST format"
 	if [[ -z $Pscale ]]; then
 		Pscale=1
@@ -174,7 +182,7 @@ fi
 # Prepare the language model FST, G
 # Optionally, scale weights in G with $Gscale
 ((stage++))
-if [[ $startstage -le $stage ]]; then
+if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo -n "Creating G (phone-model) FST with disambiguation symbols"
 	if [[ -z $Gscale ]]; then
 		Gscale=1
@@ -197,7 +205,7 @@ fi
 # Create a prior over letters and represent as an FST, L
 # Optionally, scale weights in L with $Lscale
 ((stage++))
-if [[ $startstage -le $stage ]]; then
+if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo -n "Creating L (letter statistics FST)"
 	if [[ -z $Lscale ]]; then
 		Lscale=1
@@ -218,7 +226,7 @@ fi
 # phone deletions and letter insertions, using tunable parameters
 # Tnumdel and Tnumins
 ((stage++))
-if [[ $startstage -le $stage ]]; then
+if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo "Creating T (deletion/insertion limiting FST)... "
 	create-delinsfst.pl $disambigdel $disambigins $Tnumdel $Tnumins < $phnalphabet \
 		| fstcompile --osymbols=$phnalphabet --isymbols=$phnalphabet - > $Tfst
@@ -229,7 +237,7 @@ fi
 ## STAGE 13 ##
 # Create TPL and GTPL FSTs
 ((stage++))
-if [[ $startstage -le $stage ]]; then
+if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo "Creating TPL and GTPL fsts"
 	mkdir -p "$(dirname "$TPLfst")"
 	fstcompose $Pfst $Lfst | fstcompose $Tfst - | fstarcsort --sort_type=olabel \
@@ -242,7 +250,7 @@ fi
 # Decoding: create lattices for each merged utterance FST (M)
 # both with (GTPLM) and without (TPLM) a language model
 ((stage++))
-if [[ $startstage -le $stage ]]; then
+if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	if [[ -n $makeTPLM && -n $makeGTPLM ]]; then
 		msgtext="GTPLM and TPLM"
 	elif [[ -n $makeTPLM ]]; then
@@ -265,7 +273,7 @@ fi
 ## STAGE 15 ##
 # Evaluate the GTPLM lattices, stand-alone
 ((stage++))
-if [[ $startstage -le $stage ]]; then
+if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	if [[ -n $decode_for_adapt ]]; then
 		>&2 echo "Not evaluating PTs (adaptation mode)"
 	else

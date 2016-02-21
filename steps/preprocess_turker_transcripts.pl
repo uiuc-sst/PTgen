@@ -16,6 +16,9 @@ while ((@ARGV) && ($argerr == 0)) {
 	if($ARGV[0] eq "--multiletter") {
 		shift @ARGV;
 		$multiletter = 1;
+	} elsif($ARGV[0] eq "--rmprefix") {
+		shift @ARGV;
+		$rmprefix = shift @ARGV; 
 	} elsif ($dictfile eq "") {
 		$dictfile = shift @ARGV;
 	} else {
@@ -31,7 +34,7 @@ if($argerr != 0) {
 
 $csvworkeridindex = 15;
 $csvassgnstatus = 16;
-@omitstrings = ("empty","none","blank","nothing","null","nil","music");
+@omitstrings = ("empty","none","blank","nothing","null","nil","music","crowd","noise","laughter");
 $dictonlylimit = 2; # words longer than $dictonlylimit will be restricted to the dictionary pronunciation only,
 
 %digits2wrds = (
@@ -127,25 +130,28 @@ while (my $fields = $csv->getline (STDIN)) {
 	for($i = 0; $i <= $#csvmturktxtindices; $i++) {
 		$string = "";
 		$filename = $fields->[$csvmturkmp3indices[$i]];
-		$filename =~ s:(.*)\/(part-.*\/[^\/]*)\.mp3:\2:g;
+		$filename =~ s:^\Q$rmprefix\E::;
+		$filename =~ s:.*\/(part-.*\/[^\/]*)\.mp3:\1:g;
 		last if($filename =~ /^\s*$/);
+		if($filename !~ /^part-.*\/[^\/]*/) {
+			 $filename = "part-1-".$filename; #add part-1-
+		}
 		$filename =~ s:\/:-:g;
 
 		$mturkstring = $fields->[$csvmturktxtindices[$i]];
 		$mturkstring =~ s/^\s+//g; $mturkstring =~ s/\s+$//g;
 		$mturkstring =~ s/[\?\!\,\:\;\.\-]/ /g; # remove question marks, exclamation, etc
 		$mturkstring =~ s/voice [0-9]//g; #naming voices 
-		$mturkstring =~ s/\"\<\>\*//g; #remove quotes, angular brackets
+		$mturkstring =~ s/[\"\<\>\*]//g; #remove quotes, angular brackets
 		$mturkstring =~ s/\s+/ /g; #replacing multiple spaces with a single space
 		$omit = 0;
 		# Move to the next clip if text is one of the omitstrings
 		foreach $ostr (@omitstrings) {
 			$lostr = lc($ostr);
-			$omit = 1 if($mturkstring =~ /^\s*$ostr\s*$/ || $mturkstring =~ /^\s*$lostr\s*$/);
+			$omit = 1 if($mturkstring =~ /^\s*$lostr\s*$/);
 		}
 		next if($omit == 1);
-		$numwrds = () = split /\s+/, $mturkstring;
-		$mturkstring =~ s/[\[\]]//g if($mturkstring =~ /^\s*(\[.*\])*\s*$/ && $numwrds > 0); #removing [,], if all the words enclosed within it
+		$mturkstring =~ s/[\[\]]//g if($mturkstring =~ /^\s*(\[.*\])*\s*$/ && $mturkstring =~ /\s/); #removing [,], if mturkstring is a multi-word string
 		$mturkstring =~ s/\[.*\]//g;  #removing everything else enclosed within [], e.g. [uh],[um] disfluencies
 		$mturkstring =~ s/\{.*\}//g;
 		$mturkstring =~ s/\(.*\)//g;
@@ -187,7 +193,7 @@ while (my $fields = $csv->getline (STDIN)) {
 			}
 			$string =~ s/\s+$//g; $string =~ s/^\s+//g;
 			$string =~ s/\s+/ /g;
-			$turker_transcripts{$filename}.="#$string";
+			$turker_transcripts{$filename}.="#$string" if($string ne "");
 		}
 	}
 }
