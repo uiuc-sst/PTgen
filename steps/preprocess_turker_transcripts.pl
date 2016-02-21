@@ -4,7 +4,11 @@
 # Valid English words are looked for in an English dictionary 
 # (CMUDict) and replaced with their pronunciations, if found.
 
+# If the next line fails, type "/usr/bin/perl -MCPAN -e'install Text::CSV_XS'",
+# use the option "[local::lib]",
+# and type ". ~/.bashrc".
 use Text::CSV_XS;
+
 $argerr = 0;
 $multiletter = 0;
 
