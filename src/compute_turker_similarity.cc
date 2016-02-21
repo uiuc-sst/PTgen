@@ -43,15 +43,15 @@ float editdistance(const char* a, const char* b) {
 
 	const int len1 = wrds1.size();
 	const int len2 = wrds2.size();
-	if(len1 == 0)
+	if (len1 == 0)
 		return idcost*len2;
-	if(len2 == 0)
+	if (len2 == 0)
 		return idcost*len1;
 	float** dist_matrix = new float* [len1+1];
-	for(int i = 0; i <= len1; i++)
+	for (int i = 0; i <= len1; i++)
 		dist_matrix[i] = new float[len2+1];
-	for(int i = 0; i <= len1; i++) {
-		for(int j = 0; j <= len2; j++) {
+	for (int i = 0; i <= len1; i++) {
+		for (int j = 0; j <= len2; j++) {
 			dist_matrix[i][j] = 0.0;
 			dist_matrix[0][j] = j*idcost;
 		}
@@ -59,15 +59,15 @@ float editdistance(const char* a, const char* b) {
 	}
 
 	//Dynamic programming algorithm to compute edit distance between two word sequences
-	for(int i = 1; i <= len1; i++) {
-		for(int j = 1; j <= len2; j++) {
+	for (int i = 1; i <= len1; i++) {
+		for (int j = 1; j <= len2; j++) {
 			const float cost = (wrds1[i-1] == wrds2[j-1]) ? 0 : scost;
 			const float mn = std::min(dist_matrix[i-1][j]+idcost,dist_matrix[i][j-1]+idcost); 
 			dist_matrix[i][j] = (mn < dist_matrix[i-1][j-1]+cost) ? mn : dist_matrix[i-1][j-1]+cost; 
 		}
 	}
 	const float edist = dist_matrix[len1][len2];
-	for(int i = 0; i <= len1; i++)
+	for (int i = 0; i <= len1; i++)
 		delete[] dist_matrix[i];
 	delete[] dist_matrix;
 
@@ -80,35 +80,38 @@ int convert2score(float dist) {
 }
 
 int main(int argc, char** argv) {
-	if(argc != 2) {
+	if (argc != 2) {
 		cerr << "Usage: " << argv[0] << " <file with Turker transcriptions>\n";
 		return 1;
 	}
 
 	ifstream ifile;
 	ifile.open(argv[1]);
-	if(!ifile) {
+	if (!ifile) {
 		cerr << "Could not open ifile" << argv[1] << "\n";
 		return 1;
 	}
 
 	float** turk_matrix = new float* [MAXTURKERS];
-	for(int i = 0; i < MAXTURKERS; i++)
+	for (int i = 0; i < MAXTURKERS; i++)
 		turk_matrix[i] = new float[MAXTURKERS];
 
 	vector<pair<float,int> > turkscores; // why not double?
-	while(!ifile.eof()) {
+	while (!ifile.eof()) {
 		string line;
 		getline(ifile, line);
-		if(!line.empty()) {
+		if (!line.empty()) {
 			vector<string> entries = split(line, ':');
 			string uttid = trim(entries[0]);
 			cout << uttid;
 			vector<string> turktranscripts = split(entries[1], '#');
+			assert(turktranscripts.size() > 1);
+				// Otherwise turkscores = (0.0, 0), and then
+				// assert(bestscore < 0.0) fails.
 			turkscores.resize(turktranscripts.size());
-			for(unsigned i = 0; i < turktranscripts.size(); i++) {
+			for (unsigned i = 0; i < turktranscripts.size(); i++) {
 				// Store a large score in the entry corresponding to Turker i
-				for(unsigned k = i+1; k < turktranscripts.size(); k++) {
+				for (unsigned k = i+1; k < turktranscripts.size(); k++) {
 					turk_matrix[i][k] = editdistance(turktranscripts[i].c_str(), turktranscripts[k].c_str());
 					turk_matrix[k][i] = turk_matrix[i][k];
 				}
