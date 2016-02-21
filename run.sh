@@ -7,7 +7,7 @@
 SRCDIR="$(dirname "$0")/steps"
 UTILDIR="$(dirname "$0")/util"
 OPENFSTDIR="/ws/rz-cl-2/hasegawa/amitdas/corpus/ws15-pt-data/data/rsloan/openfst-1.5.0/src/bin/.libs"
-KALDIDIR=  "/ws/rz-cl-2/hasegawa/xyang45/work/kaldi-trunk/src/bin/"
+KALDIDIR="/ws/rz-cl-2/hasegawa/xyang45/work/kaldi-trunk/src/bin/"
 CARMELDIR="/home/camilleg/carmel/linux64"
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/ws/rz-cl-2/hasegawa/amitdas/corpus/ws15-pt-data/data/rsloan/openfst-1.5.0/src/lib/.libs:/ws/rz-cl-2/hasegawa/amitdas/corpus/ws15-pt-data/data/rsloan/openfst-1.5.0/src/script/.libs # for libfstscript.so and libfst.so
 export PATH=$PATH:$SRCDIR:$UTILDIR:$OPENFSTDIR:$CARMELDIR:$KALDIDIR
