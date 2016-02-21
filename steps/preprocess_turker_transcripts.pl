@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-#
+
 # Preprocess English text obtained from crowd workers.
 # Valid English words are looked for in an English dictionary 
 # (CMUDict) and replaced with their pronunciations, if found.
@@ -139,7 +139,10 @@ while (my $fields = $csv->getline (STDIN)) {
 		$filename =~ s:\/:-:g;
 
 		$mturkstring = $fields->[$csvmturktxtindices[$i]];
+		# Remove leading and trailing whitespace.
 		$mturkstring =~ s/^\s+//g; $mturkstring =~ s/\s+$//g;
+		$mturkstring =~ s/^Text goes here//g; # remove initial "Text goes here" or "Text goes her" from worker ABS2EYLS7OW2J
+		$mturkstring =~ s/^Text goes her//g;
 		$mturkstring =~ s/[\?\!\,\:\;\.\-]/ /g; # remove question marks, exclamation, etc
 		$mturkstring =~ s/voice [0-9]//g; #naming voices 
 		$mturkstring =~ s/[\"\<\>\*]//g; #remove quotes, angular brackets
@@ -191,13 +194,13 @@ while (my $fields = $csv->getline (STDIN)) {
 					$string .= $words[$w];
 				}
 			}
+			# Remove leading and trailing whitespace, and multiple spaces.
 			$string =~ s/\s+$//g; $string =~ s/^\s+//g;
 			$string =~ s/\s+/ /g;
 			$turker_transcripts{$filename}.="#$string" if($string ne "");
 		}
 	}
 }
-
 
 foreach $key (sort keys %turker_transcripts) {
 	$trans = $turker_transcripts{$key};
