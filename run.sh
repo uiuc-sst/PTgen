@@ -1,35 +1,47 @@
 #!/bin/bash
-# Script to build probabilistic transcripts
-# and evaluate them.
+# Script to build and evaluate probabilistic transcriptions.
 #
 # This script is split into multiple stages (1 - 15).
-# Execution can start at any particular stage by 
-# defining the variable $startstage 
+# Resume execution at a particular stage by defining the variable $startstage.
 
 SRCDIR="$(dirname "$0")/steps"
 UTILDIR="$(dirname "$0")/util"
-export PATH=$PATH:$SRCDIR:$UTILDIR
+OPENFSTDIR="/ws/rz-cl-2/hasegawa/amitdas/corpus/ws15-pt-data/data/rsloan/openfst-1.5.0/src/bin/.libs"
+KALDIDIR=  "/ws/rz-cl-2/hasegawa/xyang45/work/kaldi-trunk/src/bin/"
+CARMELDIR="/home/camilleg/carmel/linux64"
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/ws/rz-cl-2/hasegawa/amitdas/corpus/ws15-pt-data/data/rsloan/openfst-1.5.0/src/lib/.libs:/ws/rz-cl-2/hasegawa/amitdas/corpus/ws15-pt-data/data/rsloan/openfst-1.5.0/src/script/.libs # for libfstscript.so and libfst.so
+export PATH=$PATH:$SRCDIR:$UTILDIR:$OPENFSTDIR:$CARMELDIR:$KALDIDIR
 export INIT_STEPS=$SRCDIR/init.sh
 
 . $INIT_STEPS
 
-if [[ ! -d $LISTDIR ||
-	  ! -d $TRANSDIR ||
-	  ! -d $TURKERTEXT ||
-	  ! -s $langmap ||
-	  ! -s $evalreffile ||
-	  ! -s $engdict ||
-	  ! -s $engalphabet ||
-	  ! -s $phnalphabet ||
-	  ! -s $phonelm ]]; then
-	  echo "Missing or empty required files. Check settings."
-	  exit 1
+if [[ ! -d $LISTDIR ]]; then
+  echo "Missing LISTDIR directory $LISTDIR. Check $1."; exit 1
 fi
+if [[ ! -d $TRANSDIR ]]; then
+  echo "Missing TRANSDIR directory $TRANSDIR. Check $1."; exit 1
+fi
+if [[ ! -d $TURKERTEXT ]]; then
+  echo "Missing TURKERTEXT directory $TURKERTEXT. Check $1."; exit 1
+fi
+if [[ ! -s $engdict ]]; then
+  echo "Missing or empty engdict file $engdict. Check $1."; exit 1
+fi
+if [[ ! -s $engalphabet ]]; then
+  echo "Missing or empty engalphabet file $engalphabet. Check $1."; exit 1
+fi
+if [[ ! -s $phnalphabet ]]; then
+  echo "Missing or empty phnalphabet file $phnalphabet. Check $1."; exit 1
+fi
+if [[ ! -s $phonelm ]]; then
+  echo "Missing or empty phonelm file $phonelm. Check $1."; exit 1
+fi
+# Unused: $langmap $evalreffile
 
 mktmpdir
 
+>&2 echo "Creating experiment directory $EXPLOCAL."
 mkdir -p $EXPLOCAL
->&2 echo "Experiment directory: $EXPLOCAL"
 cp "$1" $EXPLOCAL/settings
 
 if [[ -z $startstage ]]; then
@@ -37,11 +49,11 @@ if [[ -z $startstage ]]; then
 fi
 
 ## STAGE 1 ##
-# Preprocessing transcripts obtained from crowd workers
+# Preprocess transcripts obtained from crowd workers
 stage=1
 if [[ $startstage -le $stage ]]; then
 	mkdir -p "$(dirname "$transcripts")"
-	showprogress init 1 "Creating processed transcripts"
+	showprogress init 1 "Creating processed transcripts."
 	for L in "${ALL_LANGS[@]}"; do
 		preprocess_turker_transcripts.pl --multiletter $engdict < $TURKERTEXT/${L}/batchfile
 		showprogress go
@@ -52,10 +64,10 @@ else
 fi
 
 ## STAGE 2 ##
-# Data filtering step
+# Filter data
 ((stage++))
 if [[ $startstage -le $stage ]]; then
-	>&2 echo -n "Creating transcript similarity scores..."
+	>&2 echo -n "Creating transcript similarity scores... "
 	mkdir -p "$(dirname "$simfile")"
 	compute_turker_similarity $transcripts > $simfile
 	>&2 echo " Done"
@@ -64,7 +76,7 @@ else
 fi
 
 ## STAGE 3 ##
-# Data lists preparation
+# Prepare data lists
 ((stage++))
 if [[ $startstage -le $stage ]]; then
 	>&2 echo "Creating training/test data splits for parallel jobs"
@@ -76,28 +88,27 @@ else
 fi
 
 ## STAGE 4 ##
-# Merging text from crowd workers
+# Merge text from crowd workers
 ((stage++))
 if [[ $startstage -le $stage ]]; then
-	>&2 echo -n "Creating merged transcripts"
+	>&2 echo -n "Creating merged transcripts "
 	mergetxt.sh $1
 else
 	usingfile $mergedir "Merged transcripts in"
 fi
 
-
 ## STAGE 5 ##
-# Creating merged FST sausage-style structures from merged text
+# Convert merged text into merged FST sausage-style structures
 ((stage++))
 if [[ $startstage -le $stage ]]; then
-	>&2 echo -n "Creating merged transcript FSTs (unscaled)"
+	>&2 echo -n "Creating merged transcript FSTs (unscaled) "
 	mergefst.sh $1
 else
 	usingfile "$mergedir" "Merged transcript FSTs in"
 fi
 
 ## STAGE 6 ##
-# Creating a initialization for the phone-2-letter model (P)
+# Initialize the phone-2-letter model (P)
 ((stage++))
 if [[ $startstage -le $stage ]]; then
 	>&2 echo -n "Creating untrained phone-2-letter model ($Pstyle style)"
@@ -109,7 +120,7 @@ else
 fi
 
 ## STAGE 7 ##
-# Creating training data to learn phone-2-letter mappings defined in P
+# Create training data to learn phone-2-letter mappings defined in P
 ((stage++))
 if [[ $startstage -le $stage ]]; then
 	>&2 echo "Creating carmel training data"
@@ -122,12 +133,16 @@ else
 fi
 
 ## STAGE 8 ##
-# EM training of P
+# EM-train P
 ((stage++))
 if [[ $startstage -le $stage ]]; then
 	>&2 echo -n "Starting carmel training (output in $tmpdir/carmelout) "
 	carmel -\? --train-cascade -t -f 1 -M 20 -HJ $carmeltraintxt $initcarmel 2>&1 \
 		| tee $tmpdir/carmelout | awk '/^i=|^Computed/ {printf "."; fflush (stdout)}' >&2
+	# From $CARMELDIR.
+	# If "carmel" is not found, no error is printed!
+	# It just leaves "./run.sh: line 138: carmel: command not found"
+	# in /tmp/run.sh-29085.dir/carmelout.
 	>&2 echo "Done"
 else
 	usingfile "$initcarmel.trained" "Trained phone-2-letter model"
@@ -143,7 +158,7 @@ if [[ $startstage -le $stage ]]; then
 	if [[ -z $Pscale ]]; then
 		Pscale=1
 	fi
-	>&2 echo -n " [PSCALE=$Pscale] ..."
+	>&2 echo -n " [PSCALE=$Pscale] ... "
 	convert-carmel-to-fst.pl < ${initcarmel}.trained \
 		| sed -e 's/e\^-\([0-9]*\)\..*/1.00e-\1/g' | convert-prob-to-neglog.pl \
 		| scale-FST-weights.pl $Pscale \
@@ -156,7 +171,7 @@ else
 fi
 
 ## STAGE 10 ##
-# Preparing the language model FST, G
+# Prepare the language model FST, G
 # Optionally, scale weights in G with $Gscale
 ((stage++))
 if [[ $startstage -le $stage ]]; then
@@ -164,9 +179,10 @@ if [[ $startstage -le $stage ]]; then
 	if [[ -z $Gscale ]]; then
 		Gscale=1
 	fi
-	>&2 echo -n " [GSCALE=$Gscale] ..."
+	>&2 echo -n " [GSCALE=$Gscale] ... "
 
 	mkdir -p "$(dirname "$Gfst")"
+#	>&2 echo -n " $phnalphabet $phnalphabet $phonelm zxcv"
 	fstprint --isymbols=$phnalphabet --osymbols=$phnalphabet $phonelm \
 		| addloop.pl "$disambigdel" "$disambigins" \
 		| scale-FST-weights.pl $Gscale \
@@ -178,7 +194,7 @@ else
 fi
 
 ## STAGE 11 ##
-# Creating a prior over letters and represent as an FST, L
+# Create a prior over letters and represent as an FST, L
 # Optionally, scale weights in L with $Lscale
 ((stage++))
 if [[ $startstage -le $stage ]]; then
@@ -186,7 +202,7 @@ if [[ $startstage -le $stage ]]; then
 	if [[ -z $Lscale ]]; then
 		Lscale=1
 	fi
-	>&2 echo -n " [LSCALE=$Lscale] ..."
+	>&2 echo -n " [LSCALE=$Lscale] ... "
 	mkdir -p "$(dirname "$Lfst")"
 	create-letpriorfst.pl $mergedir $priortrainfile \
 		| scale-FST-weights.pl $Lscale \
@@ -203,7 +219,7 @@ fi
 # Tnumdel and Tnumins
 ((stage++))
 if [[ $startstage -le $stage ]]; then
-	>&2 echo "Creating T (deletion/insertion limiting FST)..."
+	>&2 echo "Creating T (deletion/insertion limiting FST)... "
 	create-delinsfst.pl $disambigdel $disambigins $Tnumdel $Tnumins < $phnalphabet \
 		| fstcompile --osymbols=$phnalphabet --isymbols=$phnalphabet - > $Tfst
 else
@@ -211,7 +227,7 @@ else
 fi
 
 ## STAGE 13 ##
-# Creating TPL and GTPL FSTs
+# Create TPL and GTPL FSTs
 ((stage++))
 if [[ $startstage -le $stage ]]; then
 	>&2 echo "Creating TPL and GTPL fsts"
@@ -223,7 +239,7 @@ else
 fi
 
 ## STAGE 14 ##
-# Decoding phase: create lattices for each merged utterance FST (M)
+# Decoding: create lattices for each merged utterance FST (M)
 # both with (GTPLM) and without (TPLM) a language model
 ((stage++))
 if [[ $startstage -le $stage ]]; then
@@ -247,7 +263,7 @@ else
 fi
 
 ## STAGE 15 ##
-# Stand-alone evaluation of the GTPLM lattices
+# Evaluate the GTPLM lattices, stand-alone
 ((stage++))
 if [[ $startstage -le $stage ]]; then
 	if [[ -n $decode_for_adapt ]]; then
