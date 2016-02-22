@@ -160,7 +160,7 @@ unsigned int align(const vector <vector <tok_t> >& input, const tok_t etok, dmap
             // Assemble the "current tokens vector", using lowest cost.
 
             vector<tok_t> toks;
-            toks.reserve(n);
+            toks.clear(); toks.resize(n);
             const bitset<MAXSTRINGS> bk(k);
             for (unsigned j=0; j < n; ++j)
                 toks[j] = bk[j] ? input[j][vt[j]] : etok;
