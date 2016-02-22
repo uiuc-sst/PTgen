@@ -34,7 +34,8 @@ if($argerr != 0) {
 
 $csvworkeridindex = 15;
 $csvassgnstatus = 16;
-@omitstrings = ("empty","none","blank","nothing","null","nil","music","crowd","noise","laughter");
+@omitstrings = ("empty","none","blank","nothing","null","nil","music","crowd","noise","laughter","ding","cough","beep","chant","chants","clap","gun shot","gunshot","ruffles","uhh")
+);
 $dictonlylimit = 2; # words longer than $dictonlylimit will be restricted to the dictionary pronunciation only,
 
 %digits2wrds = (
