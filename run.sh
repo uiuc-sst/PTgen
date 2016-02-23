@@ -77,7 +77,8 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo -n "Creating transcript similarity scores... "
 	mkdir -p "$(dirname "$simfile")"
 	grep "#" $transcripts > $tmpdir/transcripts 
-	compute_turker_similarity $tmpdir/transcripts > $simfile
+	mv $tmpdir/transcripts $transcripts
+	compute_turker_similarity $transcripts > $simfile
 	>&2 echo " Done"
 else
 	usingfile $simfile "Transcript similarity scores"
@@ -87,9 +88,10 @@ fi
 # Prepare data lists
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
-	>&2 echo "Creating training/test data splits for parallel jobs"
+	>&2 echo "Splitting training/test data for parallel jobs"
 	datatype='train' create-datasplits.sh $1
-	datatype='test' create-datasplits.sh $1
+	datatype='dev'   create-datasplits.sh $1
+#	datatype='test'  create-datasplits.sh $1
 	datatype='adapt' create-datasplits.sh $1
 else
 	usingfile "$(dirname "$splittestids")" "Test & Train ID lists in"
@@ -99,7 +101,7 @@ fi
 # Merge text from crowd workers
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
-	>&2 echo -n "Creating merged transcripts "
+	>&2 echo -n "Merging transcripts "
 	mergetxt.sh $1
 else
 	usingfile $mergedir "Merged transcripts in"
@@ -109,7 +111,7 @@ fi
 # Convert merged text into merged FST sausage-style structures
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
-	>&2 echo -n "Creating merged transcript FSTs (unscaled) "
+	>&2 echo -n "Merging transcript FSTs (unscaled) "
 	mergefst.sh $1
 else
 	usingfile "$mergedir" "Merged transcript FSTs in"
