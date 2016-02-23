@@ -134,6 +134,7 @@ while (my $fields = $csv->getline (STDIN)) {
 		$filename =~ s:.*\/(part-.*\/[^\/]*)\.mp3:\1:g;
 		last if($filename =~ /^\s*$/);
 		if($filename !~ /^part-.*\/[^\/]*/) {
+			$filename =~ s/\.mp3//g;
 			 $filename = "part-1-".$filename; #add part-1-
 		}
 		$filename =~ s:\/:-:g;
