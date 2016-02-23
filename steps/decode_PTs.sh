@@ -20,7 +20,7 @@ for ip in `seq 1 $nparallel`; do
 	(
 	for uttid in `cat $splitids.$ip`; do
 		if [[ ! -s $mergefstdir/$uttid.M.fst.txt ]]; then
-			>&2 echo -e -n "WARNING: Omitted $uttid"
+			>&2 echo -e -n "WARNING: Omitted $uttid "
 			continue
 		fi
 		showprogress go
