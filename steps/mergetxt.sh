@@ -1,5 +1,5 @@
 #!/bin/bash
-#
+
 . $INIT_STEPS
 
 mkdir -p $mergedir
@@ -17,11 +17,12 @@ for ip in `seq 1 $nparallel`; do
 		> $mergedir/$uttid.txt
 		for p in `seq 1 $nparts`; do
 			set +e
-			str=`grep "part-$p-$uttid," $simfile`
-			tstr=`grep -i "part-$p-$uttid:" $transcripts`
+			part="part-$p-$uttid"
+			str=`grep "$part," $simfile`
+			tstr=`grep -i "$part:" $transcripts`
 			set -e
 			if [[ -z $str || -z $tstr ]]; then
-				>&2 echo -e -n "\nWARNING: Could not find part-$p-$uttid."
+				>&2 echo -e -n "\nmergetxt.sh WARNING: neither $simfile nor $transcripts contains $part."
 				rm -f $mergedir/$uttid.txt 2>/dev/null
 				break
 			fi
