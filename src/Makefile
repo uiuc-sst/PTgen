@@ -2,7 +2,7 @@ INSTALLDIR=../steps/
 FSTDIR=/usr/local/include # for fst/compat.h
 
 CC=g++
-CFLAGS=-Wall -O3 -I$(FSTDIR)
+CFLAGS=-Wall -O3 -std=c++11 -I$(FSTDIR)
 
 SRCS := $(wildcard *.cc)
 BINS := $(SRCS:%.cc=%)
