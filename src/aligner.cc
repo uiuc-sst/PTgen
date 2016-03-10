@@ -29,7 +29,7 @@ const cost_t default_dist = 1;
  */
 
 struct elem_t {
-    int revptr;           // from compressindex()
+    unsigned revptr;           // from compressindex()
     unsigned short width; // length of chain of reverse pointers
     cost_t cost;
 };
@@ -44,8 +44,8 @@ class Table
 public:
     Table(const vector<unsigned>& dimensions) {
 	dim = dimensions; // Keep a local copy.
-	int size = 1;
-	for (unsigned i=0; i < dimensions.size(); ++i)
+	auto size = 1;
+	for (auto i=0u; i < dimensions.size(); ++i)
 	    size *= dimensions[i];
 	tab.resize(size);
     }
@@ -55,8 +55,8 @@ public:
     }
 
     unsigned compressindex(const vector<unsigned>& vindex) const {
-	unsigned ind = vindex[0];
-	for (unsigned i=1; i < dim.size(); ++i) {
+	auto ind = vindex[0];
+	for (auto i=1u; i < dim.size(); ++i) {
 	    assert(vindex[i] < dim[i]);
 	    ind *= dim[i];
 	    ind += vindex[i];
@@ -67,7 +67,7 @@ public:
     void expandindex(unsigned ind, vector<unsigned>& vindex) const {
 	vindex.clear();
 	vindex.resize(dim.size());
-	for (unsigned i=dim.size()-1; i > 0; --i) {
+	for (auto i=dim.size()-1; i > 0; --i) {
 	    vindex[i] = ind % dim[i];
 	    ind /= dim[i];
 	}
@@ -82,7 +82,7 @@ public:
 	vector<unsigned> twos(dim.size(),2);
 	expandindex(ind,vindex);
 	const bitset<MAXSTRINGS> bindex(offset);
-	for (unsigned i=0; i<dim.size(); ++i) {
+	for (auto i=0u; i<dim.size(); ++i) {
 	    if (vindex[i]==0 && bindex[i]==1)
 		return -1;
 	    vindex[i] -= bindex[i];
@@ -117,7 +117,7 @@ dmap_t* makedmap(string dfile)
 
 cost_t dist(tok_t& t1, tok_t& t2, dmap_t* dmap, cost_t dfltdist)
 {
-    const pair<tok_t,tok_t> key = make_pair(t1,t2);
+    const pair<tok_t,tok_t> key{t1,t2};
     if (dmap == NULL || dmap->count(key) == 0)
         return (t1 == t2) ? 0 : dfltdist;
     return (*dmap)[key];
@@ -126,17 +126,17 @@ cost_t dist(tok_t& t1, tok_t& t2, dmap_t* dmap, cost_t dfltdist)
 cost_t distance(vector<tok_t>& tv, dmap_t* dmap = NULL, cost_t dfltdist = default_dist)
 {
     cost_t cost = 0;
-    for (unsigned i=0; i < tv.size(); ++i)
-        for (unsigned j=i+1; j < tv.size(); ++j)
-            cost += dist(tv[i],tv[j],dmap,dfltdist);
+    for (auto i=0u; i < tv.size(); ++i)
+        for (auto j=i+1; j < tv.size(); ++j)
+            cost += dist(tv[i], tv[j], dmap, dfltdist);
     return cost;
 }
 
-unsigned int align(const vector <vector <tok_t> >& input, const tok_t etok, dmap_t* dmap, vector<vector <tok_t> >& output)
+unsigned align(const vector <vector <tok_t> >& input, const tok_t etok, dmap_t* dmap, vector<vector <tok_t> >& output)
 {
-    const unsigned n = input.size();
+    const auto n = input.size();
     vector<unsigned> dimensions(n);
-    for (unsigned i=0; i < n; ++i)
+    for (auto i=0u; i < n; ++i)
         dimensions[i] = input[i].size();
 
     Table<elem_t> table(dimensions);
@@ -144,17 +144,16 @@ unsigned int align(const vector <vector <tok_t> >& input, const tok_t etok, dmap
     table[0].width  = 0;
     table[0].cost   = 0;
 
-    const unsigned nbhd = pow(2,n);
-    const unsigned T = table.size();
-
-    for (unsigned t=1; t < T; ++t) {
+    const unsigned nbhd = pow(2,n); // 2<<n instead?
+    const auto T = table.size();
+    for (auto t=1u; t < T; ++t) {
         elem_t e;
 	e.cost = FLT_MAX; // Greater than any valid cost.
         vector <unsigned> vt;
         table.expandindex(t,vt);
-        for (unsigned k = 1; k < nbhd; ++k) {
+        for (auto k = 1u; k < nbhd; ++k) {
             const int nbr = table.subtractindex(t,k);
-            if (nbr<0)
+            if (nbr < 0)
                 continue;
 
             // Assemble the "current tokens vector", using lowest cost.
@@ -162,13 +161,13 @@ unsigned int align(const vector <vector <tok_t> >& input, const tok_t etok, dmap
             vector<tok_t> toks;
             toks.clear(); toks.resize(n);
             const bitset<MAXSTRINGS> bk(k);
-            for (unsigned j=0; j < n; ++j)
+            for (auto j=0u; j < n; ++j)
                 toks[j] = bk[j] ? input[j][vt[j]] : etok;
 
             const cost_t newcost = distance(toks,dmap) + table[nbr].cost;
             if (newcost < e.cost) {
                 e.cost = newcost;
-                e.revptr = nbr;
+                e.revptr = nbr; // >=0, a dozen lines ago
                 e.width = table[nbr].width + 1;
             }
         }
@@ -182,13 +181,13 @@ unsigned int align(const vector <vector <tok_t> >& input, const tok_t etok, dmap
     for (unsigned i=0; i < n; ++i)
         output[i].resize(w);
 
-    for (unsigned t = T-1; t > 0; t = table[t].revptr, --w) {
+    for (auto t = T-1; t > 0; t = table[t].revptr, --w) {
        assert(w>0);
-       const unsigned r = table[t].revptr;
+       const auto r = table[t].revptr;
        vector<unsigned> vt, vr;
        table.expandindex(t,vt);
        table.expandindex(r,vr);
-       for (unsigned i=0; i<n; ++i)
+       for (auto i=0u; i<n; ++i)
             output[i][w-1] = vt[i]==vr[i] ? etok : input[i][vt[i]];
     }
     return table[T-1].width;
@@ -198,12 +197,12 @@ int main(int argc, char** argv)
 {
     string distfile;
     tok_t emptytok = default_emptytok;
-    bool flip = true;
+    auto flip = true;
 
     // Parse command-line arguments.
     {
 	string argerr;
-	for (int a=1; a < argc; ++a) {
+	for (auto a=1; a < argc; ++a) {
 	    const string arg(argv[a]);
 	    if (arg == "--noflip") {
 		flip = false;
@@ -245,16 +244,16 @@ int main(int argc, char** argv)
 
     // Output the 2D array, transposed iff "flip".
     vector <vector <tok_t> > output;
-    const unsigned width = align(input,emptytok,dmap,output);
+    const auto width = align(input,emptytok,dmap,output);
     if (flip) {
-        for (unsigned j=0; j < width; ++j) {
-            for (unsigned i=0; i < output.size(); ++i)
+        for (auto j=0u; j < width; ++j) {
+            for (auto i=0u; i < output.size(); ++i)
                 cout << output[i][j] << " ";
             cout << "\n";
         }
     } else {
-        for (unsigned i=0; i < output.size(); ++i) {
-            for (unsigned j=0; j < width; ++j)
+        for (auto i=0u; i < output.size(); ++i) {
+            for (auto j=0u; j < width; ++j)
                 cout << output[i][j] << " ";
             cout << "\n";
         }
