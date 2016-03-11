@@ -16,6 +16,9 @@ cd src
 make
 ```
 
+The first time you `make`, you'll be asked to enter the location of OpenFST's file `fst/compat.h`.
+This is usually the directory `/usr/local/include`.  If that fails, instead try one of the results from the command `locate fst/compat.h`.
+
 # How to create and test PT's
 
 Edit the settings file, e.g. `settings_sample`.
