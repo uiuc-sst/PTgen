@@ -1,18 +1,17 @@
-### training/test languages
+# training/test languages
 ALL_LANGS=(AR CA DT HG MD SW UR)
 TRAIN_LANG=(AR CA DT HG MD UR)
 TEST_LANG=(SW)
 TEST_LANG_NAME=swahili
 
-### directories
-
+# directories
 ROOT=~/ws15
 DATA=$ROOT/data
-EXP=/home/preethi/Tmp/Exp
+EXP=$HOME/Tmp/Exp
 EXPLOCAL=$EXP/$TEST_LANG_NAME-X
 tmproot=/tmp
 
-## Data 
+# Data 
 LISTDIR=$DATA/lists
 TRANSDIR=$DATA/nativetranscripts
 TURKERTEXT=$DATA/mturk/batchfiles
@@ -21,7 +20,7 @@ TESTTYPE='dev'
 #TESTTYPE='eval'
 evalreffile=$TRANSDIR/$TEST_LANG_NAME/${TESTTYPE}_text
 
-### alphabets
+# alphabets
 engdict=$DATA/let2phn/eng_dict.txt
 engalphabet=$DATA/let2phn/englets.vocab
 phnalphabet=$DATA/phonesets/univ.compact.txt
@@ -29,14 +28,13 @@ phnalphabet=$DATA/phonesets/univ.compact.txt
 #phonelm=$DATA/langmodels/$TEST_LANG_NAME/unigram.fst 			
 phonelm=$DATA/langmodels/$TEST_LANG_NAME/bigram.fst
 
-### data splits
+# data splits
 trainids=$EXPLOCAL/lists/train
 testids=$EXPLOCAL/lists/${TESTTYPE}
 adaptids=$EXPLOCAL/lists/adapt
 priortrainfile=$trainids
 
-### local files
-
+# local files
 reffile=$EXPLOCAL/ref_train_text
 transcripts=$EXPLOCAL/transcripts.txt
 simfile=$EXPLOCAL/simscores.txt
@@ -59,8 +57,7 @@ Lfst=$EXPLOCAL/L.fst
 TPLfst=$EXPLOCAL/TPL.fst
 GTPLfst=$EXPLOCAL/GTPL.fst
 
-### parameters
-
+# parameters
 rmprefix="http://"      # Stage 1 (used in file ID creation)
 delimsymbol='%'
 disambigdel='#2'
@@ -73,24 +70,22 @@ nparts=4
 topN=4
 nparallel=8
 alignswitchpenalty=1	# Stage 6
-nrand=12				# Stage 7
-Pscale=1				# Stage 9
-Gscale=1				# Stage 10
-Lscale=1				# Stage 11
-Tnumins=10				# Stage 12
-Tnumdel=5				# Stage 12
-Mscale=1				# Stage 14
-prunewt=2				# Stage 15
+nrand=12		# Stage 7
+Pscale=1		# Stage 9
+Gscale=1		# Stage 10
+Lscale=1		# Stage 11
+Tnumins=10		# Stage 12
+Tnumdel=5		# Stage 12
+Mscale=1		# Stage 14
+prunewt=2		# Stage 15
 
-### algorithmic options
-
-#carmelinitopt="--$Pstyle --startwith=$EXPLOCAL/simple.trained"
+# algorithmic options
 carmelinitopt="--$Pstyle"
+#carmelinitopt="--$Pstyle --startwith=$EXPLOCAL/simple.trained"
 aligneropt="--dist $aligndist --empty $gapsymbol"
 alignertofstopt="--switchpenalty $alignswitchpenalty"
 
-### flags: comment out to disable
-
+# flags: comment out to disable
 makeGTPLM=1
 #makeTPLM=1
 #decode_for_adapt=1
@@ -102,4 +97,3 @@ debug=1
 startstage=1
 endstage=15
 ##########################################################
-
