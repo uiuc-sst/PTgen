@@ -15,6 +15,9 @@ export INIT_STEPS=$SRCDIR/init.sh
 
 . $INIT_STEPS
 
+if [[ ! -d $ROOT ]]; then
+  echo "Missing ROOT directory $ROOT. Check $1."; exit 1
+fi
 if [[ ! -d $LISTDIR ]]; then
   echo "Missing LISTDIR directory $LISTDIR. Check $1."; exit 1
 fi
@@ -57,7 +60,7 @@ fi
 stage=1
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	mkdir -p "$(dirname "$transcripts")"
-	showprogress init 1 "Creating processed transcripts."
+	showprogress init 1 "Creating processed transcripts. "
 	for L in "${ALL_LANGS[@]}"; do
 		if [[ -n $rmprefix ]]; then
 			prefixarg="--rmprefix $rmprefix"
