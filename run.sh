@@ -283,7 +283,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 		evaluate_PTs.sh $1 | tee $evaloutput >&2
 	fi
 else
-	>&2 echo "Nothing to do!"
+	>&2 echo "Stage 15: nothing to do."
 fi
 
 if [[ -z $debug ]]; then
