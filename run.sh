@@ -15,6 +15,9 @@ export INIT_STEPS=$SRCDIR/init.sh
 
 . $INIT_STEPS
 
+if [[ ! -d $ROOT ]]; then
+  echo "Missing ROOT directory $ROOT. Check $1."; exit 1
+fi
 if [[ ! -d $LISTDIR ]]; then
   echo "Missing LISTDIR directory $LISTDIR. Check $1."; exit 1
 fi
@@ -57,7 +60,7 @@ fi
 stage=1
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	mkdir -p "$(dirname "$transcripts")"
-	showprogress init 1 "Creating processed transcripts."
+	showprogress init 1 "Creating processed transcripts... "
 	for L in "${ALL_LANGS[@]}"; do
 		if [[ -n $rmprefix ]]; then
 			prefixarg="--rmprefix $rmprefix"
@@ -88,7 +91,7 @@ fi
 # Prepare data lists
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
-	>&2 echo "Splitting training/test data for parallel jobs"
+	>&2 echo "Splitting training/test data for parallel jobs... "
 	datatype='train' create-datasplits.sh $1
 	datatype='dev'   create-datasplits.sh $1
 #	datatype='test'  create-datasplits.sh $1
@@ -101,7 +104,7 @@ fi
 # Merge text from crowd workers
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
-	>&2 echo -n "Merging transcripts "
+	>&2 echo -n "Merging transcripts... "
 	mergetxt.sh $1
 else
 	usingfile $mergedir "Merged transcripts in"
@@ -111,7 +114,7 @@ fi
 # Convert merged text into merged FST sausage-style structures
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
-	>&2 echo -n "Merging transcript FSTs (unscaled) "
+	>&2 echo -n "Merging transcript FSTs (unscaled)... "
 	mergefst.sh $1
 else
 	usingfile "$mergedir" "Merged transcript FSTs in"
@@ -121,7 +124,7 @@ fi
 # Initialize the phone-2-letter model (P)
 ((stage++))
 if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]; then
-	>&2 echo -n "Creating untrained phone-2-letter model ($Pstyle style)"
+	>&2 echo -n "Creating untrained phone-2-letter model ($Pstyle style)... "
 	mkdir -p "$(dirname "$initcarmel")"
 	create-initcarmel.pl `echo $carmelinitopt` $phnalphabet $engalphabet $delimsymbol > $initcarmel
 	>&2 echo " Done"
@@ -133,7 +136,7 @@ fi
 # Create training data to learn phone-2-letter mappings defined in P
 ((stage++))
 if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]; then
-	>&2 echo "Creating carmel training data"
+	>&2 echo "Creating carmel training data... "
 	for L in ${TRAIN_LANG[@]}; do
 		cat $TRANSDIR/${L}/ref_train 
 	done > $reffile
@@ -146,7 +149,7 @@ fi
 # EM-train P
 ((stage++))
 if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]; then
-	>&2 echo -n "Starting carmel training (output in $tmpdir/carmelout) "
+	>&2 echo -n "Starting carmel training (output in $tmpdir/carmelout)... "
 	carmel -\? --train-cascade -t -f 1 -M 20 -HJ $carmeltraintxt $initcarmel 2>&1 \
 		| tee $tmpdir/carmelout | awk '/^i=|^Computed/ {printf "."; fflush (stdout)}' >&2
 	# From $CARMELDIR.
@@ -164,7 +167,7 @@ fi
 # Optionally, scale weights in P with $Pscale
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
-	>&2 echo -n "Creating P (phone-2-letter FST) in openFST format"
+	>&2 echo -n "Creating P (phone-2-letter FST) in openFST format... "
 	if [[ -z $Pscale ]]; then
 		Pscale=1
 	fi
@@ -185,7 +188,7 @@ fi
 # Optionally, scale weights in G with $Gscale
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
-	>&2 echo -n "Creating G (phone-model) FST with disambiguation symbols"
+	>&2 echo -n "Creating G (phone-model) FST with disambiguation symbols... "
 	if [[ -z $Gscale ]]; then
 		Gscale=1
 	fi
@@ -208,7 +211,7 @@ fi
 # Optionally, scale weights in L with $Lscale
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
-	>&2 echo -n "Creating L (letter statistics FST)"
+	>&2 echo -n "Creating L (letter statistics FST)... "
 	if [[ -z $Lscale ]]; then
 		Lscale=1
 	fi
@@ -240,7 +243,7 @@ fi
 # Create TPL and GTPL FSTs
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
-	>&2 echo "Creating TPL and GTPL fsts"
+	>&2 echo "Creating TPL and GTPL fsts... "
 	mkdir -p "$(dirname "$TPLfst")"
 	fstcompose $Pfst $Lfst | fstcompose $Tfst - | fstarcsort --sort_type=olabel \
 		| tee $TPLfst | fstcompose $Gfst - | fstarcsort --sort_type=olabel > $GTPLfst
@@ -260,7 +263,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	elif [[ -n $makeGTPLM ]]; then
 		msgtext="GTPLM"
 	fi
-	>&2 echo -n "Creating decoded lattices $msgtext"
+	>&2 echo -n "Creating decoded lattices $msgtext... "
 	if [[ -z $Mscale ]]; then
 		Mscale=1
 	fi
@@ -277,7 +280,7 @@ fi
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	if [[ -n $decode_for_adapt ]]; then
-		>&2 echo "Not evaluating PTs (adaptation mode)"
+		>&2 echo "Not evaluating PTs (adaptation mode)... "
 	else
 		>&2 echo "Evaluating decoded lattices"
 		evaluate_PTs.sh $1 | tee $evaloutput >&2
