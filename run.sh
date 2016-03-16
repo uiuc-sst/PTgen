@@ -58,6 +58,9 @@ fi
 if [[ $startstage -le 8 && 8 -le $endstage ]]; then
   hash carmel 2>/dev/null || { echo >&2 "Missing program 'carmel'.  Stage 8 would abort."; exit 1; }
 fi
+if [[ $startstage -le 15 && 15 -le $endstage ]]; then
+  hash compute-wer 2>/dev/null || { echo >&2 "Missing program 'compute-wer'.  Stage 15 would abort."; exit 1; }
+fi
 
 ## STAGE 1 ##
 # Preprocess transcripts obtained from crowd workers

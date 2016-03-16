@@ -64,6 +64,7 @@ if [[ ! -z $hypfile ]]; then
 	cp $tmpdir/hyp.txt $hypfile
 fi
 
+hash compute-wer 2>/dev/null || { echo >&2 "Missing program 'compute-wer'.  Aborting."; exit 1; }
 compute-wer --text --mode=present ark:$evalreffile ark:$tmpdir/hyp.txt
 
 if [[ -n $evaloracle ]]; then
