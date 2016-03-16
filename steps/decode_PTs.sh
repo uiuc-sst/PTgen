@@ -14,8 +14,7 @@ if [[ -n $decode_for_adapt ]]; then
 	splitids=$splitadaptids;
 fi
 
-
-showprogress init 5 "Decoding"
+showprogress init 5 "" # Long description is in caller, ../run.sh.
 for ip in `seq 1 $nparallel`; do
 	(
 	for uttid in `cat $splitids.$ip`; do
@@ -42,4 +41,4 @@ for ip in `seq 1 $nparallel`; do
 	) &
 done
 wait;
-showprogress end "Done"
+showprogress end

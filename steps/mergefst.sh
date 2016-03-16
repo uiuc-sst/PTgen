@@ -8,7 +8,7 @@ if [[ ! -d $mergedir ]] ; then
 fi
 
 mkdir -p $mergefstdir
-showprogress init 100 ""
+showprogress init 100 "Merging transcript FSTs (unscaled)"
 for ip in `seq 1 $nparallel`; do
 	(
 	for uttid in `cat $splittrainids.$ip $splittestids.$ip $splitadaptids.$ip`; do
@@ -25,4 +25,4 @@ for ip in `seq 1 $nparallel`; do
 	) &
 done
 wait;
-showprogress end "Done"
+showprogress end

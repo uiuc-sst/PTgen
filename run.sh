@@ -39,7 +39,6 @@ fi
 if [[ ! -s $phonelm ]]; then
   echo "Missing or empty phonelm file $phonelm. Check $1."; exit 1
 fi
-# Unused: $langmap $evalreffile
 
 mktmpdir
 
@@ -67,7 +66,7 @@ fi
 stage=1
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	mkdir -p "$(dirname "$transcripts")"
-	showprogress init 1 "Creating processed transcripts... "
+	showprogress init 1 "Processing transcripts"
 	for L in "${ALL_LANGS[@]}"; do
 		if [[ -n $rmprefix ]]; then
 			prefixarg="--rmprefix $rmprefix"
@@ -75,7 +74,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 		preprocess_turker_transcripts.pl --multiletter $engdict $prefixarg < $TURKERTEXT/${L}/batchfile
 		showprogress go
 	done > $transcripts
-	showprogress end "Done"
+	showprogress end
 else
 	usingfile "$transcripts" "Processed transcripts"
 fi
@@ -89,7 +88,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	grep "#" $transcripts > $tmpdir/transcripts 
 	mv $tmpdir/transcripts $transcripts
 	compute_turker_similarity $transcripts > $simfile
-	>&2 echo " Done"
+	>&2 echo "Done."
 else
 	usingfile $simfile "Transcript similarity scores"
 fi
@@ -98,11 +97,12 @@ fi
 # Prepare data lists
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
-	>&2 echo "Splitting training/test data for parallel jobs... "
+	>&2 echo -n "Splitting training/test data for parallel jobs... "
 	datatype='train' create-datasplits.sh $1
 	datatype='dev'   create-datasplits.sh $1
 #	datatype='test'  create-datasplits.sh $1
 	datatype='adapt' create-datasplits.sh $1
+	>&2 echo "Done."
 else
 	usingfile "$(dirname "$splittestids")" "Test & Train ID lists in"
 fi
@@ -111,7 +111,6 @@ fi
 # Merge text from crowd workers
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
-	>&2 echo -n "Merging transcripts... "
 	mergetxt.sh $1
 else
 	usingfile $mergedir "Merged transcripts in"
@@ -121,7 +120,6 @@ fi
 # Convert merged text into merged FST sausage-style structures
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
-	>&2 echo -n "Merging transcript FSTs (unscaled)... "
 	mergefst.sh $1
 else
 	usingfile "$mergedir" "Merged transcript FSTs in"
@@ -134,7 +132,7 @@ if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]
 	>&2 echo -n "Creating untrained phone-2-letter model ($Pstyle style)... "
 	mkdir -p "$(dirname "$initcarmel")"
 	create-initcarmel.pl `echo $carmelinitopt` $phnalphabet $engalphabet $delimsymbol > $initcarmel
-	>&2 echo " Done"
+	>&2 echo "Done."
 else
 	usingfile "$initcarmel" "Untrained phone-2-letter model"
 fi
@@ -156,15 +154,15 @@ fi
 # EM-train P
 ((stage++))
 if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]; then
+	>&2 echo -n "Training phone-2-letter model (see $tmpdir/carmelout)... "
 	hash carmel 2>/dev/null || { echo >&2 "Missing program 'carmel'.  Aborting."; exit 1; }
-	>&2 echo -n "Starting carmel training (output in $tmpdir/carmelout)... "
 	carmel -\? --train-cascade -t -f 1 -M 20 -HJ $carmeltraintxt $initcarmel 2>&1 \
 		| tee $tmpdir/carmelout | awk '/^i=|^Computed/ {printf "."; fflush (stdout)}' >&2
 	# From $CARMELDIR.
 	# If "carmel" is not found, no error is printed!
 	# It just leaves "./run.sh: line 138: carmel: command not found"
 	# in /tmp/run.sh-29085.dir/carmelout.
-	>&2 echo "Done"
+	>&2 echo "Done."
 else
 	usingfile "$initcarmel.trained" "Trained phone-2-letter model"
 fi
@@ -175,18 +173,17 @@ fi
 # Optionally, scale weights in P with $Pscale
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
-	>&2 echo -n "Creating P (phone-2-letter FST) in openFST format... "
 	if [[ -z $Pscale ]]; then
 		Pscale=1
 	fi
-	>&2 echo -n " [PSCALE=$Pscale] ... "
+	>&2 echo -n "Creating P (phone-2-letter FST) in openFST format [PSCALE=$Pscale]... "
 	convert-carmel-to-fst.pl < ${initcarmel}.trained \
 		| sed -e 's/e\^-\([0-9]*\)\..*/1.00e-\1/g' | convert-prob-to-neglog.pl \
 		| scale-FST-weights.pl $Pscale \
 		| fixp2let.pl "$disambigdel" "$disambigins" "$phneps" "$leteps" \
 		| tee $tmpdir/trainedp2let.fst.txt \
 		| fstcompile --isymbols=$phnalphabet --osymbols=$engalphabet  > $Pfst
-	>&2 echo "Done"
+	>&2 echo "Done."
 else
 	usingfile "$Pfst" "P (phone-2-letter model) FST"
 fi
@@ -196,12 +193,10 @@ fi
 # Optionally, scale weights in G with $Gscale
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
-	>&2 echo -n "Creating G (phone-model) FST with disambiguation symbols... "
 	if [[ -z $Gscale ]]; then
 		Gscale=1
 	fi
-	>&2 echo -n " [GSCALE=$Gscale] ... "
-
+	>&2 echo -n "Creating G (phone-model) FST with disambiguation symbols [GSCALE=$Gscale]... "
 	mkdir -p "$(dirname "$Gfst")"
 #	>&2 echo -n " $phnalphabet $phnalphabet $phonelm zxcv"
 	fstprint --isymbols=$phnalphabet --osymbols=$phnalphabet $phonelm \
@@ -209,9 +204,9 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 		| scale-FST-weights.pl $Gscale \
 		| fstcompile --isymbols=$phnalphabet --osymbols=$phnalphabet \
 		| fstarcsort --sort_type=olabel > $Gfst
-	>&2 echo "Done"
+	>&2 echo "Done."
 else
-	usingfile "$Gfst" "G (Phone Language Model) FST"
+	usingfile "$Gfst" "G (phone language model) FST"
 fi
 
 ## STAGE 11 ##
@@ -219,17 +214,16 @@ fi
 # Optionally, scale weights in L with $Lscale
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
-	>&2 echo -n "Creating L (letter statistics FST)... "
 	if [[ -z $Lscale ]]; then
 		Lscale=1
 	fi
-	>&2 echo -n " [LSCALE=$Lscale] ... "
+	>&2 echo -n "Creating L (letter statistics FST) [LSCALE=$Lscale]... "
 	mkdir -p "$(dirname "$Lfst")"
 	create-letpriorfst.pl $mergedir $priortrainfile \
 		| scale-FST-weights.pl $Lscale \
 		| fstcompile --osymbols=$engalphabet --isymbols=$engalphabet - \
 		| fstarcsort --sort_type=ilabel - > $Lfst
-	>&2 echo "Done"
+	>&2 echo "Done."
 else
 	usingfile $Lfst "L (letter statistics FST)"
 fi
@@ -251,10 +245,11 @@ fi
 # Create TPL and GTPL FSTs
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
-	>&2 echo "Creating TPL and GTPL fsts... "
+	>&2 echo -n "Creating TPL and GTPL fsts... "
 	mkdir -p "$(dirname "$TPLfst")"
 	fstcompose $Pfst $Lfst | fstcompose $Tfst - | fstarcsort --sort_type=olabel \
 		| tee $TPLfst | fstcompose $Gfst - | fstarcsort --sort_type=olabel > $GTPLfst
+	>&2 echo "Done."
 else
 	usingfile "$GTPLfst" "GTPL FST"
 fi
@@ -271,14 +266,13 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	elif [[ -n $makeGTPLM ]]; then
 		msgtext="GTPLM"
 	fi
-	>&2 echo -n "Creating decoded lattices $msgtext... "
 	if [[ -z $Mscale ]]; then
 		Mscale=1
 	fi
-	>&2 echo " [MSCALE=$Mscale] "
-
+	>&2 echo -n "Decoding lattices $msgtext [MSCALE=$Mscale]"
 	mkdir -p $decodelatdir
 	decode_PTs.sh $1
+	#>&2 echo "Done."
 else
 	usingfile "$decodelatdir" "Decoded lattices in"
 fi
@@ -288,9 +282,8 @@ fi
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	if [[ -n $decode_for_adapt ]]; then
-		>&2 echo "Not evaluating PTs (adaptation mode)... "
+		>&2 echo "Not evaluating PTs (adaptation mode)."
 	else
-		>&2 echo "Evaluating decoded lattices"
 		evaluate_PTs.sh $1 | tee $evaloutput >&2
 	fi
 else

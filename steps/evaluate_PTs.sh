@@ -26,7 +26,7 @@ editfst=$tmpdir/edit.fst
 oracleerror=0
 create-editfst.pl < $phnalphabet | fstcompile - > $editfst 
 
-showprogress init 5 "Evaluating"
+showprogress init 5 "Evaluating PTs"
 for ip in `seq 1 $nparallel`; do
 	(
 	for uttid in `cat $splittestids.$ip`; do
@@ -59,7 +59,7 @@ for ip in `seq 1 $nparallel`; do
 	) &
 done
 wait
-showprogress end "Done"
+showprogress end
 
 > $tmpdir/hyp.txt
 for ip in `seq 1 $nparallel`; do
@@ -75,7 +75,7 @@ compute-wer --text --mode=present ark:$evalreffile ark:$tmpdir/hyp.txt
 
 if [[ -n $evaloracle ]]; then
 	lines=`wc -l $evalreffile | cut -d' ' -f1`
-	wrds=`wc -w $evalreffile | cut -d' ' -f1`
+	wrds=` wc -w $evalreffile | cut -d' ' -f1`
 	per=`echo "scale=5; $oracleerror / ($wrds - $lines)" | bc -l`
 	echo "Oracle Error-rate (prune-wt: $prunewt): $oracleerror Relative: $per"
 fi

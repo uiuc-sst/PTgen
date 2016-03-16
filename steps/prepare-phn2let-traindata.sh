@@ -36,4 +36,4 @@ showprogress init 100 "Preparing training data"
 		>&2 echo -e -n "\nprepare-phn2let-traindata.sh: WARNING: no file $mergefstdir/${uttid}.M.fst "
 	fi
 done ) > $carmeltraintxt
-showprogress end "Done"
+showprogress end
