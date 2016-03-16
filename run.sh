@@ -6,11 +6,56 @@
 
 SRCDIR="$(dirname "$0")/steps"
 UTILDIR="$(dirname "$0")/util"
-OPENFSTDIR="/ws/rz-cl-2/hasegawa/amitdas/corpus/ws15-pt-data/data/rsloan/openfst-1.5.0/src/bin/.libs"
-KALDIDIR="/ws/rz-cl-2/hasegawa/xyang45/work/kaldi-trunk/src/bin/"
-CARMELDIR="/r/lorelei/bin-carmel/linux64" # todo: move this into a not-git config file
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/ws/rz-cl-2/hasegawa/amitdas/corpus/ws15-pt-data/data/rsloan/openfst-1.5.0/src/lib/.libs:/ws/rz-cl-2/hasegawa/amitdas/corpus/ws15-pt-data/data/rsloan/openfst-1.5.0/src/script/.libs # for libfstscript.so and libfst.so
-export PATH=$PATH:$SRCDIR:$UTILDIR:$OPENFSTDIR:$CARMELDIR:$KALDIDIR
+
+# config.sh is in the local directory, which might not be the same as that of run.sh.
+if [[ -s config.sh ]]; then
+  . config.sh
+  export PATH=$PATH:$OPENFSTDIR:$CARMELDIR:$KALDIDIR
+  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPENFSTLIB1:$OPENFSTLIB2 # for libfstscript.so and libfst.so
+else
+  : # No config.sh, but that's okay if binaries are already in $PATH.
+fi
+
+if hash compute-wer 2>/dev/null; then
+  : # found compute-wer
+else
+  read -p "Enter the Kaldi directory containing compute-wer: " KALDIDIR
+  # Typical values:
+  # /ws/rz-cl-2/hasegawa/xyang45/work/kaldi-trunk/src/bin
+  # /r/lorelei/kaldi/kaldi-trunk/src/bin
+  # Append this value, without erasing any previous values.
+  echo "KALDIDIR=\"$KALDIDIR\"" >> config.sh
+fi
+
+if hash carmel 2>/dev/null; then
+  :
+else
+  read -p "Enter the directory containing carmel: " CARMELDIR
+  # Typical values:
+  # /r/lorelei/bin-carmel/linux64
+  echo "CARMELDIR=\"$CARMELDIR\"" >> config.sh
+fi
+
+if hash fstcompile 2>/dev/null; then
+  :
+else
+  read -p "Enter the directory containing fstcompile and other OpenFST programs (/foo/bar/.../bin/.libs): " OPENFSTDIR
+  # Typical values:
+  # /ws/rz-cl-2/hasegawa/amitdas/corpus/ws15-pt-data/data/rsloan/openfst-1.5.0/src/bin/.libs
+  echo "OPENFSTDIR=\"$OPENFSTDIR\"" >> config.sh
+  # Expect to find libfstscript.so and libfst.so relative to OPENFSTDIR.
+  # /ws/rz-cl-2/hasegawa/amitdas/corpus/ws15-pt-data/data/rsloan/openfst-1.5.0/src/bin/.libs becomes
+  # /ws/rz-cl-2/hasegawa/amitdas/corpus/ws15-pt-data/data/rsloan/openfst-1.5.0/src/lib/.libs and
+  # /ws/rz-cl-2/hasegawa/amitdas/corpus/ws15-pt-data/data/rsloan/openfst-1.5.0/src/script/.libs
+  OPENFSTLIB1=$(echo "$OPENFSTDIR" | sed 's_bin/.libs$_lib/.libs_')
+  OPENFSTLIB2=$(echo "$OPENFSTDIR" | sed 's_bin/.libs$_script/.libs_')
+  echo "OPENFSTLIB1=\"$OPENFSTLIB1\"" >> config.sh
+  echo "OPENFSTLIB2=\"$OPENFSTLIB2\"" >> config.sh
+fi
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPENFSTLIB1:$OPENFSTLIB2 # for libfstscript.so and libfst.so
+export PATH=$PATH:$OPENFSTDIR:$CARMELDIR:$KALDIDIR
+export PATH=$PATH:$SRCDIR
 export INIT_STEPS=$SRCDIR/init.sh
 
 . $INIT_STEPS
