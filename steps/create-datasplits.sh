@@ -2,7 +2,13 @@
 
 . $INIT_STEPS
 
-# expects $datatype to be exported
+if [[ ! -s $langmap ]]; then
+  echo "Missing or empty langmap file $langmap. Check $1."; exit 1
+fi
+
+# Needs $datatype from settings_file.
+# (It would be nice to pass this in as $2 instead of as an explicit variable,
+# but steps/init.sh insists on only one argument, the settings_file.)
 
 case $datatype in
 train)
@@ -40,7 +46,7 @@ for L in ${LANG[@]}; do
 	full_lang_name=`awk '/'${L}'/ {print $2}' $langmap`
 	sed -e 's:.wav::' -e 's:.mp3::' $LISTDIR/$full_lang_name/${dtype}
 done > $ids_file
-split -n r/$nparallel $ids_file  $tmpdir/split-${dtype}.
+split -n r/$nparallel $ids_file $tmpdir/split-${dtype}.
 for i in `seq 1 $nparallel`; do
 	mv `ls $tmpdir/split-${dtype}.* | head -1` ${splitids_file}.$i
 done
