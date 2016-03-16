@@ -28,5 +28,8 @@ Edit the settings file, e.g. `settings_sample`.
 
 `run.sh settings_sample`
 
+If `run.sh` can't find the executable programs of OpenFST, Carmel, or Kaldi, it prompts you for their locations,
+and caches your answers in a new file `config.sh`, for future runs.
+
 If you encounter errors and fix them, you can save time by starting `run.sh` partway through:
 change `startstage` to one past the last completed stage.
