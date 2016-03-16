@@ -8,7 +8,7 @@ SRCDIR="$(dirname "$0")/steps"
 UTILDIR="$(dirname "$0")/util"
 OPENFSTDIR="/ws/rz-cl-2/hasegawa/amitdas/corpus/ws15-pt-data/data/rsloan/openfst-1.5.0/src/bin/.libs"
 KALDIDIR="/ws/rz-cl-2/hasegawa/xyang45/work/kaldi-trunk/src/bin/"
-CARMELDIR="/home/camilleg/carmel/linux64"
+CARMELDIR="/r/lorelei/bin-carmel/linux64" # todo: move this into a not-git config file
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/ws/rz-cl-2/hasegawa/amitdas/corpus/ws15-pt-data/data/rsloan/openfst-1.5.0/src/lib/.libs:/ws/rz-cl-2/hasegawa/amitdas/corpus/ws15-pt-data/data/rsloan/openfst-1.5.0/src/script/.libs # for libfstscript.so and libfst.so
 export PATH=$PATH:$SRCDIR:$UTILDIR:$OPENFSTDIR:$CARMELDIR:$KALDIDIR
 export INIT_STEPS=$SRCDIR/init.sh
@@ -53,6 +53,10 @@ fi
 
 if [[ -z $endstage ]]; then
 	endstage=1000; #large number
+fi
+
+if [[ $startstage -le 8 && 8 -le $endstage ]]; then
+  hash carmel 2>/dev/null || { echo >&2 "Missing program 'carmel'.  Stage 8 would abort."; exit 1; }
 fi
 
 ## STAGE 1 ##
@@ -149,6 +153,7 @@ fi
 # EM-train P
 ((stage++))
 if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]; then
+	hash carmel 2>/dev/null || { echo >&2 "Missing program 'carmel'.  Aborting."; exit 1; }
 	>&2 echo -n "Starting carmel training (output in $tmpdir/carmelout)... "
 	carmel -\? --train-cascade -t -f 1 -M 20 -HJ $carmeltraintxt $initcarmel 2>&1 \
 		| tee $tmpdir/carmelout | awk '/^i=|^Computed/ {printf "."; fflush (stdout)}' >&2
