@@ -7,6 +7,9 @@
 SRCDIR="$(dirname "$0")/steps"
 UTILDIR="$(dirname "$0")/util"
 
+export INIT_STEPS=$SRCDIR/init.sh
+. $INIT_STEPS
+
 # config.sh is in the local directory, which might not be the same as that of run.sh.
 if [[ -s config.sh ]]; then
   . config.sh
@@ -33,6 +36,7 @@ else
   read -p "Enter the directory containing carmel: " CARMELDIR
   # Typical values:
   # /r/lorelei/bin-carmel/linux64
+  # $HOME/carmel/linux64
   echo "CARMELDIR=\"$CARMELDIR\"" >> config.sh
 fi
 
@@ -54,11 +58,7 @@ else
 fi
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPENFSTLIB1:$OPENFSTLIB2 # for libfstscript.so and libfst.so
-export PATH=$PATH:$OPENFSTDIR:$CARMELDIR:$KALDIDIR
-export PATH=$PATH:$SRCDIR
-export INIT_STEPS=$SRCDIR/init.sh
-
-. $INIT_STEPS
+export PATH=$PATH:$SRCDIR:$OPENFSTDIR:$CARMELDIR:$KALDIDIR
 
 if [[ ! -d $ROOT ]]; then
   echo "Missing ROOT directory $ROOT. Check $1."; exit 1
