@@ -4,17 +4,23 @@
 
 . $INIT_STEPS
 
-if [[ -z $testids 
-   || -z $decodelatdir
-   || -z $evalreffile
-   || -z $phnalphabet 
-   || (-n $evaloracle && -z $prunewt) ]]; then
-	echo "Missing variables in the settings file" 
-	exit 1
+if [[ -z $testids ]]; then
+  echo "Missing variable 'testids' in the settings file '$1'."; exit 1
+fi
+if [[ -z $decodelatdir ]]; then
+  echo "Missing variable 'decodelatdir' in the settings file '$1'."; exit 1
+fi
+if [[ -z $evalreffile ]]; then
+  echo "Missing variable 'evalreffile' in the settings file '$1'."; exit 1
+fi
+if [[ -z $phnalphabet ]]; then
+  echo "Missing variable 'phnalphabet' in the settings file '$1'."; exit 1
+fi
+if [[ (-n $evaloracle && -z $prunewt) ]]; then
+  echo "Corrupt variables 'evaloracle' or 'prunewt' in the settings file '$1'."; exit 1
 fi
 
 mktmpdir
-##################
 
 editfst=$tmpdir/edit.fst
 oracleerror=0
@@ -28,7 +34,7 @@ for ip in `seq 1 $nparallel`; do
 		latfile=$decodelatdir/${uttid}.GTPLM.fst
 
 		if [[ ! -s $latfile ]]; then
-			>&2 echo -e "\nevaluate_PTs.sh ERROR: missing file $latfile. Exiting."
+			>&2 echo -e "\nevaluate_PTs.sh ERROR: missing file $latfile. Aborting."
 			exit 1
 		fi
 
@@ -64,7 +70,7 @@ if [[ ! -z $hypfile ]]; then
 	cp $tmpdir/hyp.txt $hypfile
 fi
 
-hash compute-wer 2>/dev/null || { echo >&2 "Missing program 'compute-wer'.  Aborting."; exit 1; }
+hash compute-wer 2>/dev/null || { echo >&2 "Missing program 'compute-wer'. Aborting."; exit 1; }
 compute-wer --text --mode=present ark:$evalreffile ark:$tmpdir/hyp.txt
 
 if [[ -n $evaloracle ]]; then
