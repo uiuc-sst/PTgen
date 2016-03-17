@@ -60,8 +60,8 @@ fi
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPENFSTLIB1:$OPENFSTLIB2 # for libfstscript.so and libfst.so
 export PATH=$PATH:$SRCDIR:$OPENFSTDIR:$CARMELDIR:$KALDIDIR
 
-if [[ ! -d $ROOT ]]; then
-  echo "Missing ROOT directory $ROOT. Check $1."; exit 1
+if [[ ! -d $DATA ]]; then
+  echo "Missing DATA directory $DATA. Check $1."; exit 1
 fi
 if [[ ! -d $LISTDIR ]]; then
   echo "Missing LISTDIR directory $LISTDIR. Check $1."; exit 1
@@ -121,7 +121,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	done > $transcripts
 	showprogress end
 else
-	usingfile "$transcripts" "Processed transcripts"
+	usingfile "$transcripts" "processed transcripts"
 fi
 
 ## STAGE 2 ##
@@ -135,7 +135,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	compute_turker_similarity $transcripts > $simfile
 	>&2 echo "Done."
 else
-	usingfile $simfile "Transcript similarity scores"
+	usingfile $simfile "transcript similarity scores"
 fi
 
 ## STAGE 3 ##
@@ -149,7 +149,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	datatype='adapt' create-datasplits.sh $1
 	>&2 echo "Done."
 else
-	usingfile "$(dirname "$splittestids")" "Test & Train ID lists in"
+	usingfile "$(dirname "$splittestids")" "test & train ID lists in"
 fi
 
 ## STAGE 4 ##
@@ -158,7 +158,7 @@ fi
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	mergetxt.sh $1
 else
-	usingfile $mergedir "Merged transcripts in"
+	usingfile $mergedir "merged transcripts in"
 fi
 
 ## STAGE 5 ##
@@ -167,7 +167,7 @@ fi
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	mergefst.sh $1
 else
-	usingfile "$mergedir" "Merged transcript FSTs in"
+	usingfile "$mergedir" "merged transcript FSTs in"
 fi
 
 ## STAGE 6 ##
@@ -179,7 +179,7 @@ if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]
 	create-initcarmel.pl `echo $carmelinitopt` $phnalphabet $engalphabet $delimsymbol > $initcarmel
 	>&2 echo "Done."
 else
-	usingfile "$initcarmel" "Untrained phone-2-letter model"
+	usingfile "$initcarmel" "untrained phone-2-letter model"
 fi
 
 ## STAGE 7 ##
@@ -192,7 +192,7 @@ if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]
 	done > $reffile
 	prepare-phn2let-traindata.sh $1
 else
-	usingfile "$carmeltraintxt" "Training text for phone-2-letter model"
+	usingfile "$carmeltraintxt" "training text for phone-2-letter model"
 fi
 
 ## STAGE 8 ##
@@ -209,7 +209,7 @@ if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]
 	# in /tmp/run.sh-29085.dir/carmelout.
 	>&2 echo "Done."
 else
-	usingfile "$initcarmel.trained" "Trained phone-2-letter model"
+	usingfile "$initcarmel.trained" "trained phone-2-letter model"
 fi
 
 
@@ -290,7 +290,7 @@ fi
 # Create TPL and GTPL FSTs
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
-	>&2 echo -n "Creating TPL and GTPL fsts... "
+	>&2 echo -n "Creating TPL and GTPL FSTs... "
 	mkdir -p "$(dirname "$TPLfst")"
 	fstcompose $Pfst $Lfst | fstcompose $Tfst - | fstarcsort --sort_type=olabel \
 		| tee $TPLfst | fstcompose $Gfst - | fstarcsort --sort_type=olabel > $GTPLfst
@@ -319,7 +319,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	decode_PTs.sh $1
 	#>&2 echo "Done."
 else
-	usingfile "$decodelatdir" "Decoded lattices in"
+	usingfile "$decodelatdir" "decoded lattices in"
 fi
 
 ## STAGE 15 ##

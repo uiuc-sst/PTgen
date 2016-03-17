@@ -5,8 +5,7 @@ TEST_LANG=(SW)
 TEST_LANG_NAME=swahili
 
 # directories
-ROOT=~/ws15
-DATA=$ROOT/data
+DATA=$HOME/ws15/data
 EXP=$HOME/Tmp/Exp
 EXPLOCAL=$EXP/$TEST_LANG_NAME-X
 tmproot=/tmp
