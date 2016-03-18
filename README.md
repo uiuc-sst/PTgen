@@ -24,7 +24,7 @@ This is usually `/usr/local/include`.  If that fails, `rm config.mk; make`, and 
 Edit the settings file, e.g. `settings_sample`.
 - Set `nparallel` to 1 or 2 fewer than the number of your computer's CPU cores.
 - Ensure that `startstage=1`.
-- Make sure all the required files within `$DATA` exist.
+- Ensure that all the required files within `$DATA` exist.
 
 `run.sh settings_sample`
 
@@ -33,3 +33,13 @@ and caches your answers in a new file `config.sh`, for future runs.
 
 If you encounter errors and fix them, save time by starting `run.sh` partway through:
 change `startstage` to one past the last successfully completed stage.
+
+# How to run prebuilt tests
+
+`cd test/ws15` (or any other test directory).
+
+`../../run.sh settings-foo`
+
+The settings file in each of these tests includes
+a `$DATA_URL` for downloading the test's data,
+which is too unwieldy to store on github.

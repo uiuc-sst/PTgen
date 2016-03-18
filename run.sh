@@ -61,8 +61,34 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPENFSTLIB1:$OPENFSTLIB2 # for libfstsc
 export PATH=$PATH:$SRCDIR:$OPENFSTDIR:$CARMELDIR:$KALDIDIR
 
 if [[ ! -d $DATA ]]; then
-  echo "Missing DATA directory $DATA. Check $1."; exit 1
+  if [ -z ${DATA_URL+x} ]; then
+    echo "Missing DATA directory $DATA, and no \$DATA_URL to get it from. Check $1."; exit 1
+  fi
+  tarball=`basename $DATA_URL`
+  # $DATA_URL is e.g. http://www.ifp.illinois.edu/something/foo.tgz
+  # $tarball is foo.tgz
+  if [ -f $tarball ]; then
+    echo "Found tarball $tarball, previously downloaded from $DATA_URL."
+  else
+    echo "Downloading $DATA_URL."
+    wget --no-verbose $DATA_URL || exit 1
+  fi
+  # Check the name of the tarball's first file (probably a directory).  Strip the trailing slash.
+  tarDir=`tar tvf $tarball | head -1 | awk '{print $NF}' | sed -e 's_\/$__'`
+  if [[ "$tarDir" != "$DATA" ]]; then
+    echo "Tarball $tarball contains $tarDir, not \$DATA $DATA."; exit 1
+  fi
+  echo "Extracting $tarball, hopefully into \$DATA $DATA."
+  tar xzf $tarball || ( echo "Unexpected contents in $tarball.  Aborting."; exit 1 )
+  if [[ ! -d $DATA ]]; then
+    echo "Still missing DATA directory $DATA. Check $DATA_URL and $1."; exit 1
+  fi
+  echo "Installed \$DATA $DATA."
 fi
+if [[ ! -d $DATA ]]; then
+  echo "Still missing DATA directory $DATA. Check $DATA_URL and $1."; exit 1
+fi
+
 if [[ ! -d $LISTDIR ]]; then
   echo "Missing LISTDIR directory $LISTDIR. Check $1."; exit 1
 fi
