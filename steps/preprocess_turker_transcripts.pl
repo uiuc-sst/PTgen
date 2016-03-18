@@ -5,8 +5,8 @@
 # (CMUDict) and replaced with their pronunciations, if found.
 
 # If the next line fails, type "/usr/bin/perl -MCPAN -e'install Text::CSV_XS'",
-# use the option "[local::lib]",
-# and type ". ~/.bashrc".
+# use the option "[local::lib]" if you're not root,
+# and then type ". ~/.bashrc".
 use Text::CSV_XS;
 
 $argerr = 0;

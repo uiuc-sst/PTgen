@@ -2,6 +2,9 @@
 
 . $INIT_STEPS
 
+# Exit if there is any error.
+set -e
+
 mktmpdir
 
 if [[ ! -s $reffile ]]; then

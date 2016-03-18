@@ -4,8 +4,10 @@
 # This script is split into multiple stages (1 - 15).
 # Resume execution at a particular stage by defining the variable $startstage.
 
-SRCDIR="$(dirname "$0")/steps"
-UTILDIR="$(dirname "$0")/util"
+SCRIPT="$(readlink --canonicalize-existing "$0")"
+SCRIPTPATH="$(dirname "$SCRIPT")"
+SRCDIR="$SCRIPTPATH/steps"
+UTILDIR="$SCRIPTPATH/util"
 
 export INIT_STEPS=$SRCDIR/init.sh
 . $INIT_STEPS
@@ -58,7 +60,7 @@ else
 fi
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPENFSTLIB1:$OPENFSTLIB2 # for libfstscript.so and libfst.so
-export PATH=$PATH:$SRCDIR:$OPENFSTDIR:$CARMELDIR:$KALDIDIR
+export PATH=$PATH:$SRCDIR:$UTILDIR:$OPENFSTDIR:$CARMELDIR:$KALDIDIR
 
 if [[ ! -d $DATA ]]; then
   if [ -z ${DATA_URL+x} ]; then
@@ -225,15 +227,11 @@ fi
 # EM-train P
 ((stage++))
 if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]; then
-	>&2 echo -n "Training phone-2-letter model (see $tmpdir/carmelout)... "
+	>&2 echo -n "Training phone-2-letter model (see $tmpdir/carmelout)..."
 	hash carmel 2>/dev/null || { echo >&2 "Missing program 'carmel'.  Aborting."; exit 1; }
 	carmel -\? --train-cascade -t -f 1 -M 20 -HJ $carmeltraintxt $initcarmel 2>&1 \
 		| tee $tmpdir/carmelout | awk '/^i=|^Computed/ {printf "."; fflush (stdout)}' >&2
-	# From $CARMELDIR.
-	# If "carmel" is not found, no error is printed!
-	# It just leaves "./run.sh: line 138: carmel: command not found"
-	# in /tmp/run.sh-29085.dir/carmelout.
-	>&2 echo "Done."
+	>&2 echo " Done."
 else
 	usingfile "$initcarmel.trained" "trained phone-2-letter model"
 fi

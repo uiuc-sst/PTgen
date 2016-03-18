@@ -1,6 +1,9 @@
 #!/bin/bash
-#
+
 . $INIT_STEPS
+
+# Exit if there is any error.
+set -e
 
 if [[ ! -d $mergedir ]] ; then
 	>&2 echo "mergefst.sh ERROR: no directory $mergedir."
