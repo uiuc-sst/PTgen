@@ -19,8 +19,7 @@ CC = g++
 CFLAGS = -Wall -O3 -std=c++11 -I$(FSTDIR)
 
 $(BINS): % : %.cc config.mk
-	@$(CC) $(CFLAGS) $< -o $@
-	@echo "Compiled "$<"."
+	$(CC) $(CFLAGS) $< -o $@
 
 install: $(BINS)
 	cp -u $(BINS) $(INSTALLDIR)
