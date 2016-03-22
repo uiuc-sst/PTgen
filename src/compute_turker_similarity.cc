@@ -25,13 +25,13 @@ void vectorOfWords(vector<string>& words, const string& str) {
 }
 
 // Compute the edit distance between two word sequences (dynamic programming).
-float editdistance(const string& str1, const string& str2) {
+double editdistance(const string& str1, const string& str2) {
 	vector<string> words1, words2;
 	vectorOfWords(words1, str1);
 	vectorOfWords(words2, str2);
 
 	// Substitution and Insertion/Deletion costs.
-	const auto scost = 1.0, idcost = 1.0;
+	constexpr auto scost = 1.0, idcost = 1.0;
 
 	const auto len1 = words1.size();
 	const auto len2 = words2.size();
@@ -42,10 +42,9 @@ float editdistance(const string& str1, const string& str2) {
 
 	// A 1-dimensional len1 * len2 matrix might be faster,
 	// but already, this exe takes only a few seconds, a tiny fraction of run.sh.
-	auto dist_matrix = new float* [len1+1];
-	for (auto i = 0u; i <= len1; ++i)
-		dist_matrix[i] = new float[len2+1];
+	auto dist_matrix = new double* [len1+1];
 	for (auto i = 0u; i <= len1; ++i) {
+		dist_matrix[i] = new double[len2+1];
 		for (auto j = 0u; j <= len2; ++j) {
 			dist_matrix[i][j] = 0.0;
 			dist_matrix[0][j] = j*idcost;
@@ -56,8 +55,8 @@ float editdistance(const string& str1, const string& str2) {
 	for (auto i = 1u; i <= len1; ++i) {
 		for (auto j = 1u; j <= len2; ++j) {
 			const auto cost = words1[i-1] == words2[j-1] ? 0.0 : scost;
-			const float mn = std::min(dist_matrix[i-1][j]+idcost, dist_matrix[i][j-1]+idcost); 
-			dist_matrix[i][j] = (mn < dist_matrix[i-1][j-1]+cost) ? mn : dist_matrix[i-1][j-1]+cost; 
+			const auto mn = std::min(dist_matrix[i-1][j], dist_matrix[i][j-1]) + idcost;
+			dist_matrix[i][j] = std::min(mn, dist_matrix[i-1][j-1]+cost);
 		}
 	}
 	const auto edist = dist_matrix[len1][len2];
@@ -80,10 +79,7 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
-	double* turk_matrix[MAXTURKERS];
-	for (auto& row: turk_matrix)
-		row = new double[MAXTURKERS];
-
+	double turk_matrix[MAXTURKERS][MAXTURKERS];
 	vector<pair<double,int> > turkscores;
 	while (!ifile.eof()) {
 		string line;
