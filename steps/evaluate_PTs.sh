@@ -13,6 +13,10 @@ fi
 if [[ -z $evalreffile ]]; then
   echo "Missing variable 'evalreffile' in the settings file '$1'."; exit 1
 fi
+if [[ ! -s $evalreffile ]]; then
+  echo "Missing file $evalreffile, 'evalreffile' in the settings file '$1'."; exit 1
+  # compute-wer would fail.
+fi
 if [[ -z $phnalphabet ]]; then
   echo "Missing variable 'phnalphabet' in the settings file '$1'."; exit 1
 fi
@@ -23,10 +27,10 @@ fi
 mktmpdir
 
 editfst=$tmpdir/edit.fst
-oracleerror=0
 create-editfst.pl < $phnalphabet | fstcompile - > $editfst 
 
 showprogress init 5 "Evaluating PTs"
+oracleerror=0
 for ip in `seq 1 $nparallel`; do
 	(
 	for uttid in `cat $splittestids.$ip`; do
@@ -34,12 +38,10 @@ for ip in `seq 1 $nparallel`; do
 		latfile=$decodelatdir/${uttid}.GTPLM.fst
 
 		if [[ ! -s $latfile ]]; then
-			>&2 echo -e "\nevaluate_PTs.sh ERROR: missing file $latfile. Aborting."
-			exit 1
+			>&2 echo -e "\nevaluate_PTs.sh ERROR: missing file $latfile. Aborting."; exit 1
 		fi
-
 		if [[ -n $evaloracle ]]; then
-			# first accumulate oracleerror
+			# Accumulate each wer into the number oracleerror.
 			reffst=$tmpdir/${uttid}.ref.fst 
 			prunefst=$tmpdir/${uttid}.prune.fst
 			egrep "$uttid[ 	]" $evalreffile | cut -d' ' -f2- | make-acceptor.pl \
@@ -52,7 +54,7 @@ for ip in `seq 1 $nparallel`; do
 			oracleerror=`echo "$oracleerror + $wer" | bc`
 		fi
 
-		# now print the best hypothesis
+		# Print the best hypothesis.
 		echo -e -n "$uttid\t"
 		fstshortestpath $latfile | fstprint --osymbols=$phnalphabet | reverse_fst_path.pl
 	done > $tmpdir/hyp.$ip.txt
@@ -75,11 +77,10 @@ compute-wer --text --mode=present ark:$evalreffile ark:$tmpdir/hyp.txt
 
 if [[ -n $evaloracle ]]; then
 	lines=`wc -l $evalreffile | cut -d' ' -f1`
-	wrds=` wc -w $evalreffile | cut -d' ' -f1`
-	per=`echo "scale=5; $oracleerror / ($wrds - $lines)" | bc -l`
+	words=`wc -w $evalreffile | cut -d' ' -f1`
+	per=`echo "scale=5; $oracleerror / ($words - $lines)" | bc -l`
 	echo "Oracle Error-rate (prune-wt: $prunewt): $oracleerror Relative: $per"
 fi
-
 if [[ -z $debug ]]; then
 	rm -rf $tmpdir
 fi
