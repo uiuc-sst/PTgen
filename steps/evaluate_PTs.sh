@@ -1,6 +1,6 @@
 #!/bin/bash
-# Evaluating PTs using phone error rates computed on a test set
-# of transcripts in the target language
+# Evaluate PTs using phone error rates computed on a test set
+# of transcripts in the target language.
 
 . $INIT_STEPS
 
@@ -67,6 +67,9 @@ showprogress end
 for ip in `seq 1 $nparallel`; do
 	cat $tmpdir/hyp.$ip.txt >> $tmpdir/hyp.txt
 done
+if [[ ! -s $tmpdir/hyp.txt ]]; then
+	>&2 echo "evaluate_PTs.sh: made no hypotheses.  Aborting."; exit 1
+fi
 
 if [[ ! -z $hypfile ]]; then
 	cp $tmpdir/hyp.txt $hypfile
