@@ -17,7 +17,6 @@ my @classes = (
 	[0.7,"c","s"]
 );
 
-
 for my $class (@classes) {
 	my @classx =  @$class;
 	my $dist = shift @classx;
@@ -27,7 +26,6 @@ for my $class (@classes) {
 		}
 	}
 }
-
 
 foreach my $i (@letters) {
 	print "- $i $disttodel\n$i - $disttodel\n";

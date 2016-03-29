@@ -135,11 +135,15 @@ if [[ $startstage -le 15 && 15 -le $endstage ]]; then
 fi
 
 ## STAGE 1 ##
-# Preprocess transcripts obtained from crowd workers
+# Preprocess transcripts from crowd workers.
+#
+# Reads the files $engdict and $TURKERTEXT/*/batchfile, where * covers $ALL_LANGS.
+# May use the variable $rmprefix. 
+# Creates the file $transcripts.
 stage=1
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	mkdir -p "$(dirname "$transcripts")"
-	showprogress init 1 "Processing transcripts"
+	showprogress init 1 "Preprocessing transcripts"
 	for L in "${ALL_LANGS[@]}"; do
 		if [[ -n $rmprefix ]]; then
 			prefixarg="--rmprefix $rmprefix"
@@ -149,11 +153,14 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	done > $transcripts
 	showprogress end
 else
-	usingfile "$transcripts" "processed transcripts"
+	usingfile "$transcripts" "preprocessed transcripts"
 fi
 
 ## STAGE 2 ##
-# Filter data
+# Filter data.
+#
+# Modifies the file $transcripts.
+# Creates the file $simfile.
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo -n "Creating transcript similarity scores... "
@@ -167,7 +174,13 @@ else
 fi
 
 ## STAGE 3 ##
-# Prepare data lists
+# Prepare data lists.
+#
+# Via $langmap, expands variable $TRAIN_LANG's abbreviations into full language names.
+# Reads each $LISTDIR/language_name/{train, dev, or test}.
+# Creates one of the files $trainids, $testids, $adaptids.
+# Splits that file into small parts, to create one of the sets of files
+#   {$splittrainids, $splittestids, $splitadaptids}.xxx, where xxx is numbers.
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo -n "Splitting training/test data for parallel jobs... "
@@ -181,7 +194,11 @@ else
 fi
 
 ## STAGE 4 ##
-# Merge text from crowd workers
+# Merge text from crowd workers.
+#
+# Creates file $aligndist.
+# Creates directory $mergedir and files therein:
+# language_xxx.txt, part-x-language_xxx.txt.
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	mergetxt.sh $1
@@ -190,7 +207,13 @@ else
 fi
 
 ## STAGE 5 ##
-# Convert merged text into merged FST sausage-style structures
+# Convert merged text into merged FST sausages.
+#
+# Uses variable $alignertofstopt.
+# Reads the files in the directory $mergedir.
+# Reads the files {$splittrainids, $splittestids, $splitadaptids}.xxx.
+# Creates the files $mergefstdir/*.M.fst.txt.
+# Creates the files $mergefstdir/*.M.fst.
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	mergefst.sh $1
@@ -199,7 +222,11 @@ else
 fi
 
 ## STAGE 6 ##
-# Initialize the phone-2-letter model (P)
+# Initialize the phone-2-letter model, P.
+#
+# Uses variables $carmelinitopt and $delimsymbol.
+# Reads files $phnalphabet and $engalphabet.
+# Creates file $initcarmel.
 ((stage++))
 if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]; then
 	>&2 echo -n "Creating untrained phone-2-letter model ($Pstyle style)... "
@@ -211,20 +238,30 @@ else
 fi
 
 ## STAGE 7 ##
-# Create training data to learn phone-2-letter mappings defined in P
+# Create training data to learn the phone-2-letter mappings defined in P.
+#
+# Reads files $TRANSDIR/$TRAIN_LANG[*]/ref_train
+# Creates temporary file $reffile.
+# Creates file $carmeltraintxt.
 ((stage++))
 if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]; then
 	>&2 echo "Creating carmel training data... "
+	# Why not move these 4 lines into prepare-phn2let-traindata.sh?
 	for L in ${TRAIN_LANG[@]}; do
 		cat $TRANSDIR/${L}/ref_train 
 	done > $reffile
 	prepare-phn2let-traindata.sh $1
+	# Why not prepare-phn2let-traindata.sh $1 > $carmeltraintxt ?
 else
 	usingfile "$carmeltraintxt" "training text for phone-2-letter model"
 fi
 
 ## STAGE 8 ##
-# EM-train P
+# EM-train P.
+#
+# Reads files $carmeltraintxt and $initcarmel.
+# Creates logfile $tmpdir/carmelout.
+# Creates file $initcarmel.trained.
 ((stage++))
 if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]; then
 	>&2 echo -n "Training phone-2-letter model (see $tmpdir/carmelout)..."
@@ -238,8 +275,13 @@ fi
 
 
 ## STAGE 9 ##
-# Represent P as an OpenFst style FST
-# Optionally, scale weights in P with $Pscale
+# Convert P to an OpenFst-style FST.
+#
+# Reads file $initcarmel.trained.
+# Uses variables $disambigdel, $disambigins, $phneps, and $leteps.
+# May use variable $Pscale, to scale P's weights.
+# Creates logfile $tmpdir/trainedp2let.fst.txt.
+# Creates file $Pfst.
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	if [[ -z $Pscale ]]; then
@@ -258,8 +300,12 @@ else
 fi
 
 ## STAGE 10 ##
-# Prepare the language model FST, G
-# Optionally, scale weights in G with $Gscale
+# Prepare the language model FST, G.
+#
+# Reads files $phnalphabet and $phonelm.
+# Uses variables $disambigdel $disambigins
+# May use variable $Gscale, to scale G's weights.
+# Creates file $Gfst.
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	if [[ -z $Gscale ]]; then
@@ -267,7 +313,6 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	fi
 	>&2 echo -n "Creating G (phone-model) FST with disambiguation symbols [GSCALE=$Gscale]... "
 	mkdir -p "$(dirname "$Gfst")"
-#	>&2 echo -n " $phnalphabet $phnalphabet $phonelm zxcv"
 	fstprint --isymbols=$phnalphabet --osymbols=$phnalphabet $phonelm \
 		| addloop.pl "$disambigdel" "$disambigins" \
 		| scale-FST-weights.pl $Gscale \
@@ -279,8 +324,12 @@ else
 fi
 
 ## STAGE 11 ##
-# Create a prior over letters and represent as an FST, L
-# Optionally, scale weights in L with $Lscale
+# Create a prior over letters and represent as an FST, L.
+#
+# Reads files in directory $mergedir.
+# Reads files $trainids and $engalphabet.
+# May use variable $Lscale, to scale L's weights.
+# Creates file $Lfst.
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	if [[ -z $Lscale ]]; then
@@ -288,7 +337,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	fi
 	>&2 echo -n "Creating L (letter statistics FST) [LSCALE=$Lscale]... "
 	mkdir -p "$(dirname "$Lfst")"
-	create-letpriorfst.pl $mergedir $priortrainfile \
+	create-letpriorfst.pl $mergedir $trainids \
 		| scale-FST-weights.pl $Lscale \
 		| fstcompile --osymbols=$engalphabet --isymbols=$engalphabet - \
 		| fstarcsort --sort_type=ilabel - > $Lfst
@@ -298,9 +347,11 @@ else
 fi
 
 ## STAGE 12 ##
-# Create an auxiliary FST, T, that restricts the number of 
-# phone deletions and letter insertions, using tunable parameters
-# Tnumdel and Tnumins
+# Create an auxiliary FST T that restricts the number of phone deletions
+# and letter insertions, through tunable parameters Tnumdel and Tnumins.
+#
+# Uses variables $disambigdel $disambigins $Tnumdel $Tnumins.
+# Creates file $Tfst.  
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo "Creating T (deletion/insertion limiting FST)... "
@@ -311,21 +362,31 @@ else
 fi
 
 ## STAGE 13 ##
-# Create TPL and GTPL FSTs
+# Create TPL and GTPL FSTs.
+#
+# Reads files $Lfst $Tfst $Gfst.
+# Creates files $TPLfst and $GTPLfst.
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo -n "Creating TPL and GTPL FSTs... "
 	mkdir -p "$(dirname "$TPLfst")"
 	fstcompose $Pfst $Lfst | fstcompose $Tfst - | fstarcsort --sort_type=olabel \
-		| tee $TPLfst | fstcompose $Gfst - | fstarcsort --sort_type=olabel > $GTPLfst
+		 | tee $TPLfst | fstcompose $Gfst - | fstarcsort --sort_type=olabel > $GTPLfst
 	>&2 echo "Done."
 else
 	usingfile "$GTPLfst" "GTPL FST"
 fi
 
 ## STAGE 14 ##
-# Decoding: create lattices for each merged utterance FST (M)
-# both with (GTPLM) and without (TPLM) a language model
+# Decode.  Create lattices for each merged utterance FST (M),
+# both with (GTPLM) and without (TPLM) a language model.
+#
+# Reads the files $splittestids.xxx or $splitadaptids.xxx.
+# Reads the files $mergefstdir/*.M.fst.txt.
+# Creates and then reads the files $mergefstdir/*.M.fst.
+# Reads the files $GTPLfst and $TPLfst.
+# Creates the files $decodelatdir/*.GTPLM.fst and $decodelatdir/*.TPLM.fst
+# Creates $decodelatdir.
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	if [[ -n $makeTPLM && -n $makeGTPLM ]]; then
@@ -347,7 +408,12 @@ else
 fi
 
 ## STAGE 15 ##
-# Evaluate the GTPLM lattices, stand-alone
+# Evaluate the GTPLM lattices, stand-alone.
+#
+# Reads files $splittestids.xxx $evalreffile $phnalphabet $decodelatdir/*.GTPLM.fst $testids.
+# Uses variables $evaloracle $prunewt.
+# May create file $hypfile.
+# Creates $evaloutput, the evalution of error rates.
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	if [[ -n $decode_for_adapt ]]; then

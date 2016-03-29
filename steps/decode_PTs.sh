@@ -30,13 +30,15 @@ for ip in `seq 1 $nparallel`; do
 
 		if [[ -n $makeGTPLM ]]; then
 			fstcompose $GTPLfst $mergefstdir/$uttid.M.fst \
-				| fstproject --project_output=false -  > $decodelatdir/${uttid}.GTPLM.fst
+				| fstproject --project_output=false - > $decodelatdir/${uttid}.GTPLM.fst
 		fi
 
 		if [[ -n $makeTPLM ]]; then
 			fstcompose $TPLfst $mergefstdir/$uttid.M.fst \
-				| fstproject --project_output=false -  > $decodelatdir/${uttid}.TPLM.fst
+				| fstproject --project_output=false - > $decodelatdir/${uttid}.TPLM.fst
 		fi
+
+		# Why do only *some* of the $uttid have braces?
 	done
 	) &
 done

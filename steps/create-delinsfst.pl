@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 
-# Creating an unweighted FST that limits number of insertions and deletions.
-# Takes a vocab file on input, and as arguments delete and insert
-# disambiguation symbols, and numdel and numins.
+# Outputs an unweighted FST that limits the number of insertions and deletions.
+# Reads a vocab file.
+# Arguments are the delete and insert disambiguation symbols, and numdel and numins.
 
 if (-t STDIN || $#ARGV != 3) {
 	print "Usage: create-delinsfst.pl <del disambig symbol> <ins disambig symbol> <num del> <num ins>";
@@ -19,15 +19,14 @@ while(<STDIN>) {
 	$phonemap{$sym} = $index;
 }
 
-$delsymb = shift;
-$inssymb = shift;
-$numdel = shift;
-$numins = shift;
+$delsymb = shift; # $disambigdel
+$inssymb = shift; # $disambigins
+$numdel = shift;  # $Tnumdel
+$numins = shift;  # $Tnumins
 
 foreach $k (keys %phonemap) {
 	print "0 0 $k $k\n"; 
 }
-
 
 $firstdel = 1;
 for ($i=0; $i < $numdel; $i++) {
@@ -41,7 +40,6 @@ for ($i=0; $i < $numdel; $i++) {
 	}
 }
 
-
 $firstins = $end + 1;
 for ($i=0; $i < $numins; $i++) {
 	$begin = ($i==0 ? 0 : $firstins + $i -1);
@@ -53,8 +51,6 @@ for ($i=0; $i < $numins; $i++) {
 }
 
 $laststate = $end;
-
 for ($i=0; $i <= $laststate; $i++) {
 	print "$i\n";
 }
-

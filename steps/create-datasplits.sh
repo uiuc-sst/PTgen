@@ -6,7 +6,7 @@ if [[ ! -s $langmap ]]; then
   echo "Missing or empty langmap file $langmap. Check $1."; exit 1
 fi
 
-# Needs $datatype from settings_file.
+# Needs $datatype from run.sh's stage 3.  Related to $TESTTYPE in settings_file?
 # (It would be nice to pass this in as $2 instead of as an explicit variable,
 # but steps/init.sh insists on only one argument, the settings_file.)
 

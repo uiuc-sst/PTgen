@@ -1,5 +1,6 @@
 #!/usr/bin/perl
-#
+
+# Replace the fourth field of each line with that value's negative log.
 
 while(<STDIN>) {
 	chomp;
@@ -9,7 +10,7 @@ while(<STDIN>) {
 		if($wt > 0) {
 			print "$fields[0]\t$fields[1]\t$fields[2]\t$fields[3]\t",-log($wt),"\n";
 		} else {
-			print STDERR "WARNING: Invalid probability $wt -- arc ignored.\n"
+			print STDERR "convert-prob-to-neglog.pl WARNING: Invalid probability $wt.  Arc ignored.\n"
 		}
 	} else {
 		print "$_\n";

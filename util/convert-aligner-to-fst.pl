@@ -1,6 +1,6 @@
 #!/usr/bin/perl
-#
-# Parse aligner output to create probabilistic automata for turker transcripts
+
+# Parse the aligner's output to create a probabilistic automaton for turker transcripts.
 
 $switchpenalty = 1;
 $epssymbol = "-";
@@ -13,19 +13,18 @@ while ((@ARGV) && ($argerr == 0)) {
 		shift @ARGV;
 		$epssymbol = shift @ARGV;
 	} else {
-		print STDERR "Unknown argument:  $ARGV[0]\n";
+		print STDERR "Unknown argument: $ARGV[0]\n";
 		$argerr = 1;
 		break;
 	}
 }
 
 if($argerr == 1) {
-	print "Usage: aligner_to_fst.pl [--switchpenalty <penalty>] [--delimiter <symbol>] [--epsilon <symbol>]\n";
-	print "Input is aligner output, output is fst in OpenFST text format";
+	print "Usage: convert_aligner_to_fst.pl [--switchpenalty <penalty>] [--delimiter <symbol>] [--epsilon <symbol>]\n";
+	print "Standard input is aligner output.  Standard output is the fst in OpenFST text format";
 	exit(1);
 }
 	
-
 if ($switchpenalty == 1) {
 	$state = 0;
 	while(<STDIN>) {
@@ -41,11 +40,9 @@ if ($switchpenalty == 1) {
 		}
 		$state++;
 	}
-
 	print "$state\n";
 	exit(0);
 }
-
 
 $strands = -1;
 
@@ -84,4 +81,3 @@ for ($i=1; $i <= $strands; $i++) {
 	print "$begin $final $epssymbol $epssymbol 1\n";
 }
 print "$final\n";
-

@@ -1,6 +1,6 @@
 #!/usr/bin/perl
-# Creating an initialization for the 
-# phone-2-letter model (P)
+
+# Initialize the phone-2-letter model (P)
 
 $mode = "simple";
 if($#ARGV > 2) {
@@ -14,17 +14,16 @@ if($#ARGV > 2) {
 	$startfile =~ s/.*=//;
 }
 
-
 if($#ARGV != 2) {
 	print "Usage: create-initcarmel.pl [--<mode>] [--startwith=<file>] <phn alphabet> <eng alphabet> <delimiter symbol>\n";
 	print "<mode> is one of simple (default), letctxt, phnletctxt";
 	exit(1);
 }
 
-$delim = $ARGV[2];
+$delim = $ARGV[2]; # $delimsymbol
 
 %phone_vocab = ();
-open(PHN, $ARGV[0]);
+open(PHN, $ARGV[0]); # $phnalphabet
 @phns = ();
 while(<PHN>) {
 	chomp;
@@ -35,7 +34,7 @@ while(<PHN>) {
 }
 close(PHN);
 
-open(LET, $ARGV[1]);
+open(LET, $ARGV[1]); # $engalphabet
 %let_vocab = ();
 @lets = ();
 while(<LET>) {
@@ -137,7 +136,6 @@ my ($phone_vocab,$let_vocab,$phns,$lets,$delim,$startvals)= @_;
 sub letctxt {
 
 my ($phone_vocab,$let_vocab,$phns,$lets,$delim,$startvals)= @_;
-#### CONSTANTS ####
 	$prob_delim = 0.01;
 
 	$numlets = scalar (keys %$let_vocab); # counting 0 
@@ -173,11 +171,9 @@ my ($phone_vocab,$let_vocab,$phns,$lets,$delim,$startvals)= @_;
 	}
 }
 
-
 sub phnletctxt {
 
 my ($phone_vocab,$let_vocab,$phns,$lets,$delim,$startvals)= @_;
-#### CONSTANTS ####
 	$prob_delim = 0.01;
 	$wt = (1-$prob_delim)/($#{$lets}+1);
 	# states are named S_$i_$j, where $i is phone index and $j is letter index (or 0 for $DELIM_SYMBOL)

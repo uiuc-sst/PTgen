@@ -1,23 +1,22 @@
 #!/usr/bin/perl
-# 
-# Creating a prior over letters and represent as an FST
+
+# Create a prior over letters and represent it as an FST.
 
 if ($#ARGV != 1) {
-	print "Usage: <script> <merged transcripts dir> <uttids to use>\n";
+	print "Usage: create-letpriorfst.pl <merged transcripts dir> <uttids>\n";
 	exit 1;
 }
 
-
-$mergedir = $ARGV[0];
-$uttlist = $ARGV[1];
-open(UTT, $uttlist) or die "Cannot open list of utterances, $uttlist\n";
+$mergedir = $ARGV[0]; # $mergedir
+$uttlist  = $ARGV[1]; # $trainids
+open(UTT, $uttlist) or die "create-letpriorfst.pl: failed to open list of utterances $uttlist\n";
 
 %labelcount = ();
 $total = 0;
 while($utt = <UTT>) {
 	chomp($utt);
 	$filename = "$mergedir/$utt".".txt";
-	open(FILE, "$filename") or print STDERR "WARNING: Could not open $filename\n";
+	open(FILE, "$filename") or print STDERR "create-letpriorfst.pl WARNING: failed to open $filename.\n";
 	while($line = <FILE>) {
 		chomp;
 		$line =~ s/\s+$//; $line =~ s/^\s+//;
