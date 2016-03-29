@@ -169,7 +169,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	mkdir -p "$(dirname "$simfile")"
 	grep "#" $transcripts > $tmpdir/transcripts 
 	mv $tmpdir/transcripts $transcripts
-	compute_turker_similarity $transcripts > $simfile
+	compute_turker_similarity < $transcripts > $simfile
 	>&2 echo "Done."
 	echo "Stage 2 took" $SECONDS "seconds."; SECONDS=0
 else

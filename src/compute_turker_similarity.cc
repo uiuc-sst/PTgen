@@ -67,62 +67,52 @@ double editdistance(const string& str1, const string& str2) {
 }
 
 int main(int argc, char** argv) {
-	if (argc != 2) {
-		cerr << "Usage: " << argv[0] << " <file with Turker transcriptions>\n";
-		return 1;
-	}
-
-	ifstream ifile;
-	ifile.open(argv[1]);
-	if (!ifile) {
-		cerr << argv[0] << ": failed to open ifile" << argv[1] << "\n";
-		return 1;
-	}
+	// On standard input, expects a bunch of Turker transcriptions.
+	// On standard output, prints the transcriptions' similarity scores.
+	// Ignores command-line arguments.
 
 	double turk_matrix[MAXTURKERS][MAXTURKERS];
 	vector<pair<double,int> > turkscores;
-	while (!ifile.eof()) {
-		string line;
-		getline(ifile, line);
-		if (!line.empty()) {
-			vector<string> entries = split(line, ':');
-			cout << trim(entries[0]); // uttid
-			const vector<string> turktranscripts = split(entries[1], '#');
-			assert(turktranscripts.size() <= MAXTURKERS);
-			assert(turktranscripts.size() > 1);
-				// Otherwise turkscores = (0.0, 0), and then
-				// assert(bestscore < 0.0) fails.
-			turkscores.resize(turktranscripts.size());
-			for (auto i = 0u; i < turktranscripts.size(); ++i) {
-				// Store a large score in the entry corresponding to Turker i
-				for (auto k = i+1; k < turktranscripts.size(); ++k) {
-					turk_matrix[k][i] =
-					turk_matrix[i][k] =
-						editdistance(turktranscripts[i], turktranscripts[k]);
-				}
+	string line;
+	while (getline(cin, line)) {
+		if (line.empty())
+			continue;
+		vector<string> entries = split(line, ':');
+		cout << trim(entries[0]); // uttid
+		const vector<string> turktranscripts = split(entries[1], '#');
+		assert(turktranscripts.size() <= MAXTURKERS);
+		assert(turktranscripts.size() > 1);
+			// Otherwise turkscores = (0.0, 0), and then
+			// assert(bestscore < 0.0) fails.
+		turkscores.resize(turktranscripts.size());
+		for (auto i = 0u; i < turktranscripts.size(); ++i) {
+			// Store a large score in the entry corresponding to Turker i
+			for (auto k = i+1; k < turktranscripts.size(); ++k) {
+				turk_matrix[k][i] =
+				turk_matrix[i][k] =
+					editdistance(turktranscripts[i], turktranscripts[k]);
 			}
-			for (auto i = 0u; i < turktranscripts.size(); ++i) {
-				turkscores[i] = {0.0, i};
-				for (auto j = 0u; j < turktranscripts.size(); ++j) {
-					if (i != j)
-						turkscores[i].first += turk_matrix[i][j];
-				}
-			}
-			std::sort(turkscores.begin(), turkscores.end());
-			const auto worstscore = turkscores[turkscores.size()-1].first;
-			const auto bestscore =  turkscores[0                  ].first;
-			assert(bestscore < 0.0);
-
-			// Print 1-indexed turker indices.
-            		auto simscore = 1.0;
-			for (const auto& score: turkscores) {
-                		if (bestscore != worstscore) // Avoid DBZ.
-					simscore = (score.first - worstscore) / (bestscore - worstscore);
-				cout << "," << score.second + 1 << ":" << simscore;
-			}
-			cout << endl;
 		}
+		for (auto i = 0u; i < turktranscripts.size(); ++i) {
+			turkscores[i] = {0.0, i};
+			for (auto j = 0u; j < turktranscripts.size(); ++j) {
+				if (i != j)
+					turkscores[i].first += turk_matrix[i][j];
+			}
+		}
+		std::sort(turkscores.begin(), turkscores.end());
+		const auto worstscore = turkscores[turkscores.size()-1].first;
+		const auto bestscore =  turkscores[0                  ].first;
+		assert(bestscore < 0.0);
+
+		// Print 1-indexed turker indices.
+		auto simscore = 1.0;
+		for (const auto& score: turkscores) {
+			if (bestscore != worstscore) // Avoid DBZ.
+				simscore = (score.first - worstscore) / (bestscore - worstscore);
+			cout << "," << score.second + 1 << ":" << simscore;
+		}
+		cout << endl;
 	}
-	ifile.close();
 	return 0;
 }
