@@ -1,6 +1,5 @@
 # Languages for training and testing.
-# TRAIN_LANG and TEST_LANG must be subsets of ALL_LANGS.
-# TRAIN_LANG and TEST_LANG should be disjoint.
+# The sets TRAIN_LANG and TEST_LANG must be disjoint subsets of ALL_LANGS.
 ALL_LANGS=(AR CA DT HG MD SW UR)
 TRAIN_LANG=(AR CA DT HG MD UR)
 TEST_LANG=(SW)

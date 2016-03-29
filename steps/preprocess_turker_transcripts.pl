@@ -107,11 +107,11 @@ while(<DICT>) {
 close(DICT);
 
 $csv = Text::CSV_XS->new ({
-      binary    => 1, # Allow special character. Always set this
-      auto_diag => 1, # Report irregularities immediately
+      binary    => 1, # Allow special characters. Always set this.
+      auto_diag => 1, # Report irregularities immediately.
       });
 
-# Determining the number of clips in each HIT
+# Count the clips in each HIT
 $numclipscheckfield = 37; 
 $ignore = $csv->getline (STDIN);
 @csvmturkmp3indices = ();
@@ -142,7 +142,8 @@ while (my $fields = $csv->getline (STDIN)) {
 		$mturkstring = $fields->[$csvmturktxtindices[$i]];
 		# Remove leading and trailing whitespace.
 		$mturkstring =~ s/^\s+//g; $mturkstring =~ s/\s+$//g;
-		$mturkstring =~ s/^Text goes here//g; # remove initial "Text goes here" or "Text goes her" from worker ABS2EYLS7OW2J
+		# remove initial "Text goes here" or "Text goes her" from worker ABS2EYLS7OW2J
+		$mturkstring =~ s/^Text goes here//g;
 		$mturkstring =~ s/^Text goes her//g;
 		$mturkstring =~ s/[\?\!\,\:\;\.\-]/ /g; # remove question marks, exclamation, etc
 		$mturkstring =~ s/voice [0-9]//g; #naming voices 
@@ -156,7 +157,7 @@ while (my $fields = $csv->getline (STDIN)) {
 		}
 		next if($omit == 1);
 		$mturkstring =~ s/[\[\]]//g if($mturkstring =~ /^\s*(\[.*\])*\s*$/ && $mturkstring =~ /\s/); #removing [,], if mturkstring is a multi-word string
-		$mturkstring =~ s/\[.*\]//g;  #removing everything else enclosed within [], e.g. [uh],[um] disfluencies
+		$mturkstring =~ s/\[.*\]//g;  # Remove anything else within [], e.g. [uh],[um] disfluencies
 		$mturkstring =~ s/\{.*\}//g;
 		$mturkstring =~ s/\(.*\)//g;
 		$mturkstring =~ s/^\s+//g; $mturkstring =~ s/\s+$//g;
@@ -175,7 +176,7 @@ while (my $fields = $csv->getline (STDIN)) {
 				if($words[$w] !~ /\[.*\]/) { #omit laugh, uh, umm
 					$words[$w] =~ s/[^a-zA-Z]/ /g;
 					@letters = split(//,$words[$w]);
-					# if $dictonlylimit is non-negative, then words of length
+					# If $dictonlylimit is non-negative, then words of length
 					# $dictonlylimit or more are replaced by their first
 					# pronounciation from the dictionary.
 					if($dictonlylimit > 0 && $#letters >= $dictonlylimit && exists $dict_entries{$words[$w]}) {
