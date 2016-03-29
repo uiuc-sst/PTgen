@@ -140,6 +140,7 @@ fi
 # Reads the files $engdict and $TURKERTEXT/*/batchfile, where * covers $ALL_LANGS.
 # May use the variable $rmprefix. 
 # Creates the file $transcripts.
+SECONDS=0
 stage=1
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	mkdir -p "$(dirname "$transcripts")"
@@ -152,6 +153,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 		showprogress go
 	done > $transcripts
 	showprogress end
+	echo "Stage 1 took" $SECONDS "seconds."; SECONDS=0
 else
 	usingfile "$transcripts" "preprocessed transcripts"
 fi
@@ -169,6 +171,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	mv $tmpdir/transcripts $transcripts
 	compute_turker_similarity $transcripts > $simfile
 	>&2 echo "Done."
+	echo "Stage 2 took" $SECONDS "seconds."; SECONDS=0
 else
 	usingfile $simfile "transcript similarity scores"
 fi
@@ -189,6 +192,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 #	datatype='test'  create-datasplits.sh $1
 	datatype='adapt' create-datasplits.sh $1
 	>&2 echo "Done."
+	echo "Stage 3 took" $SECONDS "seconds."; SECONDS=0
 else
 	usingfile "$(dirname "$splittestids")" "test & train ID lists in"
 fi
@@ -202,6 +206,7 @@ fi
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	mergetxt.sh $1
+	echo "Stage 4 took" $SECONDS "seconds."; SECONDS=0
 else
 	usingfile $mergedir "merged transcripts in"
 fi
@@ -217,6 +222,7 @@ fi
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	mergefst.sh $1
+	echo "Stage 5 took" $SECONDS "seconds."; SECONDS=0
 else
 	usingfile "$mergedir" "merged transcript FSTs in"
 fi
@@ -233,6 +239,7 @@ if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]
 	mkdir -p "$(dirname "$initcarmel")"
 	create-initcarmel.pl `echo $carmelinitopt` $phnalphabet $engalphabet $delimsymbol > $initcarmel
 	>&2 echo "Done."
+	echo "Stage 6 took" $SECONDS "seconds."; SECONDS=0
 else
 	usingfile "$initcarmel" "untrained phone-2-letter model"
 fi
@@ -252,6 +259,7 @@ if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]
 	done > $reffile
 	prepare-phn2let-traindata.sh $1
 	# Why not prepare-phn2let-traindata.sh $1 > $carmeltraintxt ?
+	echo "Stage 7 took" $SECONDS "seconds."; SECONDS=0
 else
 	usingfile "$carmeltraintxt" "training text for phone-2-letter model"
 fi
@@ -269,6 +277,7 @@ if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]
 	carmel -\? --train-cascade -t -f 1 -M 20 -HJ $carmeltraintxt $initcarmel 2>&1 \
 		| tee $tmpdir/carmelout | awk '/^i=|^Computed/ {printf "."; fflush (stdout)}' >&2
 	>&2 echo " Done."
+	echo "Stage 8 took" $SECONDS "seconds."; SECONDS=0
 else
 	usingfile "$initcarmel.trained" "trained phone-2-letter model"
 fi
@@ -295,6 +304,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 		| tee $tmpdir/trainedp2let.fst.txt \
 		| fstcompile --isymbols=$phnalphabet --osymbols=$engalphabet  > $Pfst
 	>&2 echo "Done."
+	echo "Stage 9 took" $SECONDS "seconds."; SECONDS=0
 else
 	usingfile "$Pfst" "P (phone-2-letter model) FST"
 fi
@@ -319,6 +329,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 		| fstcompile --isymbols=$phnalphabet --osymbols=$phnalphabet \
 		| fstarcsort --sort_type=olabel > $Gfst
 	>&2 echo "Done."
+	echo "Stage 10 took" $SECONDS "seconds."; SECONDS=0
 else
 	usingfile "$Gfst" "G (phone language model) FST"
 fi
@@ -342,6 +353,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 		| fstcompile --osymbols=$engalphabet --isymbols=$engalphabet - \
 		| fstarcsort --sort_type=ilabel - > $Lfst
 	>&2 echo "Done."
+	echo "Stage 11 took" $SECONDS "seconds."; SECONDS=0
 else
 	usingfile $Lfst "L (letter statistics FST)"
 fi
@@ -357,6 +369,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo "Creating T (deletion/insertion limiting FST)... "
 	create-delinsfst.pl $disambigdel $disambigins $Tnumdel $Tnumins < $phnalphabet \
 		| fstcompile --osymbols=$phnalphabet --isymbols=$phnalphabet - > $Tfst
+	echo "Stage 12 took" $SECONDS "seconds."; SECONDS=0
 else
 	usingfile $Tfst "T (deletion/insertion limiting FST)"
 fi
@@ -373,6 +386,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	fstcompose $Pfst $Lfst | fstcompose $Tfst - | fstarcsort --sort_type=olabel \
 		 | tee $TPLfst | fstcompose $Gfst - | fstarcsort --sort_type=olabel > $GTPLfst
 	>&2 echo "Done."
+	echo "Stage 13 took" $SECONDS "seconds."; SECONDS=0
 else
 	usingfile "$GTPLfst" "GTPL FST"
 fi
@@ -402,7 +416,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo -n "Decoding lattices $msgtext [MSCALE=$Mscale]"
 	mkdir -p $decodelatdir
 	decode_PTs.sh $1
-	#>&2 echo "Done."
+	echo "Stage 14 took" $SECONDS "seconds."; SECONDS=0
 else
 	usingfile "$decodelatdir" "decoded lattices in"
 fi
@@ -420,6 +434,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 		>&2 echo "Not evaluating PTs (adaptation mode)."
 	else
 		evaluate_PTs.sh $1 | tee $evaloutput >&2
+		echo "Stage 15 took" $SECONDS "seconds."; SECONDS=0
 	fi
 else
 	>&2 echo "Stage 15: nothing to do."
