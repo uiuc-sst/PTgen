@@ -9,10 +9,9 @@ set -e
 scriptname=`basename "$0"`
 
 if [[ $# -ne 1 ]]; then
-	echo "Usage: $scriptname settings_file.";
-	exit 1
+	echo "Usage: $scriptname settings_file."; exit 1
 fi
-[ ! -f $1 ] && echo "$scriptname ERROR: no settings file \"$1\"." && exit 1;
+[ ! -f $1 ] && echo "$scriptname ERROR: no settings file \"$1\"." && exit 1
 . $1
 
 # Make a temporary directory for the caller.

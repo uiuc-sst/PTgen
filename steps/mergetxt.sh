@@ -12,7 +12,7 @@ for ip in `seq 1 $nparallel`; do
 	for uttid in `cat $splittrainids.$ip $splittestids.$ip $splitadaptids.$ip`; do
 		showprogress go
 		if [[ -s $mergedir/$uttid.txt && `grep "$delimsymbol" $mergedir/$uttid.txt | wc -l` == $nparts ]]; then
-			continue;
+			continue
 		fi
 		> $mergedir/$uttid.txt
 		for p in `seq 1 $nparts`; do
@@ -27,7 +27,7 @@ for ip in `seq 1 $nparallel`; do
 				break
 			fi
 
-			idx=`expr $topN + 1`;
+			idx=`expr $topN + 1`
 				# Example:
 				# $str  is "part-1-dutch_141129_376553-4,4:1,7:1,2:0.916667,3:0.916667,8:0.833333,5:0.583333,6:0.5,1:-0,9:-0"
 				# $tstr is "part-1-dutch_141129_376553-4:a S#b o r S#b a S d o#b o t s#o l f#p a s#o a f t#o u s e#o z\nb o t s"
@@ -41,8 +41,8 @@ for ip in `seq 1 $nparallel`; do
 				# The former, if $idx is corrupt?
 				# The latter, if $str is corrupt? If $str is too short, cut -f9 emits only "\n".  That would cause that error.
 			for turkerindex in `seq 2 $idx`; do
-				turker=`echo $str | cut -d',' -f$turkerindex | cut -d':' -f1`;
-				echo $tstr | cut -d':' -f2- | cut -d'#' -f${turker}
+				turker=`echo $str | cut -d',' -f$turkerindex | cut -d':' -f1`
+				echo $tstr | cut -d':' -f2- | cut -d'#' -f$turker
 			done | aligner `echo $aligneropt` > $mergedir/part-$p-$uttid.txt
 
 			cat $mergedir/part-$p-$uttid.txt >> $mergedir/$uttid.txt
@@ -57,5 +57,5 @@ for ip in `seq 1 $nparallel`; do
 	done
 	) &
 done
-wait;
+wait
 showprogress end

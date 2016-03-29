@@ -35,15 +35,15 @@ for ip in `seq 1 $nparallel`; do
 	(
 	for uttid in `cat $splittestids.$ip`; do
 		showprogress go
-		latfile=$decodelatdir/${uttid}.GTPLM.fst
+		latfile=$decodelatdir/$uttid.GTPLM.fst
 
 		if [[ ! -s $latfile ]]; then
 			>&2 echo -e "\nevaluate_PTs.sh: no decoded lattice file '$latfile'. Aborting."; exit 1
 		fi
 		if [[ -n $evaloracle ]]; then
 			# Accumulate each wer into the number oracleerror.
-			reffst=$tmpdir/${uttid}.ref.fst 
-			prunefst=$tmpdir/${uttid}.prune.fst
+			reffst=$tmpdir/$uttid.ref.fst 
+			prunefst=$tmpdir/$uttid.prune.fst
 			egrep "$uttid[ 	]" $evalreffile | cut -d' ' -f2- | make-acceptor.pl \
 				| fstcompile --acceptor=true --isymbols=$phnalphabet  > $reffst
 			fstprune --weight=$prunewt $latfile | fstprint | cut -f1-4 | uniq \

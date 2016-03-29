@@ -3,15 +3,16 @@
 . $INIT_STEPS
 
 if [[ -z $makeGTPLM && -z $decode_for_adapt ]]; then
-	>&2 echo "decode_PTs.sh: aborting.  In evaluation mode, make GTPLM flag must be set."
+	>&2 echo "decode_PTs.sh: aborting.  Evaluation mode requires flag makeGTPLM=1."
 	exit 1
 fi
 
 mkdir -p $decodelatdir
 
-splitids=$splittestids;
 if [[ -n $decode_for_adapt ]]; then
-	splitids=$splitadaptids;
+	splitids=$splitadaptids
+else
+	splitids=$splittestids
 fi
 
 showprogress init 5 "" # Long description is in caller, ../run.sh.
@@ -24,23 +25,21 @@ for ip in `seq 1 $nparallel`; do
 		fi
 		showprogress go
 
-		scale-FST-weights.pl $Mscale < $mergefstdir/${uttid}.M.fst.txt \
+		scale-FST-weights.pl $Mscale < $mergefstdir/$uttid.M.fst.txt \
 			| fstcompile --isymbols=$engalphabet --osymbols=$engalphabet \
 			> $mergefstdir/$uttid.M.fst
 
 		if [[ -n $makeGTPLM ]]; then
 			fstcompose $GTPLfst $mergefstdir/$uttid.M.fst \
-				| fstproject --project_output=false - > $decodelatdir/${uttid}.GTPLM.fst
+				| fstproject --project_output=false - > $decodelatdir/$uttid.GTPLM.fst
 		fi
 
 		if [[ -n $makeTPLM ]]; then
 			fstcompose $TPLfst $mergefstdir/$uttid.M.fst \
-				| fstproject --project_output=false - > $decodelatdir/${uttid}.TPLM.fst
+				| fstproject --project_output=false - > $decodelatdir/$uttid.TPLM.fst
 		fi
-
-		# Why do only *some* of the $uttid have braces?
 	done
 	) &
 done
-wait;
+wait
 showprogress end

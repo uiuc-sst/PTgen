@@ -18,14 +18,14 @@ for ip in `seq 1 $nparallel`; do
 		if [[ -s $mergedir/$uttid.txt ]] ; then
 			showprogress go
 			convert-aligner-to-fst.pl `echo $alignertofstopt` < $mergedir/$uttid.txt \
-				| convert-prob-to-neglog.pl | tee $mergefstdir/${uttid}.M.fst.txt \
+				| convert-prob-to-neglog.pl | tee $mergefstdir/$uttid.M.fst.txt \
 				| fstcompile --isymbols=$engalphabet --osymbols=$engalphabet \
-				| fstarcsort --sort_type=ilabel - > $mergefstdir/${uttid}.M.fst
+				| fstarcsort --sort_type=ilabel - > $mergefstdir/$uttid.M.fst
 		else
 			>&2 echo -e -n "\nmergefst.sh WARNING: Skipping utterance $uttid."
 		fi
 	done
 	) &
 done
-wait;
+wait
 showprogress end

@@ -149,7 +149,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 		if [[ -n $rmprefix ]]; then
 			prefixarg="--rmprefix $rmprefix"
 		fi
-		preprocess_turker_transcripts.pl --multiletter $engdict $prefixarg < $TURKERTEXT/${L}/batchfile
+		preprocess_turker_transcripts.pl --multiletter $engdict $prefixarg < $TURKERTEXT/$L/batchfile
 		showprogress go
 	done > $transcripts
 	showprogress end
@@ -255,7 +255,7 @@ if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]
 	>&2 echo "Creating carmel training data... "
 	# Why not move these 4 lines into prepare-phn2let-traindata.sh?
 	for L in ${TRAIN_LANG[@]}; do
-		cat $TRANSDIR/${L}/ref_train 
+		cat $TRANSDIR/$L/ref_train 
 	done > $reffile
 	prepare-phn2let-traindata.sh $1
 	# Why not prepare-phn2let-traindata.sh $1 > $carmeltraintxt ?
