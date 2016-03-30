@@ -180,17 +180,22 @@ fi
 # Prepare data lists.
 #
 # Via $langmap, expands variable $TRAIN_LANG's abbreviations into full language names.
-# Reads each $LISTDIR/language_name/{train, dev, or test}.
-# Creates one of the files $trainids, $testids, $adaptids.
-# Splits that file into small parts, to create one of the sets of files
-#   {$splittrainids, $splittestids, $splitadaptids}.xxx, where xxx is numbers.
+# Reads each $LISTDIR/language_name/{train, dev, test}.
+# Creates the files $trainids, $testids, $adaptids.
+# Splits those files into parts {$splittrainids, $splittestids, $splitadaptids}.xxx, where xxx is numbers.
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
-	>&2 echo -n "Splitting training/test data for parallel jobs... "
-	datatype='train' create-datasplits.sh $1
-	datatype='dev'   create-datasplits.sh $1
-#	datatype='test'  create-datasplits.sh $1
-	datatype='adapt' create-datasplits.sh $1
+	case $TESTTYPE in
+	dev | eval)
+	  ;;
+	*)
+	  >&2 echo "\$TESTTYPE $TESTTYPE must be either 'dev' or 'eval'.  Check $1."; exit 1
+	  ;;
+	esac
+	>&2 echo -n "Splitting training/test data into parallel jobs... "
+	datatype='train'   create-datasplits.sh $1
+	datatype='adapt'   create-datasplits.sh $1
+	datatype=$TESTTYPE create-datasplits.sh $1
 	>&2 echo "Done."
 	echo "Stage 3 took" $SECONDS "seconds."; SECONDS=0
 else

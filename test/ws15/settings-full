@@ -7,14 +7,12 @@ TEST_LANG_NAME=swahili # data-WS15/langmodels/swahili/bigram.fst.  (Derive this 
 
 # Input test DATA and output EXPeriment results.
 DATA=data-WS15
-DATA_URL=http://isle.illinois.edu/mc/PTgenTest/data-WS15.tgz # ifp-serv-03:/workspace/speech_web/mc == http://isle.illinois.edu/mc/
+DATA_URL=http://isle.illinois.edu/mc/PTgenTest/data-WS15.tgz
 EXP=$HOME/Tmp/Exp
 EXPLOCAL=$EXP/$TEST_LANG_NAME-X
 tmproot=/tmp
 
-# Type of test.  Used by stage 3.  Either 'dev' or 'eval'.
-# (How does this interact with which lines are commented out in stage 3?)
-TESTTYPE='dev'
+TESTTYPE='dev'						# Used by stage 3.  Either 'dev' or 'eval'.
 
 # Transcriptions.
 TURKERTEXT=$DATA/batchfiles				# Read by stage 1.
@@ -90,6 +88,6 @@ makeGTPLM=1		# Used by stage 14.
 #evaloracle=1		# Used by stage 15.
 debug=1			# Used by stage 15.
 
-# Which stages to run.
+# Which stages to run, inclusive.
 startstage=1
 endstage=15
