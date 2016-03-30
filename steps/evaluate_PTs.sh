@@ -33,6 +33,9 @@ showprogress init 5 "Evaluating PTs"
 oracleerror=0
 for ip in `seq 1 $nparallel`; do
 	(
+	if [[ ! -s $splittestids.$ip ]]; then
+		>&2 echo "evaluate_PTs.sh WARNING: missing or empty file $splittestids.$ip."
+	fi
 	for uttid in `cat $splittestids.$ip`; do
 		showprogress go
 		latfile=$decodelatdir/$uttid.GTPLM.fst

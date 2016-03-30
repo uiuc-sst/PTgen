@@ -1,9 +1,11 @@
 # Languages for training and testing.
 # The sets TRAIN_LANG and TEST_LANG must be disjoint subsets of ALL_LANGS.
-ALL_LANGS=(AR CA DT HG MD SW UR)
-TRAIN_LANG=(AR CA DT HG MD UR)
-TEST_LANG=(SW)
-TEST_LANG_NAME=swahili # data-WS15/langmodels/swahili/bigram.fst.  (Derive this from $langmap?)
+ALL_LANGS=(AR CA DT HG MD SW UR)			# Used by stage 1.
+TRAIN_LANG=(AR CA DT HG MD UR)				# Used by stage 3 and 7.
+DEV_LANG=(SW)						# Used by stage 3.
+EVAL_LANG=(SW)						# Used by stage 3.
+TEST_LANG=(SW)						# Used by stage 3.
+TEST_LANG_NAME=swahili # Used by $EXPLOCAL, $evalreffile, $phonelm, and $Gfst.  Compatible with $langmap.
 
 # Input test DATA and output EXPeriment results.
 DATA=data-WS15
