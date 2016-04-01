@@ -1,6 +1,6 @@
 #!/bin/bash
-# Evaluate PTs using phone error rates computed on a test set
-# of transcripts in the target language.
+# Evaluate PTs using phone error rates computed on a
+# test set of transcripts in the target language.
 
 . $INIT_STEPS
 
@@ -15,7 +15,7 @@ if [[ -z $evalreffile ]]; then
 fi
 if [[ ! -s $evalreffile ]]; then
   echo "evaluate_PTs.sh: no file $evalreffile, evalreffile in settings file '$1'. Aborting."; exit 1
-  # The executable compute-wer would fail.
+  # This file is the known-good transcription for compute-wer.
 fi
 if [[ -z $phnalphabet ]]; then
   echo "evaluate_PTs.sh: no variable phnalphabet in settings file '$1'. Aborting."; exit 1
@@ -23,6 +23,7 @@ fi
 if [[ (-n $evaloracle && -z $prunewt) ]]; then
   echo "evaluate_PTs.sh: corrupt variables evaloracle or prunewt in settings file '$1'. Aborting."; exit 1
 fi
+hash compute-wer 2>/dev/null || { echo "evaluate_PTs.sh: missing program compute-wer. Aborting."; exit 1; }
 
 mktmpdir
 
@@ -34,7 +35,7 @@ oracleerror=0
 for ip in `seq 1 $nparallel`; do
 	(
 	if [[ ! -s $splittestids.$ip ]]; then
-		>&2 echo "evaluate_PTs.sh WARNING: missing or empty file $splittestids.$ip."
+		>&2 echo "\nevaluate_PTs.sh WARNING: missing or empty file $splittestids.$ip."
 	fi
 	for uttid in `cat $splittestids.$ip`; do
 		showprogress go
@@ -78,7 +79,6 @@ if [[ ! -z $hypfile ]]; then
 	cp $tmpdir/hyp.txt $hypfile
 fi
 
-hash compute-wer 2>/dev/null || { echo >&2 "evaluate_PTs.sh: missing program compute-wer. Aborting."; exit 1; }
 compute-wer --text --mode=present ark:$evalreffile ark:$tmpdir/hyp.txt
 
 if [[ -n $evaloracle ]]; then
