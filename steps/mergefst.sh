@@ -6,8 +6,7 @@
 set -e
 
 if [[ ! -d $mergedir ]] ; then
-	>&2 echo "mergefst.sh ERROR: no directory $mergedir."
-	exit 1
+	>&2 echo "mergefst.sh: no directory $mergedir.  Aborting."; exit 1
 fi
 
 mkdir -p $mergefstdir
@@ -22,7 +21,7 @@ for ip in `seq 1 $nparallel`; do
 				| fstcompile --isymbols=$engalphabet --osymbols=$engalphabet \
 				| fstarcsort --sort_type=ilabel - > $mergefstdir/$uttid.M.fst
 		else
-			>&2 echo -e -n "\nmergefst.sh WARNING: Skipping utterance $uttid."
+			>&2 echo -e -n "\nmergefst.sh: skipping utterance $uttid."
 		fi
 	done
 	) &
