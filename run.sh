@@ -1,8 +1,9 @@
 #!/bin/bash
 # Script to build and evaluate probabilistic transcriptions.
 #
-# This script is split into multiple stages (1 - 15).
-# Resume execution at a particular stage by defining the variable $startstage.
+# This script is split into 15 stages.
+# To resume execution at a particular stage,
+# set the variable $startstage in the settings file.
 
 SCRIPT="$(readlink --canonicalize-existing "$0")"
 SCRIPTPATH="$(dirname "$SCRIPT")"
@@ -260,6 +261,9 @@ if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]
 	>&2 echo "Creating carmel training data... "
 	# Why not move these 4 lines into prepare-phn2let-traindata.sh?
 	for L in ${TRAIN_LANG[@]}; do
+		if [[ ! -s $TRANSDIR/$L/ref_train ]]; then
+			>&2 echo "\$TRAIN_LANGS includes $L, but there's no file $TRANSDIR/$L/ref_train.  Aborting."; exit 1
+		fi
 		cat $TRANSDIR/$L/ref_train 
 	done > $reffile
 	prepare-phn2let-traindata.sh $1
@@ -278,7 +282,7 @@ fi
 ((stage++))
 if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]; then
 	>&2 echo -n "Training phone-2-letter model (see $tmpdir/carmelout)..."
-	hash carmel 2>/dev/null || { echo >&2 "Missing program 'carmel'.  Aborting."; exit 1; }
+	hash carmel 2>/dev/null || { >&2 echo "Missing program 'carmel'.  Aborting."; exit 1; }
 	carmel -\? --train-cascade -t -f 1 -M 20 -HJ $carmeltraintxt $initcarmel 2>&1 \
 		| tee $tmpdir/carmelout | awk '/^i=|^Computed/ {printf "."; fflush (stdout)}' >&2
 	>&2 echo " Done."
