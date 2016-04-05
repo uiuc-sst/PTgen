@@ -42,3 +42,5 @@ change `startstage` to one past the last successfully completed stage.
 The settings file in each of these tests includes
 a `$DATA_URL` for downloading the test's data,
 which is too unwieldy to store on github.
+
+If `../../run.sh` prompts you again for the locations of exes, you can just abort it with `ctrl+C`, then retrieve those settings with `cp ../../config.sh .`, then retry.
