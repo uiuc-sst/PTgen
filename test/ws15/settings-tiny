@@ -9,7 +9,6 @@ DATA=data-WS15
 DATA_URL=http://isle.illinois.edu/mc/PTgenTest/data-WS15.tgz # ifp-serv-03:/workspace/speech_web/mc == http://isle.illinois.edu/mc/
 EXP=$HOME/Tmp/Exp
 EXPLOCAL=$EXP/$TEST_LANG_NAME-X
-tmproot=/tmp
 
 # data 
 LISTDIR=$DATA/lists

@@ -8,6 +8,8 @@ TEST_LANG=(SW)					# Used by stage 3.
 LANG_NAME=swahili # For test or dev.  Used by $EXPLOCAL, $evalreffile, $phonelm, and $Gfst.  Compatible with $langmap.
 # %WER 92.78 [ 7105 / 7658, 13 ins, 5696 del, 1396 sub ]
 # %WER 93.86 [ 7188 / 7658,  9 ins, 5667 del, 1512 sub ]
+# %WER 94.02 [ 7200 / 7658,  8 ins, 5685 del, 1507 sub ]
+# %WER 94.14 [ 7209 / 7658,  7 ins, 5676 del, 1526 sub ]
 # %WER 95.01 [ 7276 / 7658,  8 ins, 5674 del, 1594 sub ]
 # %SER 100.00 [ 120 / 120 ]
 
@@ -16,7 +18,6 @@ DATA=data
 DATA_URL=http://isle.illinois.edu/mc/PTgenTest/data-2016-02-23.tgz
 EXP=$HOME/Tmp/Exp
 EXPLOCAL=$EXP/$LANG_NAME-X
-tmproot=/tmp
 
 # Either 'dev' or 'eval'.
 # Use 'dev' to tune hyperparameters, Pscale, Gscale, etc.

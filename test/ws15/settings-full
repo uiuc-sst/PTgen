@@ -12,7 +12,6 @@ DATA=data-WS15
 DATA_URL=http://isle.illinois.edu/mc/PTgenTest/data-WS15.tgz
 EXP=$HOME/Tmp/Exp
 EXPLOCAL=$EXP/$LANG_NAME-X
-tmproot=/tmp
 
 # Either 'dev' or 'eval'.
 # Use 'dev' to tune hyperparameters, Pscale, Gscale, etc.

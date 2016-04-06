@@ -11,17 +11,13 @@ scriptname=`basename "$0"`
 if [[ $# -ne 1 ]]; then
 	echo "Usage: $scriptname settings_file."; exit 1
 fi
-[ ! -f $1 ] && echo "$scriptname ERROR: no settings file \"$1\"." && exit 1
+[ ! -f $1 ] && echo "$scriptname: no settings file \"$1\". Aborting." && exit 1
 . $1
 
 # Make a temporary directory for the caller.
+# (Change /tmp to something else, for servers with harsh quotas on /tmp.)
 mktmpdir() {
-	if [[ -n $tmpdir ]]; then
-		tmproot=$tmpdir
-	else
-		tmproot="/tmp"
-	fi
-	export tmpdir=$tmproot/$scriptname-$$.dir
+	export tmpdir=/tmp/$scriptname-$$.dir
 	mkdir -p $tmpdir
 	>&2 echo "Using tmpdir $tmpdir."
 }
@@ -29,7 +25,7 @@ mktmpdir() {
 # Verify that a previously created file exists, and report that.
 usingfile() {
 	if [[ ! -e $1 ]]; then
-		>&2 echo "$scriptname ERROR: no file \"$1\" for $2."
+		>&2 echo "$scriptname: no file \"$1\" for $2. Aborting."
 		exit 1
 	fi
 	>&2 echo "Using $2 $1."

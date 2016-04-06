@@ -7,6 +7,7 @@ EVAL_LANG=(MD)					# Used by stage 3.
 TEST_LANG=(MD)					# Used by stage 3.
 LANG_NAME=mandarin # For test or dev.  Used by $EXPLOCAL, $evalreffile, $phonelm, and $Gfst.  Compatible with $langmap.
 # %WER 87.30 [ 7197 / 8244, 24 ins, 6168 del, 1005 sub ]
+# %WER 87.70 [ 7230 / 8244, 26 ins, 6237 del,  967 sub ]
 # %SER 100.00 [ 120 / 120 ]
 
 # Input test DATA and output EXPeriment results.
@@ -14,7 +15,6 @@ DATA=data
 DATA_URL=http://isle.illinois.edu/mc/PTgenTest/data-2016-02-23.tgz
 EXP=$HOME/Tmp/Exp
 EXPLOCAL=$EXP/$LANG_NAME-X
-tmproot=/tmp
 
 # Either 'dev' or 'eval'.
 # Use 'dev' to tune hyperparameters, Pscale, Gscale, etc.
