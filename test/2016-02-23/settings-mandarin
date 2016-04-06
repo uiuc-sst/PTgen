@@ -7,6 +7,7 @@ EVAL_LANG=(MD)					# Used by stage 3.
 TEST_LANG=(MD)					# Used by stage 3.
 LANG_NAME=mandarin # For test or dev.  Used by $EXPLOCAL, $evalreffile, $phonelm, and $Gfst.  Compatible with $langmap.
 # %WER 87.30 [ 7197 / 8244, 24 ins, 6168 del, 1005 sub ]
+# %WER 87.59 [ 7221 / 8244, 24 ins, 6246 del,  951 sub ]
 # %WER 87.70 [ 7230 / 8244, 26 ins, 6237 del,  967 sub ]
 # %SER 100.00 [ 120 / 120 ]
 

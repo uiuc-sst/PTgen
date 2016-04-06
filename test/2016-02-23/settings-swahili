@@ -10,6 +10,7 @@ LANG_NAME=swahili # For test or dev.  Used by $EXPLOCAL, $evalreffile, $phonelm,
 # %WER 93.86 [ 7188 / 7658,  9 ins, 5667 del, 1512 sub ]
 # %WER 94.02 [ 7200 / 7658,  8 ins, 5685 del, 1507 sub ]
 # %WER 94.14 [ 7209 / 7658,  7 ins, 5676 del, 1526 sub ]
+# %WER 94.25 [ 7218 / 7658,  7 ins, 5689 del, 1522 sub ]
 # %WER 95.01 [ 7276 / 7658,  8 ins, 5674 del, 1594 sub ]
 # %SER 100.00 [ 120 / 120 ]
 

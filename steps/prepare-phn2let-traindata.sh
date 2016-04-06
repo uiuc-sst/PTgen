@@ -5,38 +5,48 @@
 # Exit if there is any error.
 set -e
 
-mktmpdir
-
+if [[ ! -s $trainids ]]; then
+  >&2 echo "prepare-phn2let-traindata.sh: missing or empty training file $trainids. Aborting."; exit 1
+fi
 if [[ ! -s $reffile ]]; then
-	>&2 echo "prepare-phn2let-traindata.sh: missing or empty reference file $reffile";
-	exit 1;
+  >&2 echo "prepare-phn2let-traindata.sh: missing or empty reference file $reffile. Aborting."; exit 1
 fi
 
-showprogress init 100 "Preparing training data"
-( for uttid in `cat $trainids`; do
-	if [[ -s $mergefstdir/${uttid}.M.fst ]]; then
-		showprogress go
-		refstring=`egrep "${uttid}[ 	]" $reffile \
-			| cut -d' ' -f2- \
-			| sed -e 's/^[ \t]*/"/' \
-			| sed -e 's/[ \t]*$/"/' \
-			| sed -e 's/[ \t]\+/" "/g'`
-		if [[ -z $refstring ]]; then
-			>&2 echo "prepare-phn2let-traindata.sh: WARNING: Empty reference string for $uttid. Skipping utterance."
-			continue
-		fi
-		for rn in `seq 1 $nrand`; do
-			echo $refstring
-			fstrandgen --npath=1 --select=log_prob $mergefstdir/${uttid}.M.fst \
-				| fstprint --osymbols=$engalphabet \
-				| reverse_randgenfstpaths.pl $uttid \
-				| cut -d' ' -f2- \
-				| sed -e 's/^[ \t]*/"/' \
-				| sed -e 's/[ \t]*$/"/' \
-				| sed -e 's/[ \t]\+/" "/g'
-		done
-	else
-		>&2 echo -e -n "\nprepare-phn2let-traindata.sh: WARNING: no file $mergefstdir/${uttid}.M.fst "
-	fi
-done ) > $carmeltraintxt
+showprogress init 30 "Preparing training data"
+
+# Without parallelizing, this stage takes 60 to 70% of run.sh's time.  (Carmel is most of the rest.)
+nLOTS=98 # Way more than $nparallel, but less than split's limit of 100.
+split --numeric-suffixes=1 -n r/$nLOTS $trainids $trainids.
+
+for ip in `seq -w 1 $nLOTS`; do
+  if [[ ! -s $trainids.$ip ]]; then
+    >&2 echo -e "\nprepare-phn2let-traindata.sh: no split-file $trainids.$ip. Aborting."; exit 1
+  fi
+  ( for uttid in `cat $trainids.$ip`; do
+    if [[ ! -s $mergefstdir/$uttid.M.fst ]]; then
+      >&2 echo -e "\nprepare-phn2let-traindata.sh: no file $mergefstdir/$uttid.M.fst. Skipping utterance."
+      continue
+    fi
+    showprogress go
+    refstring=`egrep "$uttid[ 	]" $reffile |
+      cut -d' ' -f2- |
+      sed -e 's/^[ \t]*/"/' -e 's/[ \t]*$/"/' -e 's/[ \t]\+/" "/g'`
+    if [[ -z $refstring ]]; then
+      >&2 echo -e "\nprepare-phn2let-traindata.sh: no reference string for $uttid. Skipping utterance."
+      continue
+    fi
+    for rn in `seq 1 $nrand`; do
+      echo $refstring
+      fstrandgen --npath=1 --select=log_prob $mergefstdir/$uttid.M.fst |
+	fstprint --osymbols=$engalphabet |
+	reverse_randgenfstpaths.pl $uttid |
+	cut -d' ' -f2- |
+	sed -e 's/^[ \t]*/"/' -e 's/[ \t]*$/"/' -e 's/[ \t]\+/" "/g'
+    done
+  done ) > $carmeltraintxt.$ip &
+done
+wait
+
+cat $carmeltraintxt.* > $carmeltraintxt
+rm -f $trainids.* $carmeltraintxt.*
 showprogress end
