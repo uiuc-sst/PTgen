@@ -61,8 +61,8 @@ if [[ ! -s $ids_file ]]; then
   >&2 echo -e "\ncreate-datasplits.sh generated an empty ids_file $ids_file.  Aborting."; exit 1
 fi
 
-split -n r/$nparallel $ids_file $tmpdir/split-$dtype.
+# "split -n r/42 ..." makes 42 equal-size parts, without breaking lines, with round robin distribution.
+# "--numeric-suffixes=1" names them .01 .02 ... .42, instead of .aa .ab ... .
+# To iterate over these files, use "seq -f %02g $nparallel".
 mkdir -p "$(dirname "$splitids_file")"
-for i in `seq 1 $nparallel`; do
-	mv `ls $tmpdir/split-$dtype.* | head -1` $splitids_file.$i
-done
+split --numeric-suffixes=1 -n r/$nparallel $ids_file $splitids_file.$i

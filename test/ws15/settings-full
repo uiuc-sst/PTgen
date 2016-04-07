@@ -7,6 +7,9 @@ EVAL_LANG=(SW)					# Used by stage 3.
 TEST_LANG=(SW)					# Used by stage 3.
 LANG_NAME=swahili # For test or dev.  Used by $EXPLOCAL, $evalreffile, $phonelm, and $Gfst.  Compatible with $langmap.
 
+# %WER 47.15 [ 3611 / 7658, 767 ins, 949 del, 1895 sub ]
+# %SER 100.00 [ 120 / 120 ]
+
 # Input test DATA and output EXPeriment results.
 DATA=data-WS15
 DATA_URL=http://isle.illinois.edu/mc/PTgenTest/data-WS15.tgz
