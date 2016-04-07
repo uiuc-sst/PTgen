@@ -32,7 +32,7 @@ create-editfst.pl < $phnalphabet | fstcompile - > $editfst
 
 showprogress init 5 "Evaluating PTs"
 oracleerror=0
-for ip in `seq 1 $nparallel`; do
+for ip in `seq -f %02g $nparallel`; do
 	(
 	if [[ ! -s $splittestids.$ip ]]; then
 		>&2 echo "evaluate_PTs.sh: missing or empty file $splittestids.$ip."
@@ -67,7 +67,7 @@ wait
 showprogress end
 
 > $tmpdir/hyp.txt
-for ip in `seq 1 $nparallel`; do
+for ip in `seq -f %02g $nparallel`; do
 	cat $tmpdir/hyp.$ip.txt >> $tmpdir/hyp.txt
 done
 if [[ ! -s $tmpdir/hyp.txt ]]; then

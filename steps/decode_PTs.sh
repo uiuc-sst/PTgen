@@ -16,7 +16,7 @@ else
 fi
 
 showprogress init 5 "" # Long description is in caller, ../run.sh.
-for ip in `seq 1 $nparallel`; do
+for ip in `seq -f %02g $nparallel`; do
 	(
 	for uttid in `cat $splitids.$ip`; do
 		if [[ ! -s $mergefstdir/$uttid.M.fst.txt ]]; then
