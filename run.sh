@@ -4,6 +4,10 @@
 # This script is split into 15 stages.
 # To resume execution at a particular stage,
 # set the variable $startstage in the settings file.
+#
+# Although stages 9-13 are very fast, we keep them as separate stages
+# for tuning hyper-parameters such as # of phone deletions/insertions,
+# and because they *are* functionally distinct.
 
 SCRIPT="$(readlink --canonicalize-existing "$0")"
 SCRIPTPATH="$(dirname "$SCRIPT")"
