@@ -10,7 +10,6 @@
 const auto MAXTURKERS = 15;
 
 using namespace std;
-using namespace std::tr1;
 
 void vectorOfWords(vector<string>& words, const string& str) {
 	stringstream ss(str);
@@ -24,7 +23,8 @@ void vectorOfWords(vector<string>& words, const string& str) {
 	}
 }
 
-// Compute the edit distance between two word sequences (dynamic programming).
+// Calculate the edit distance between two word sequences.
+// (dynamic programming, e.g. Jurafsky & Martin (2000) p. 156, fig 5.5).
 double editdistance(const string& str1, const string& str2) {
 	vector<string> words1, words2;
 	vectorOfWords(words1, str1);
@@ -36,9 +36,9 @@ double editdistance(const string& str1, const string& str2) {
 	const auto len1 = words1.size();
 	const auto len2 = words2.size();
 	if (len1 == 0)
-		return idcost*len2;
+		return idcost*len2;	// insert len2 times into an empty sequence
 	if (len2 == 0)
-		return idcost*len1;
+		return idcost*len1;	// insert len1 times into an empty sequence
 
 	// A 1-dimensional len1 * len2 matrix might be faster,
 	// but already, this exe takes only a few seconds, a tiny fraction of run.sh.
@@ -55,8 +55,10 @@ double editdistance(const string& str1, const string& str2) {
 	for (auto i = 1u; i <= len1; ++i) {
 		for (auto j = 1u; j <= len2; ++j) {
 			const auto cost = words1[i-1] == words2[j-1] ? 0.0 : scost;
-			const auto mn = std::min(dist_matrix[i-1][j], dist_matrix[i][j-1]) + idcost;
-			dist_matrix[i][j] = std::min(mn, dist_matrix[i-1][j-1]+cost);
+			dist_matrix[i][j] = std::min({
+			    dist_matrix[i-1][j  ] + idcost,	// insert
+			    dist_matrix[i  ][j-1] + idcost,	// delete
+			    dist_matrix[i-1][j-1] + cost });	// substitute
 		}
 	}
 	const auto edist = dist_matrix[len1][len2];
@@ -72,42 +74,43 @@ int main(int argc, char** argv) {
 	// Ignores command-line arguments.
 
 	double turk_matrix[MAXTURKERS][MAXTURKERS];
-	vector<pair<double,int> > turkscores;
+	vector<pair<double,int> > scores;
 	string line;
 	while (getline(cin, line)) {
 		if (line.empty())
 			continue;
 		vector<string> entries = split(line, ':');
 		cout << trim(entries[0]); // uttid
-		const vector<string> turktranscripts = split(entries[1], '#');
-		assert(turktranscripts.size() <= MAXTURKERS);
-		assert(turktranscripts.size() > 1);
-			// Otherwise turkscores = (0.0, 0), and then
+		const vector<string> transcripts = split(entries[1], '#');
+		assert(transcripts.size() <= MAXTURKERS);
+		assert(transcripts.size() > 1);
+			// Otherwise scores = (0.0, 0), and then
 			// assert(bestscore < 0.0) fails.
-		turkscores.resize(turktranscripts.size());
-		for (auto i = 0u; i < turktranscripts.size(); ++i) {
+			// More precisely, comparing transcripts requires at least two transcripts.
+		scores.resize(transcripts.size());
+		for (auto i = 0u; i < transcripts.size(); ++i) {
 			// Store a large score in the entry corresponding to Turker i
-			for (auto k = i+1; k < turktranscripts.size(); ++k) {
+			for (auto k = i+1; k < transcripts.size(); ++k) {
 				turk_matrix[k][i] =
 				turk_matrix[i][k] =
-					editdistance(turktranscripts[i], turktranscripts[k]);
+					editdistance(transcripts[i], transcripts[k]);
 			}
 		}
-		for (auto i = 0u; i < turktranscripts.size(); ++i) {
-			turkscores[i] = {0.0, i};
-			for (auto j = 0u; j < turktranscripts.size(); ++j) {
+		for (auto i = 0u; i < transcripts.size(); ++i) {
+			scores[i] = {0.0, i};
+			for (auto j = 0u; j < transcripts.size(); ++j) {
 				if (i != j)
-					turkscores[i].first += turk_matrix[i][j];
+					scores[i].first += turk_matrix[i][j];
 			}
 		}
-		std::sort(turkscores.begin(), turkscores.end());
-		const auto worstscore = turkscores[turkscores.size()-1].first;
-		const auto bestscore =  turkscores[0                  ].first;
+		std::sort(scores.begin(), scores.end());
+		const auto worstscore = scores[scores.size()-1].first;
+		const auto bestscore =  scores[0              ].first;
 		assert(bestscore < 0.0);
 
-		// Print 1-indexed turker indices.
+		// Print each turker's index (starting at 1) and score-so-far.
 		auto simscore = 1.0;
-		for (const auto& score: turkscores) {
+		for (const auto& score: scores) {
 			if (bestscore != worstscore) // Avoid DBZ.
 				simscore = (score.first - worstscore) / (bestscore - worstscore);
 			cout << "," << score.second + 1 << ":" << simscore;
