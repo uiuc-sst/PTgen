@@ -1,11 +1,12 @@
 #!/usr/bin/perl
+
+# Add zero-weighted self-loops to every state of an FST, with arguments as labels.
+
 if (@ARGV == 0) {
-	print "Usage: <script> <symbol> [<more symbols>]\n";
-	print "Input: fst text file";
+	print "Usage: addloop.pl <symbol> [...]\n";
+	print "Input: FST text file";
 	exit 1;
 }
-
-# adding 0-weighted self-loops on every state of an fst with arguments as labels
 
 %states=();
 while($line=<STDIN>) {

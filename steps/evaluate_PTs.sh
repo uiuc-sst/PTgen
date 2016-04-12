@@ -30,7 +30,7 @@ mktmpdir
 editfst=$tmpdir/edit.fst
 create-editfst.pl < $phnalphabet | fstcompile - > $editfst 
 
-showprogress init 5 "Evaluating PTs"
+showprogress init 15 "Evaluating PTs"
 oracleerror=0
 for ip in `seq -f %02g $nparallel`; do
 	(

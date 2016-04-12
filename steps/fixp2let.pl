@@ -1,14 +1,12 @@
 #!/usr/bin/perl
-#
+
 # Modifies phone-2-letter model by adding appropriate
-# disambiguation symbols handling phone deletions and letter
-# insertions
+# disambiguation symbols to handle phone deletions and letter insertions.
 
 if ($#ARGV != 3) {
-	print "Usage: <script> <disambig_del_symbol> <disambig_ins_symbol> <phn_eps_symbol> <let_eps_symbol>\n";
+	print "Usage: fixp2let.pl <disambig_del_symbol> <disambig_ins_symbol> <phn_eps_symbol> <let_eps_symbol>\n";
 	exit 1;
 }
-
 
 $disambig_del = $ARGV[0];
 $disambig_ins = $ARGV[1];
@@ -21,7 +19,8 @@ while($line = <STDIN>) {
 	chomp $line;
 	$line =~ s/\s+/\t/g;
 	@fields = split /\s+/,$line;
-	if($#fields > 2) { #arc
+	if($#fields > 2) {
+		# arc
 		$maxstate = $fields[0] if $fields[0] > $maxstate;
 		$maxstate = $fields[1] if $fields[1] > $maxstate;
 	}
@@ -32,12 +31,15 @@ while($line = <STDIN>) {
 
 foreach $line (@lines) {
 	@fields = split /\s+/, $line;
-	if($#fields > 2) { #arc
-		if($fields[2] eq $phneps && $fields[3] ne $leteps) { #insertion
+	if($#fields > 2) {
+		# arc
+		if($fields[2] eq $phneps && $fields[3] ne $leteps) {
+			# insertion
 			print "$fields[0]\t$fields[1]\t$disambig_ins\t$fields[3]";
 			print "\t$fields[4]" if($#fields > 3);
 			print "\n";
-		} elsif ($fields[3] eq $leteps && $fields[2] ne $phneps) { #deletion
+		} elsif ($fields[3] eq $leteps && $fields[2] ne $phneps) {
+			# deletion
 			if (!exists $delstates{$fields[0]}) {
 				$maxstate++;
 				$delstates{$fields[0]} = $maxstate;

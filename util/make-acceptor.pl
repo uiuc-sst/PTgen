@@ -1,6 +1,6 @@
 #!/usr/bin/perl
-#
-# Make an OpenFST acceptor out of a space-delimited string
+
+# Convert a space-delimited string (on stdin) to an OpenFST acceptor (on stdout).
 
 while(<STDIN>){
 	chomp;
@@ -14,4 +14,3 @@ while(<STDIN>){
 	print "$state\n";
 	exit (0);
 }
-
