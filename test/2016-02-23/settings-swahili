@@ -7,6 +7,7 @@ EVAL_LANG=(SW)					# Used by stage 3.
 TEST_LANG=(SW)					# Used by stage 3.
 LANG_NAME=swahili # For test or dev.  Used by $EXPLOCAL, $evalreffile, $phonelm, and $Gfst.  Compatible with $langmap.
 # %WER 92.78 [ 7105 / 7658, 13 ins, 5696 del, 1396 sub ]
+# %WER 93.55 [ 7164 / 7658, 11 ins, 5698 del, 1455 sub ]
 # %WER 93.82 [ 7185 / 7658,  9 ins, 5691 del, 1485 sub ]
 # %WER 93.86 [ 7188 / 7658,  9 ins, 5667 del, 1512 sub ]
 # %WER 94.02 [ 7200 / 7658,  8 ins, 5685 del, 1507 sub ]
@@ -88,7 +89,6 @@ Tnumins=10		# Used by stage 12.
 Tnumdel=5		# Used by stage 12.
 Mscale=1		# Used by stage 14.
 prunewt=2		# Used by stage 15.
-nparallel=11		# Used by many stages.  TODO: infer from `nproc` - 1.
 
 # Command-line options.
 aligneropt="--dist $aligndist --empty $gapsymbol"			# Used by stage 4.

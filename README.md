@@ -22,7 +22,6 @@ This is usually `/usr/local/include`.  If that fails, `rm config.mk; make`, and 
 # How to create and evaluate PT's
 
 Edit the settings file, e.g. `settings_sample`.
-- Set `nparallel` to 1 or 2 fewer than the number of your computer's CPU cores (as reported by `nproc`).
 - Ensure that the required files within `$DATA` exist.
 
 `run.sh settings_sample`

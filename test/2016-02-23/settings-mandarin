@@ -86,7 +86,6 @@ Tnumins=10		# Used by stage 12.
 Tnumdel=5		# Used by stage 12.
 Mscale=1		# Used by stage 14.
 prunewt=2		# Used by stage 15.
-nparallel=11		# Used by many stages.  TODO: infer from `nproc` - 1.
 
 # Command-line options.
 aligneropt="--dist $aligndist --empty $gapsymbol"			# Used by stage 4.
