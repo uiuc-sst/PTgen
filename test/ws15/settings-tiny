@@ -1,98 +1,99 @@
-# training/test languages
-ALL_LANGS=(AR SW)
-TRAIN_LANG=(AR)
-TEST_LANG=(SW)
-TEST_LANG_NAME=swahili # data-WS15/langmodels/swahili/bigram.fst
+# Languages for training and testing.
+# The set TRAIN_LANG must be a subset of ALL_LANGS, and should exclude the other XXX_LANG's.
+ALL_LANGS=(AR             SW   )		# Used by stage 1.
+TRAIN_LANG=(AR                 )		# Used by stage 3 and 7.
+DEV_LANG=(SW)					# Used by stage 3.
+EVAL_LANG=(SW)					# Used by stage 3.
+TEST_LANG=(SW)					# Used by stage 3.
+LANG_NAME=swahili # For test or dev.  Used by $EXPLOCAL, $evalreffile, $phonelm, and $Gfst.  Compatible with $langmap.
 
-# directories
+# %WER 68.26 [ 5227 / 7658, 658 ins, 1070 del, 3499 sub ]
+# %SER 100.00 [ 120 / 120 ]
+
+# Input test DATA and output EXPeriment results.
 DATA=data-WS15
-DATA_URL=http://isle.illinois.edu/mc/PTgenTest/data-WS15.tgz # ifp-serv-03:/workspace/speech_web/mc == http://isle.illinois.edu/mc/
+DATA_URL=http://isle.illinois.edu/mc/PTgenTest/data-WS15.tgz
 EXP=$HOME/Tmp/Exp
-EXPLOCAL=$EXP/$TEST_LANG_NAME-X
+EXPLOCAL=$EXP/$LANG_NAME-X
 
-# data 
-LISTDIR=$DATA/lists
-TRANSDIR=$DATA/nativetranscripts
-TURKERTEXT=$DATA/batchfiles
-langmap=$LISTDIR/langcodes.txt
-TESTTYPE='dev'
-#TESTTYPE='eval'
-evalreffile=$TRANSDIR/$TEST_LANG_NAME/${TESTTYPE}_text
+# Either 'dev' or 'eval'.
+# Use 'dev' to tune hyperparameters, Pscale, Gscale, etc.
+# Then use the settings that scored best in stage 15 for 'eval'.
+TESTTYPE='dev'						# Used by stage 3, and (through $evalreffile) stage 15.
 
-# alphabets
-engdict=$DATA/let2phn/eng_dict.txt
-engalphabet=$DATA/let2phn/englets.vocab
-phnalphabet=$DATA/phonesets/univ.compact.txt
+# Transcriptions.
+TURKERTEXT=$DATA/batchfiles				# Read by stage 1.
+LISTDIR=$DATA/lists					# Read by stage 3.
+langmap=$LISTDIR/langcodes.txt				# Read by stage 3.
+TRANSDIR=$DATA/nativetranscripts			# Read by stage 7.
+evalreffile=$TRANSDIR/$LANG_NAME/${TESTTYPE}_text	# Read by stage 15.  Known-good transcription for scoring by compute-wer.
 
-#phonelm=$DATA/langmodels/$TEST_LANG_NAME/unigram.fst 			
-phonelm=$DATA/langmodels/$TEST_LANG_NAME/bigram.fst
+# Alphabets.
+engdict=$DATA/let2phn/eng_dict.txt		# Read by stage 1.
+engalphabet=$DATA/let2phn/englets.vocab		# Read by stage 6 and 11.
+phnalphabet=$DATA/phonesets/univ.compact.txt	# Read by stage 6, 10, 12, and 15.
+phonelm=$DATA/langmodels/$LANG_NAME/bigram.fst	# Read by stage 10.  (Or ...unigram.fst.)
 
-# data splits
-trainids=$EXPLOCAL/lists/train
-testids=$EXPLOCAL/lists/${TESTTYPE}
-adaptids=$EXPLOCAL/lists/adapt
-priortrainfile=$trainids
+# Data splits.
+trainids=$EXPLOCAL/lists/train			# Made by stage 3, read by 11.
+adaptids=$EXPLOCAL/lists/adapt			# Internal to stage 3, to create $splitadaptids.
+testids=$EXPLOCAL/lists/$TESTTYPE		# Made by stage 3, read by 15.
 
-# local files
-reffile=$EXPLOCAL/ref_train_text
-transcripts=$EXPLOCAL/transcripts.txt
-simfile=$EXPLOCAL/simscores.txt
-aligndist=$EXPLOCAL/aligndists.txt
-mergedir=$EXPLOCAL/mergedir
-mergefstdir=$EXPLOCAL/mergefstdir
-splittrainids=$EXPLOCAL/lists/trainids
-splittestids=$EXPLOCAL/lists/testids
-splitadaptids=$EXPLOCAL/lists/adaptids
-Pstyle=simple # simple, letctxt or phnletctxt (Stage 6)
-initcarmel=$EXPLOCAL/carmel/$Pstyle
-carmeltraintxt=$EXPLOCAL/carmel/training.txt
-decodelatdir=$EXPLOCAL/decode
-hypfile=$EXPLOCAL/hypotheses.txt
-evaloutput=$EXPLOCAL/eval.txt
-Gfst=$EXPLOCAL/${TEST_LANG_NAME}.G.fst
-Tfst=$EXPLOCAL/T.fst
-Pfst=$EXPLOCAL/P.fst
-Lfst=$EXPLOCAL/L.fst
-TPLfst=$EXPLOCAL/TPL.fst
-GTPLfst=$EXPLOCAL/GTPL.fst
+# Intermediate files.
+transcripts=$EXPLOCAL/transcripts.txt		# Made by stage 1,  modified by 2.
+simfile=$EXPLOCAL/simscores.txt			# Made by stage 2,  read by 4.
+mergedir=$EXPLOCAL/mergedir			# Made by stage 4,  read by 11.
+aligndist=$EXPLOCAL/aligndists.txt		# Internal to stage 4, via $aligneropt.
+mergefstdir=$EXPLOCAL/mergefstdir		# Made by stage 5 and 14 (the files in that dir), read by 7 and 14.
+splittrainids=$EXPLOCAL/lists/trainids		# Made by stage 3,  read by 5.
+splitadaptids=$EXPLOCAL/lists/adaptids		# Made by stage 3,  read by 5 and 14.
+splittestids=$EXPLOCAL/lists/testids		# Made by stage 3,  read by 5, 14 and 15.
+Pstyle=simple					# Used by stage 6.  One of simple, letctxt or phnletctxt.
+initcarmel=$EXPLOCAL/carmel/$Pstyle		# Made by stage 6,  read by 8. ($initcarmel.trained is made by 8, read by 9.)
+carmeltraintxt=$EXPLOCAL/carmel/training.txt	# Made by stage 7,  read by 8.
+reffile=$EXPLOCAL/ref_train_text		# Internal to stage 7.
+Pfst=$EXPLOCAL/P.fst				# Made by stage 9,  read by 13.
+Gfst=$EXPLOCAL/$LANG_NAME.G.fst			# Made by stage 10, read by 13.
+Lfst=$EXPLOCAL/L.fst				# Made by stage 11, read by 13.
+Tfst=$EXPLOCAL/T.fst				# Made by stage 12, read by 13.
+TPLfst=$EXPLOCAL/TPL.fst			# Made by stage 13, read by 14.
+GTPLfst=$EXPLOCAL/GTPL.fst			# Made by stage 13, read by 14.
+decodelatdir=$EXPLOCAL/decode			# Made by stage 14, read by 15.
+hypfile=$EXPLOCAL/hypotheses.txt		# Made by stage 15, read by human.
+evaloutput=$EXPLOCAL/eval.txt			# Made by stage 15, read by human.
 
-# parameters
-rmprefix="http://"      # Stage 1 (used in file ID creation)
-delimsymbol='%'
-disambigdel='#2'
-disambigins='#3'
-phneps='<eps>'
-leteps='-'
-gapsymbol='_'
-Nturkers=10
-nparts=4
-topN=4
-nparallel=11	# numCPUs - 1, todo.
-alignswitchpenalty=1	# Stage 6
-nrand=12		# Stage 7
-Pscale=1		# Stage 9
-Gscale=1		# Stage 10
-Lscale=1		# Stage 11
-Tnumins=10		# Stage 12
-Tnumdel=5		# Stage 12
-Mscale=1		# Stage 14
-prunewt=2		# Stage 15
+# Parameters.
+rmprefix="http://"      # Used by stage 1, to create file IDs.
+gapsymbol='_'		# Used by stage 4, via $aligneropt.
+nparts=4		# Used by stage 4.
+topN=4			# Used by stage 4.
+alignswitchpenalty=1	# Used by stage 5, via $alignertofstopt.
+delimsymbol='%'		# Used by stage 6.
+nrand=12		# Used by stage 7.
+phneps='<eps>'		# Used by stage 9.
+leteps='-'		# Used by stage 9.
+disambigdel='#2'	# Used by stage 9, 10 and 12.
+disambigins='#3'	# Used by stage 9, 10 and 12.
+Pscale=1		# Used by stage 9.
+Gscale=1		# Used by stage 10.
+Lscale=1		# Used by stage 11.
+Tnumins=10		# Used by stage 12.
+Tnumdel=5		# Used by stage 12.
+Mscale=1		# Used by stage 14.
+prunewt=2		# Used by stage 15.
 
-# algorithmic options
-carmelinitopt="--$Pstyle"
-#carmelinitopt="--$Pstyle --startwith=$EXPLOCAL/simple.trained"
-aligneropt="--dist $aligndist --empty $gapsymbol"
-alignertofstopt="--switchpenalty $alignswitchpenalty"
+# Command-line options.
+aligneropt="--dist $aligndist --empty $gapsymbol"			# Used by stage 4.
+alignertofstopt="--switchpenalty $alignswitchpenalty"			# Used by stage 5.
+carmelinitopt="--$Pstyle" # --startwith=$EXPLOCAL/simple.trained	# Used by stage 6.
 
-# flags: comment out to disable
-makeGTPLM=1
-#makeTPLM=1
-#decode_for_adapt=1
-#evaloracle=1
-debug=1
+# Flags.
+makeGTPLM=1		# Used by stage 14.
+#makeTPLM=1		# Used by stage 14.
+#decode_for_adapt=1	# Used by stage 14.  Omit stage 15.  Build PTs for training utterances in the test language, to adapt other ASR systems.
+#evaloracle=1		# Used by stage 15.
+debug=1			# Used by stage 15.
 
-##########################################################
-# the stage number for run.sh to start from
+# Which stages to run, inclusive.
 startstage=1
 endstage=15
-##########################################################
