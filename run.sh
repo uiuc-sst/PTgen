@@ -125,11 +125,10 @@ mkdir -p $EXPLOCAL
 cp "$1" $EXPLOCAL/settings
 
 if [[ -z $startstage ]]; then
-	startstage=1;
+	startstage=1
 fi
-
 if [[ -z $endstage ]]; then
-	endstage=1000; #large number
+	endstage=99999
 fi
 
 if [[ $startstage -le 8 && 8 -le $endstage ]]; then
@@ -263,15 +262,7 @@ fi
 ((stage++))
 if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]; then
 	>&2 echo "Creating carmel training data... "
-	# Why not move these 4 lines into prepare-phn2let-traindata.sh?
-	for L in ${TRAIN_LANG[@]}; do
-		if [[ ! -s $TRANSDIR/$L/ref_train ]]; then
-			>&2 echo "\$TRAIN_LANGS includes $L, but there's no file $TRANSDIR/$L/ref_train.  Aborting."; exit 1
-		fi
-		cat $TRANSDIR/$L/ref_train 
-	done > $reffile
-	prepare-phn2let-traindata.sh $1
-	# Why not prepare-phn2let-traindata.sh $1 > $carmeltraintxt ?
+	prepare-phn2let-traindata.sh $1 > $carmeltraintxt
 	echo "Stage 7 took" $SECONDS "seconds."; SECONDS=0
 else
 	usingfile "$carmeltraintxt" "training text for phone-2-letter model"
@@ -382,6 +373,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo "Creating T (deletion/insertion limiting FST)... "
 	create-delinsfst.pl $disambigdel $disambigins $Tnumdel $Tnumins < $phnalphabet \
 		| fstcompile --osymbols=$phnalphabet --isymbols=$phnalphabet - > $Tfst
+	>&2 echo "Done."
 	echo "Stage 12 took" $SECONDS "seconds."; SECONDS=0
 else
 	usingfile $Tfst "T (deletion/insertion limiting FST)"

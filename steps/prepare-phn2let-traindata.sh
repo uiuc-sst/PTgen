@@ -8,14 +8,23 @@ set -e
 if [[ ! -s $trainids ]]; then
   >&2 echo "prepare-phn2let-traindata.sh: missing or empty training file $trainids. Aborting."; exit 1
 fi
-if [[ ! -s $reffile ]]; then
-  >&2 echo "prepare-phn2let-traindata.sh: missing or empty reference file $reffile. Aborting."; exit 1
-fi
 
 showprogress init 30 "Preparing training data"
 
-# Without parallelizing, this stage takes 60 to 70% of run.sh's time.  (Carmel is most of the rest.)
-nLOTS=98 # Way more than $nparallel, but less than split's limit of 100.
+reffile=$EXPLOCAL/ref_train_text
+for L in ${TRAIN_LANG[@]}; do
+	if [[ ! -s $TRANSDIR/$L/ref_train ]]; then
+		>&2 echo "\$TRAIN_LANGS includes $L, but there's no file $TRANSDIR/$L/ref_train.  Aborting."; exit 1
+	fi
+	cat $TRANSDIR/$L/ref_train
+done > $reffile
+
+# Without parallelizing, this stage would take 60 to 70% of run.sh's time.  (Carmel is most of the rest.)
+
+# nLOTS is way more than $nparallel, but less than split's limit of 100 (or use split -a).
+# Better might be a precise value like $nparallel * $nrand,
+# or parallelizing the inner $nrand loop as well as the outer $nLOTS loop.
+nLOTS=98
 split --numeric-suffixes=1 -n r/$nLOTS $trainids $trainids.
 
 for ip in `seq -w 1 $nLOTS`; do
@@ -47,6 +56,6 @@ for ip in `seq -w 1 $nLOTS`; do
 done
 wait
 
-cat $carmeltraintxt.* > $carmeltraintxt
+cat $carmeltraintxt.*
 rm -f $trainids.* $carmeltraintxt.*
 showprogress end

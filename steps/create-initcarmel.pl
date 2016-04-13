@@ -62,7 +62,6 @@ if ($startfile ne "") {
 	close(STRT);
 }
 
-
 if ($mode eq "simple") {
 	&simple(\%phone_vocab,\%let_vocab,\@phns,\@lets,$delim,\%startvals);
 }
@@ -72,8 +71,11 @@ elsif ($mode eq "letctxt") {
 elsif ($mode eq "phnletctxt") {
 	&phnletctxt(\%phone_vocab,\%let_vocab,\@phns,\@lets,$delim,\%startvals);
 }
+elsif ($mode eq "") {
+	die "Undefined Pstyle mode.  Expected one of simple, letctxt, phnletctxt."
+}
 else {
-	die "Unknown mode $mode"
+	die "Unrecognized Pstyle mode $mode.  Expected one of simple, letctxt, phnletctxt."
 }
 
 exit(0);

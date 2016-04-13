@@ -21,16 +21,17 @@ This is usually `/usr/local/include`.  If that fails, `rm config.mk; make`, and 
 
 # How to create and evaluate PT's
 
-Edit the settings file, e.g. `settings_sample`.
-- Ensure that the required files within `$DATA` exist.
+Edit the settings file, e.g. `test/ws15/settings_full`.
+- Ensure that the required files within that file's `$DATA` exist,
+or can be downloaded from that file's `$DATA_URL`.
 
-`run.sh settings_sample`
+`run.sh settings_full`
 
 If `run.sh` can't find the executable programs of OpenFST, Carmel, or Kaldi, it prompts you for their locations,
 and caches your answers in a new file `config.sh`, for future runs.
 
-If you encounter errors and fix them, save time by starting `run.sh` partway through:
-change `startstage` to one past the last successfully completed stage.
+If you encounter errors and fix them, you can save time by starting `run.sh` partway through:
+in your settings file, set `startstage` to one past the last successfully completed stage.
 
 # How to run prebuilt tests
 
@@ -42,4 +43,4 @@ The settings file in each of these tests includes
 a `$DATA_URL` for downloading the test's data,
 which is too unwieldy to store on github.
 
-If `../../run.sh` prompts you again for the locations of exes, you can just abort it with `ctrl+C`, then retrieve those settings with `cp ../../config.sh .`, then retry.
+If `../../run.sh` prompts you again for the locations of exes, you can just abort it with `ctrl+C`, retrieve those settings with `cp ../../config.sh .`, and retry.
