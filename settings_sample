@@ -67,7 +67,6 @@ gapsymbol='_'
 Nturkers=10
 nparts=4
 topN=4
-nparallel=8
 alignswitchpenalty=1	# Stage 6
 nrand=12		# Stage 7
 Pscale=1		# Stage 9

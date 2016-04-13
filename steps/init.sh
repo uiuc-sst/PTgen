@@ -8,6 +8,8 @@ set -e
 
 scriptname=`basename "$0"`
 
+nparallel=`nproc | sed "s/$/-1/" | bc`	# One fewer than the number of CPU cores.
+
 if [[ $# -ne 1 ]]; then
 	echo "Usage: $scriptname settings_file."; exit 1
 fi
