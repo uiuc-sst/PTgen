@@ -31,12 +31,12 @@ editfst=$tmpdir/edit.fst
 create-editfst.pl < $phnalphabet | fstcompile - > $editfst 
 
 showprogress init 15 "Evaluating PTs"
-oracleerror=0
 for ip in `seq -f %02g $nparallel`; do
 	(
 	if [[ ! -s $splittestids.$ip ]]; then
 		>&2 echo "evaluate_PTs.sh: missing or empty file $splittestids.$ip."
 	fi
+	oracleerror=0
 	for uttid in `cat $splittestids.$ip`; do
 		showprogress go
 		latfile=$decodelatdir/$uttid.GTPLM.fst
@@ -55,12 +55,13 @@ for ip in `seq -f %02g $nparallel`; do
 			wer=`fstcompose $editfst $reffst | fstcompose $prunefst - \
 				| fstshortestdistance --reverse | head -1 | cut -f2`
 			oracleerror=`echo "$oracleerror + $wer" | bc`
+			>&2 echo -e "Oracle WER (Job $ip): WER for $uttid = $wer; Cumulative WER = $oracleerror"
 		fi
-
 		# Print the best hypothesis.
 		echo -e -n "$uttid\t"
 		fstshortestpath $latfile | fstprint --osymbols=$phnalphabet | reverse_fst_path.pl
 	done > $tmpdir/hyp.$ip.txt
+	[[ -n $evaloracle ]] && echo "$oracleerror" > $tmpdir/oracleerror.$ip.txt
 	) &
 done
 wait
@@ -81,11 +82,14 @@ fi
 compute-wer --text --mode=present ark:$evalreffile ark:$tmpdir/hyp.txt
 
 if [[ -n $evaloracle ]]; then
+	oracleerror=`cat $tmpdir/oracleerror.*.txt | awk 'BEGIN {sum=0} {sum=sum+$1} END{print sum}'`
 	lines=`wc -l $evalreffile | cut -d' ' -f1`
 	words=`wc -w $evalreffile | cut -d' ' -f1`
 	per=`echo "scale=5; $oracleerror / ($words - $lines)" | bc -l`
-	echo "Oracle Error-rate (prune-wt: $prunewt): $oracleerror Relative: $per"
+	echo "lines = $lines, words = $words"
+	echo "Oracle error rate (prune-wt: $prunewt): $oracleerror Relative: $per"
 fi
+
 if [[ -z $debug ]]; then
 	rm -rf $tmpdir
 fi
