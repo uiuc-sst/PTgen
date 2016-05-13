@@ -15,10 +15,9 @@ if [[ $# -ne 1 ]]; then
 	echo "Usage: $scriptname settings_file."; exit 1
 fi
 [ ! -f $1 ] && echo "$scriptname: no settings file \"$1\". Aborting." && exit 1
+. $1
 
 export EXPLOCAL=$EXP/$LANG_NAME
-
-. $1
 
 # Data splits.
 trainids=$EXPLOCAL/lists/train			# Made by stage 3, read by 11.
