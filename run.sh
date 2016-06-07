@@ -281,11 +281,27 @@ if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]
 	carmel -\? --train-cascade -t -f 1 -M 20 -HJ $carmeltraintxt $initcarmel 2>&1 \
 		| tee $tmpdir/carmelout | awk '/^i=|^Computed/ {printf "."; fflush (stdout)}' >&2
 	>&2 echo " Done."
+
+	# Todo: sanity check for carmel's training.
+	#
+	# Read $initcarmel.trained.
+	# Split each line at whitespace into tokens.
+	# Parse the last token into a float.
+	# Sort the floats.
+	# Discard the first 10% and last 10%.
+	# Compute the standard deviation.
+	# If that's less than some threshold, warn that carmel's training was insufficient.
+	#
+	# Or, more elaborately:
+	# Collect each line's third token, the entropy per symbol.
+	# If that's close to log(number of maps, e.g. 56),
+	# then that symbol's probabilities are too uniform,
+	# i.e., that symbol was insufficiently trained.
+
 	echo "Stage 8 took" $SECONDS "seconds."; SECONDS=0
 else
 	usingfile "$initcarmel.trained" "trained phone-2-letter model"
 fi
-
 
 ## STAGE 9 ##
 # Convert P to an OpenFst-style FST.
