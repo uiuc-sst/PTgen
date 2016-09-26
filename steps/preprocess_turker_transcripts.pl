@@ -142,24 +142,32 @@ while (my $fields = $csv->getline (STDIN)) {
 		$mturkstring = $fields->[$csvmturktxtindices[$i]];
 		# Remove leading and trailing whitespace.
 		$mturkstring =~ s/^\s+//g; $mturkstring =~ s/\s+$//g;
-		# remove initial "Text goes here" or "Text goes her" from worker ABS2EYLS7OW2J
+
+		# Remove initial "Text goes here" or "Text goes her" from worker ABS2EYLS7OW2J,
+		# punctuation, naming voices, angle brackets, consecutive spaces.
 		$mturkstring =~ s/^Text goes here//g;
 		$mturkstring =~ s/^Text goes her//g;
-		$mturkstring =~ s/[\?\!\,\:\;\.\-]/ /g; # remove question marks, exclamation, etc
-		$mturkstring =~ s/voice [0-9]//g; #naming voices 
-		$mturkstring =~ s/[\"\<\>\*]//g; #remove quotes, angular brackets
-		$mturkstring =~ s/\s+/ /g; #replacing multiple spaces with a single space
+		$mturkstring =~ s/[\?\!\,\:\;\.\-\"\<\>\*]/ /g;
+		$mturkstring =~ s/voice [0-9]//g;
+		$mturkstring =~ s/\s+/ /g;
+
+		# Skip this clip if its text is one of the omitstrings.
 		$omit = 0;
-		# Move to the next clip if text is one of the omitstrings
 		foreach $ostr (@omitstrings) {
 			$lostr = lc($ostr);
 			$omit = 1 if($mturkstring =~ /^\s*$lostr\s*$/);
 		}
 		next if($omit == 1);
-		$mturkstring =~ s/[\[\]]//g if($mturkstring =~ /^\s*(\[.*\])*\s*$/ && $mturkstring =~ /\s/); #removing [,], if mturkstring is a multi-word string
-		$mturkstring =~ s/\[.*\]//g;  # Remove anything else within [], e.g. [uh],[um] disfluencies
+
+		# Remove [,], if there's more than one word.
+		$mturkstring =~ s/[\[\]]//g if($mturkstring =~ /^\s*(\[.*\])*\s*$/ && $mturkstring =~ /\s/);
+
+		# Remove anything else within brackets, e.g., [uh],[um] disfluencies.
+		$mturkstring =~ s/\[.*\]//g;
 		$mturkstring =~ s/\{.*\}//g;
 		$mturkstring =~ s/\(.*\)//g;
+
+		# Remove leading and trailing whitespace, again.
 		$mturkstring =~ s/^\s+//g; $mturkstring =~ s/\s+$//g;
 		$mturkstring = lc($mturkstring);
 
@@ -196,7 +204,7 @@ while (my $fields = $csv->getline (STDIN)) {
 					$string .= $words[$w];
 				}
 			}
-			# Remove leading and trailing whitespace, and multiple spaces.
+			# Remove leading and trailing whitespace, and consecutive spaces.
 			$string =~ s/\s+$//g; $string =~ s/^\s+//g;
 			$string =~ s/\s+/ /g;
 			$turker_transcripts{$filename}.="#$string" if($string ne "");
