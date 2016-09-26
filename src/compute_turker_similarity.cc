@@ -82,23 +82,31 @@ int main(int argc, char** argv) {
 		vector<string> entries = split(line, ':');
 		cout << trim(entries[0]); // uttid
 		const vector<string> transcripts = split(entries[1], '#');
-		assert(transcripts.size() <= MAXTURKERS);
-		assert(transcripts.size() > 1);
-			// Otherwise scores = (0.0, 0), and then
-			// assert(bestscore < 0.0) fails.
-			// More precisely, comparing transcripts requires at least two transcripts.
-		scores.resize(transcripts.size());
-		for (auto i = 0u; i < transcripts.size(); ++i) {
+		const auto numTranscripts = transcripts.size();
+		if (numTranscripts <= 1) {
+		  cerr << "\ncompute_turker_similarity: comparing transcripts requires at least two #-delimited transcripts in the substring\n'"
+		       << entries[1] << "' of the line\n'"
+		       << line << "'.  Aborting.\n";
+		  return 1;
+		  // If we continued, scores[] would be [(0.0, 0)],
+		  // and then assert(bestscore < 0.0) would fail.
+		}
+		if (numTranscripts > MAXTURKERS) {
+		  cerr << "\ncompute_turker_similarity: too many #-delimited transcripts in the line\n'"
+		       << line << "'.  Please recompile with MAXTURKERS >= " << numTranscripts << ".  Aborting.\n";
+		}
+		scores.resize(numTranscripts);
+		for (auto i = 0u; i < numTranscripts; ++i) {
 			// Store a large score in the entry corresponding to Turker i
-			for (auto k = i+1; k < transcripts.size(); ++k) {
+			for (auto k = i+1; k < numTranscripts; ++k) {
 				turk_matrix[k][i] =
 				turk_matrix[i][k] =
 					editdistance(transcripts[i], transcripts[k]);
 			}
 		}
-		for (auto i = 0u; i < transcripts.size(); ++i) {
+		for (auto i = 0u; i < numTranscripts; ++i) {
 			scores[i] = {0.0, i};
-			for (auto j = 0u; j < transcripts.size(); ++j) {
+			for (auto j = 0u; j < numTranscripts; ++j) {
 				if (i != j)
 					scores[i].first += turk_matrix[i][j];
 			}
