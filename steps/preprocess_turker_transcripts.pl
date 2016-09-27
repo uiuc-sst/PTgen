@@ -138,6 +138,9 @@ while (my $fields = $csv->getline (STDIN)) {
 			 $filename = "part-1-".$filename; #add part-1-
 		}
 		$filename =~ s:\/:-:g;
+		# Remove quasi-URL, to remove the : in http: that makes compute_turker_similarity.cc misparse the line.
+		# (Stronger would be to remove all colons before "wav".)
+		$filename =~ s/http...www.isle.illinois.edu//g;
 
 		$mturkstring = $fields->[$csvmturktxtindices[$i]];
 		# Remove leading and trailing whitespace.
