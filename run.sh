@@ -187,14 +187,25 @@ fi
 # Reads each $LISTDIR/language_name/{train, dev, test}.
 # Creates the files $trainids, $testids, $adaptids.
 # Splits those files into parts {$splittrainids, $splittestids, $splitadaptids}.xxx, where xxx is numbers.
+#
+# The files language_name/{train, dev, test} contain lines such as "arabic_140925_362941-6".
+# Each line may point to:
+# - a textfile containing a known-good transcription, data/nativetranscripts/arabic/arabic_140925_362941-6.txt
+# - many lines in data/batchfiles/AR/batchfile that contain http://.../arabic_140925_362941-6.mp3
+#   and one crowdsourced transcription thereof
+# - a line in data/nativetranscripts/AR/ref_train: arabic_140925_362941-6 followed by a string of phonemes
+# - a line in data/lists/arabic/arabic.txt: arabic_140925_362941-6 followed by either "discard" or "retain"
+#
+# To split data into train/dev/eval, there is no strategy common to all languages
+# (some languages are pre-split, for instance).  For the languages used in the WS15
+# workshop, these arabic_... identifiers were extracted from the .mp3 filenames in
+# data/batchfiles/*/batchfile, shuffled, and split 2/3, 1/6, 1/6 for train/dev/eval.
+
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	case $TESTTYPE in
-	dev | eval)
-	  ;;
-	*)
-	  >&2 echo "\$TESTTYPE $TESTTYPE must be either 'dev' or 'eval'.  Check $1."; exit 1
-	  ;;
+	dev | eval)  ;;
+	*)           >&2 echo "\$TESTTYPE $TESTTYPE must be either 'dev' or 'eval'.  Check $1."; exit 1 ;;
 	esac
 	>&2 echo -n "Splitting training/test data into parallel jobs... "
 	datatype='train'   create-datasplits.sh $1
@@ -256,9 +267,12 @@ fi
 ## STAGE 7 ##
 # Create training data to learn the phone-2-letter mappings defined in P.
 #
-# Reads files $TRANSDIR/$TRAIN_LANG[*]/ref_train
+# Reads files $TRANSDIR/$TRAIN_LANG[*]/ref_train.
 # Creates temporary file $reffile.
 # Creates file $carmeltraintxt.
+#
+# In each ref_train file, each line is an identifier followed by a sequence of phonemes,
+# given by passing the native transcription through a G2P converter or a dictionary.
 ((stage++))
 if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]; then
 	>&2 echo "Creating carmel training data... "

@@ -19,18 +19,12 @@ dev | eval)
 esac
 
 case $datatype in
-train)
-	LANG=( "${TRAIN_LANG[@]}" ); dtype="train"; ids_file=$trainids; splitids_file=$splittrainids ;;
-adapt)
-	LANG=( "${DEV_LANG[@]}"   ); dtype="train"; ids_file=$adaptids; splitids_file=$splitadaptids ;;
-dev)
-	LANG=( "${DEV_LANG[@]}"   ); dtype="dev";   ids_file=$testids;  splitids_file=$splittestids  ;;
-eval)
-	LANG=( "${EVAL_LANG[@]}"  ); dtype="test";  ids_file=$testids;  splitids_file=$splittestids  ;;
-*)
-	>&2 echo -e "\ncreate-datasplits.sh: Data split type $datatype should be [train|dev|adapt|eval].  Aborting."; exit 1
+train) LANG=( "${TRAIN_LANG[@]}" ); dtype="train"; ids_file=$trainids; splitids_file=$splittrainids ;;
+adapt) LANG=( "${DEV_LANG[@]}"   ); dtype="train"; ids_file=$adaptids; splitids_file=$splitadaptids ;;
+dev)   LANG=( "${DEV_LANG[@]}"   ); dtype="dev";   ids_file=$testids;  splitids_file=$splittestids  ;;
+eval)  LANG=( "${EVAL_LANG[@]}"  ); dtype="test";  ids_file=$testids;  splitids_file=$splittestids  ;;
+*)     >&2 echo -e "\ncreate-datasplits.sh: Data split type $datatype should be [train|dev|adapt|eval].  Aborting."; exit 1 ;;
 esac
-
 case $datatype in
 train)
   if [ -z ${TRAIN_LANG+x} ]; then
