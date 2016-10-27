@@ -1,8 +1,68 @@
 #!/usr/bin/perl
 
-# Preprocess English text obtained from crowd workers.
+# Preprocess crowd workers' (English) transcriptions.
+# On STDIN, expects something like the contents of data/batchfiles/DT/batchfile,
+# in CSV format with 55 fields (the used fields are starred):
+#  0 HITId
+#  1 HITTypeId
+#  2 Title
+#  3 Description
+#  4 Keywords
+#  5 Reward
+#  6 CreationTime
+#  7 MaxAssignments
+#  8 RequesterAnnotation
+#  9 AssignmentDurationInSeconds
+# 10 AutoApprovalDelayInSeconds
+# 11 Expiration
+# 12 NumberOfSimilarHITs
+# 13 LifetimeInSeconds
+# 14 AssignmentId
+# 15 WorkerId
+# 16 AssignmentStatus
+# 17 AcceptTime
+# 18 SubmitTime
+# 19 AutoApprovalTime
+# 20 ApprovalTime
+# 21 RejectionTime
+# 22 RequesterFeedback
+# 23 WorkTimeInSeconds
+# 24 LifetimeApprovalRate
+# 25 Last30DaysApprovalRate
+# 26 Last7DaysApprovalRate
+# 27 Input.audio1		*
+# 28 Input.oggaudio1
+# 29 Input.audio2		*
+# 30 Input.oggaudio2
+# 31 Input.audio3		*
+# 32 Input.oggaudio3
+# 33 Input.audio4		*
+# 34 Input.oggaudio4
+# 35 Input.audio5		*
+# 36 Input.oggaudio5
+# 37 Input.audio6		*
+# 38 Input.oggaudio6
+# 39 Input.audio7		*
+# 40 Input.oggaudio7
+# 41 Input.audio8		*
+# 42 Input.oggaudio8
+# 43 Answer.example
+# 44 Answer.languages
+# 45 Answer.text1		*
+# 46 Answer.text2		*
+# 47 Answer.text3		*
+# 48 Answer.text4		*
+# 49 Answer.text5		*
+# 50 Answer.text6		*
+# 51 Answer.text7		*
+# 52 Answer.text8		*
+# 53 Approve
+# 54 Reject
+#
 # Valid English words are looked for in an English dictionary 
 # (CMUDict) and replaced with their pronunciations, if found.
+#
+# The outputs of all runs of this script are concatenated into $transcripts, e.g. /tmp/Exp/uzbek/transcripts.txt.
 
 # If the next line fails, type "/usr/bin/perl -MCPAN -e'install Text::CSV_XS'",
 # use the option "[local::lib]" if you're not root,
@@ -130,12 +190,24 @@ while (my $fields = $csv->getline (STDIN)) {
 	for($i = 0; $i <= $#csvmturktxtindices; $i++) {
 		$string = "";
 		$filename = $fields->[$csvmturkmp3indices[$i]];
-		$filename =~ s:^\Q$rmprefix\E::;
-		$filename =~ s:.*\/(part-.*\/[^\/]*)\.mp3:\1:g;
+		if ($filename =~ /splitUZB/) {
+		  # Convert "http://www.isle.illinois.edu/uzbek/splitUZB/Uzbpart-21/UZB_344_004.wav"
+		  # into    "part-21/uzbek-344-004".
+		  $filename =~ s/http...www.isle.illinois.edu.uzbek.splitUZB.Uzb//g;
+		  $filename =~ s/\.wav$//g;
+		  $filename =~ s/UZB/uzbek/g;
+		} else {
+		  # Convert "http://www.ifp.illinois.edu/~pjyothi/mfiles/ws15/dutch/part-3/dutch_140910_359833-12.mp3"
+		  # into    "part-3/dutch_140910_359833-12"
+		  # by keeping only what starts with part-x slash something, and omitting the .mp3.
+		  $filename =~ s:^\Q$rmprefix\E::;
+		  $filename =~ s:.*\/(part-.*\/[^\/]*)\.mp3:\1:g;
+		}
 		last if($filename =~ /^\s*$/);
+		# If there's no "part-x", prepend "part-1-" and truncate ".mp3".
 		if($filename !~ /^part-.*\/[^\/]*/) {
 			$filename =~ s/\.mp3//g;
-			 $filename = "part-1-".$filename; #add part-1-
+			$filename = "part-1-".$filename;
 		}
 		$filename =~ s:\/:-:g;
 		# Remove quasi-URL, to remove the : in http: that makes compute_turker_similarity.cc misparse the line.
