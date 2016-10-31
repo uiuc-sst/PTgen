@@ -124,12 +124,8 @@ mktmpdir
 mkdir -p $EXPLOCAL
 cp "$1" $EXPLOCAL/settings
 
-if [[ -z $startstage ]]; then
-	startstage=1
-fi
-if [[ -z $endstage ]]; then
-	endstage=99999
-fi
+if [[ -z $startstage ]]; then startstage=1;   fi
+if [[ -z $endstage ]];   then endstage=99999; fi
 
 if [[ $startstage -le 8 && 8 -le $endstage ]]; then
   hash carmel 2>/dev/null || { echo >&2 "Missing program 'carmel'.  Stage 8 would abort."; exit 1; }
@@ -142,8 +138,8 @@ fi
 # Preprocess transcripts from crowd workers.
 #
 # Reads the files $engdict and $TURKERTEXT/*/batchfile, where * covers $ALL_LANGS.
-# May use the variable $rmprefix. 
-# Creates the file $transcripts.
+# Uses the variable $rmprefix, if defined.
+# Creates the file $transcripts, e.g. tmp/Exp/uzbek/transcripts.txt.
 SECONDS=0
 stage=1
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
@@ -272,7 +268,7 @@ fi
 # Creates file $carmeltraintxt.
 #
 # In each ref_train file, each line is an identifier followed by a sequence of phonemes,
-# given by passing the native transcription through a G2P converter or a dictionary.
+# given by passing the transcription through a G2P converter or a dictionary.
 ((stage++))
 if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]; then
 	>&2 echo "Creating carmel training data... "
