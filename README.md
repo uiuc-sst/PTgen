@@ -9,7 +9,7 @@ this [AAAI paper](http://www.ifp.illinois.edu/~pjyothi/files/AAAI2015.pdf),
 and without jargon in this [Technograph article](Technograph.md).
 <!-- (http://dailyillini.com/special-sections/2016/04/10/researchers-developing-an-automatic-speech-recognition-software-for-under-resourced-languages/) -->
 
-The theory is described in sections II.C and III.B of this [IEEE TASLP paper](http://ieeexplore.ieee.org/document/7707303/).
+The theory is described in sections II.C, III.B, and V of this [IEEE TASLP paper](http://ieeexplore.ieee.org/document/7707303/).
 
 A stage-by-stage description is found in this [Interspeech paper](http://www.isle.illinois.edu/sst/pubs/2015/jyothi15interspeech_mismatch.pdf).
 
