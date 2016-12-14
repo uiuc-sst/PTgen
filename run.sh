@@ -139,7 +139,8 @@ fi
 #
 # Reads the files $engdict and $TURKERTEXT/*/batchfile, where * covers $ALL_LANGS.
 # Uses the variable $rmprefix, if defined.
-# Creates the file $transcripts, e.g. tmp/Exp/uzbek/transcripts.txt.
+# Creates the file $transcripts, e.g. tmp/Exp/uzbek/transcripts.txt
+# (Interspeech paper, figure 1, y^(i)).
 SECONDS=0
 stage=1
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
@@ -160,6 +161,9 @@ fi
 
 ## STAGE 2 ##
 # Filter data.
+#
+# For each utterance, rank each transcript by its similarity to the
+# other transcripts (Interspeech paper, section 3).
 #
 # Modifies the file $transcripts.
 # Creates the file $simfile.
@@ -195,7 +199,8 @@ fi
 # To split data into train/dev/eval, there is no strategy common to all languages
 # (some languages are pre-split, for instance).  For the languages used in the WS15
 # workshop, these arabic_... identifiers were extracted from the .mp3 filenames in
-# data/batchfiles/*/batchfile, shuffled, and split 2/3, 1/6, 1/6 for train/dev/eval.
+# data/batchfiles/*/batchfile, shuffled, and split 2/3, 1/6, 1/6 for train/dev/eval
+# (40/10/10 minutes, in the TASLP paper).
 
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
@@ -214,11 +219,12 @@ else
 fi
 
 ## STAGE 4 ##
-# Merge text from crowd workers.
+# For each utterance ($uttid), merge all of its transcriptions.
 #
 # Creates file $aligndist.
 # Creates directory $mergedir and files therein:
-# language_xxx.txt, part-x-language_xxx.txt.
+# language_xxx.txt, part-x-language_xxx.txt, $uttid.txt.
+# (Interspeech paper, section 2.1).
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	mergetxt.sh $1
@@ -228,13 +234,16 @@ else
 fi
 
 ## STAGE 5 ##
-# Convert merged text into merged FST sausages.
+# Convert each merged transcript into a sausage, "a confusion network rho(lambda|T)
+# over representative transcripts in the annotation-language orthography,"
+# "an orthographic confusion network."
 #
 # Uses variable $alignertofstopt.
-# Reads the files in the directory $mergedir.
-# Reads the files {$splittrainids, $splittestids, $splitadaptids}.xxx.
-# Creates the files $mergefstdir/*.M.fst.txt.
-# Creates the files $mergefstdir/*.M.fst.
+# Reads files $mergedir/*.
+# Reads files {$splittrainids, $splittestids, $splitadaptids}.xxx.
+# Creates directory $mergefstdir and, therein, for each uttid,
+# a transcript FST *.M.fst over the English letters $engalphabet
+# (IEEE TASLP paper, fig. 4, left side).
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	mergefst.sh $1
@@ -244,7 +253,9 @@ else
 fi
 
 ## STAGE 6 ##
-# Initialize the phone-2-letter model, P.
+# Initialize the phone-2-letter model, P,
+# the "misperception G2P rho(lambda|phi)" of the TASLP paper, section III.B,
+# the "mismatched channel" of the Interspeech paper, paragraph below table 1.
 #
 # Uses variables $carmelinitopt and $delimsymbol.
 # Reads files $phnalphabet and $engalphabet.
@@ -343,9 +354,14 @@ fi
 # Prepare the language model FST, G.
 #
 # Reads files $phnalphabet and $phonelm.
-# Uses variables $disambigdel $disambigins
+# $phonelm is a bigram phone language model, typically built by sending
+# Wikipedia text through a zero-resource knowledge-based G2P (TASLP paper,
+# fig. 5 and section IV.C;  http://isle.illinois.edu/sst/data/g2ps/ ).
+#
+# Uses variables $disambigdel and $disambigins.
 # May use variable $Gscale, to scale G's weights.
-# Creates file $Gfst.
+# Creates the modeled phone bigram probability pi(phi^l | theta)
+# $Gfst, over the symbols $phnalphabet (TASLP paper, section IV.C).
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	if [[ -z $Gscale ]]; then
@@ -410,6 +426,7 @@ fi
 #
 # Reads files $Lfst $Tfst $Gfst.
 # Creates files $TPLfst and $GTPLfst.
+# 
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo -n "Creating TPL and GTPL FSTs... "
@@ -454,6 +471,10 @@ fi
 
 ## STAGE 15 ##
 # Evaluate the GTPLM lattices, stand-alone.
+#
+# Composing a transcript FST with $Gfst (i.e., the GTPLM's) requires the
+# non-event symbol "#2" in $phnalphabet (data/phonesets/univ.compact.txt) for
+# self-loops added to $Gfst (TASLP paper, fig. 6; section IV.C, last paragraph).
 #
 # Reads files $splittestids.xxx $evalreffile $phnalphabet $decodelatdir/*.GTPLM.fst $testids.
 # Uses variables $evaloracle $prunewt.
