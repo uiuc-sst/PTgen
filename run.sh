@@ -253,9 +253,27 @@ else
 fi
 
 ## STAGE 6 ##
-# Initialize the phone-2-letter model, P,
-# the "misperception G2P rho(lambda|phi)" of the TASLP paper, section III.B,
-# the "mismatched channel" of the Interspeech paper, paragraph below table 1.
+# Initialize the phone-2-letter model, P, aka:
+# - the "mismatched channel" of the Interspeech paper, paragraph below table 1.
+#
+# - the "misperception G2P rho(lambda|phi)" of the TASLP paper, section III.B.
+#
+# - A model of the probability that an American listener writes a given letter,
+# upon hearing a given foreign phoneme.  It assumes that what matters is
+# only the American ear, not the utterance's language.  Thus we can learn
+# p(letter|phoneme) by using phones from many languages, which cover all
+# of the phones in the utterance's language.  Then we compute
+#     Phone sequence = arg max  prod_n  p(letter_n | phone_n)
+# where p(letter_n | phone_n) is the size-1 version of the mismatch channel.
+# Given that phone sequence, we compute
+#     Word sequence  = arg max  prod_n  p(phone_n | word that spans phones including phone n)
+# where p(phone_n | word that spans phones) = 1 (0) if phone_n is (isn't) part of the word.
+# So this model is just a dictionary specifying which phone sequence
+# should be considered to correspond to each possible word.  We get this
+# dictionary in two steps: (1) assume that the words specified by a machine
+# translation engine are the *only* possible words; (2) for each such word,
+# convert the sequence of graphemes into a sequence of phones using e.g.
+# http://isle.illinois.edu/sst/data/g2ps/Uyghur/Uyghur_Arabic_orthography_dict.html .
 #
 # Uses variables $carmelinitopt and $delimsymbol.
 # Reads files $phnalphabet and $engalphabet.
