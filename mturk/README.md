@@ -9,9 +9,9 @@ Edit the copy as needed.
 - Concatenate them, monophonic and with a consistent sampling rate.
 For example:
 
-    sox in/*.wav -c 1 -r 22050 /tmp/a.wav avg
+    `sox in/*.wav -c 1 -r 22050 /tmp/a.wav avg`
 
-    for f in in/*.flac; do sox "$f" in/"$( basename ${f%.flac}.wav )"; done; sox in/*.wav ...
+    `for f in in/*.flac; do sox "$f" in/"$( basename ${f%.flac}.wav )"; done; sox in/*.wav ...`
     (There seems to be a bug in sox when directly concatenating .flac files,
     so instead first convert those to .wav before concatenating them.)
 
@@ -22,13 +22,13 @@ The script ./split.rb does this.  It takes about 1 minute per hour of input.
 It reads /tmp/a.wav and writes /tmp/turkAudio.tar.
 
 On ifp-serv-03:
-- cd /workspace/speech_web/mc/
-- mkdir myTest; cd myTest
+- `cd /workspace/speech_web/mc/`
+- `mkdir myTest; cd myTest`
 - Into this directory, copy the file turkAudio.tar that was made by split.rb.
-- tar xf turkAudio.tar
+- `tar xf turkAudio.tar`
 
 - Create a file foo.csv.
-./make-csv.rb 46749 > foo.csv
+`./make-csv.rb 46749 > foo.csv`
 (The number 46749 is 1 more than the biggest filename, e.g., 46748.mp3.)
 
 - Submit foo.csv to Mechanical Turk's "Publish Batch."
@@ -42,5 +42,5 @@ the account a little at a time.
   collect them and run PTgen on the results so far.
 
 Click on Mechanical Turk's "Manage results," "download csv."
-- mv Batch*.csv PTgen/test/myTest/batchfiles-raw
-- cat PTgen/test/myTest/batchfiles-raw/Batch*.csv PTgen/test/myTest/data/batchfiles/languageCode/batchfile/
+- `mv Batch*.csv PTgen/test/myTest/batchfiles-raw`
+- `cat PTgen/test/myTest/batchfiles-raw/Batch*.csv PTgen/test/myTest/data/batchfiles/languageCode/batchfile/`
