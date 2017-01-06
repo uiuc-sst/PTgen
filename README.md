@@ -54,4 +54,4 @@ If `../../run.sh` prompts you again for the locations of exes, you can just abor
 
 # How to ask crowdsourced people to transcribe speech
 
-See the subdirectory `mturk`.
+See the subdirectory [mturk](./mturk).
