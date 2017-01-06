@@ -19,23 +19,23 @@ Examples:
 
 ## Remove silent intervals, and split the concatenation into monophonic clips of 1.25 seconds, in .mp3 and .ogg format.
 
-- `./split.rb`
+- [`./split.rb`](./split.rb)
 
 This script takes about 1 minute per hour of input.
-It reads /tmp/a.wav and writes /tmp/turkAudio.tar.
+It reads `/tmp/a.wav` and writes `/tmp/turkAudio.tar`.
 
 ## On ifp-serv-03:
 - `cd /workspace/speech_web/mc/`
 - `mkdir myTest; cd myTest`
-- Into this directory, copy the file turkAudio.tar that was made by split.rb.
+- Into here, copy `turkAudio.tar` that was made by `split.rb`.
 - `tar xf turkAudio.tar`
 
-## Create a file foo.csv.
-`./make-csv.rb 5001 > foo.csv`
+## Create a "Batch file."
+[`./make-csv.rb 5001 > foo.csv`](./make-csv.rb)
 
 (The number 5001 is 1 more than the biggest filename, e.g., 05000.mp3.)
 
-## Submit foo.csv to Mechanical Turk's "Publish Batch."
+## Submit the batch file to Mechanical Turk's "Publish Batch."
 If needed, first split foo.csv into quarters (each starting with the
 original's first line), and submit it only one quarter at a time.
 That yields intermediate results more quickly, because one quarter of
@@ -47,4 +47,4 @@ collect them and run PTgen on the results so far.
 
 Click on Mechanical Turk's "Manage results," "download csv."
 - `mv Batch*.csv PTgen/test/myTest/batchfiles-raw`
-- `cat PTgen/test/myTest/batchfiles-raw/Batch*.csv PTgen/test/myTest/data/batchfiles/languageCode/batchfile/`
+- `cat PTgen/test/myTest/batchfiles-raw/Batch*.csv PTgen/test/myTest/data/batchfiles/myLanguageCode/batchfile/`
