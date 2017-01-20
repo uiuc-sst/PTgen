@@ -46,7 +46,7 @@ for L in ${LANG[@]}; do
 		>&2 echo -e "\ncreate-datasplits.sh: no language $L in $langmap.  Aborting."; exit 1
 	fi
 	if [ ! -s "$LISTDIR/$full_lang_name/$dtype" ]; then
-		>&2 echo -e "\ncreate-datasplits.sh: no file $LISTDIR/$full_lang_name/$dtype.  Aborting."; exit 1
+		>&2 echo -e "\ncreate-datasplits.sh: missing or empty file $LISTDIR/$full_lang_name/$dtype.  Aborting."; exit 1
 	fi
 	sed -e 's:.wav::' -e 's:.mp3::' $LISTDIR/$full_lang_name/$dtype
 done > $ids_file
