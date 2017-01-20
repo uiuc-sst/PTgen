@@ -47,6 +47,9 @@ for ip in `seq -w 1 $nLOTS`; do
     for rn in `seq 1 $nrand`; do
       echo $refstring
       fstrandgen --npath=1 --select=log_prob $mergefstdir/$uttid.M.fst |
+      #   --max_length: type = int32, default = 2147483647
+      #    Number of paths to generate
+
 	fstprint --osymbols=$engalphabet |
 	reverse_randgenfstpaths.pl $uttid |
 	cut -d' ' -f2- |
