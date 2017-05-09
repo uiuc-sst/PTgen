@@ -18,7 +18,7 @@ A stage-by-stage description is found in this [Interspeech paper](http://www.isl
 Install [OpenFST](http://www.openfst.org/), [Carmel](http://www.isi.edu/licensed-sw/carmel), and at least the `compute-wer` executable of [Kaldi](https://github.com/kaldi-asr/kaldi).
 
 ```
-git clone https://github.com/ws15code/PTgen
+git clone https://github.com/uiuc-sst/PTgen
 cd src
 make
 ```
