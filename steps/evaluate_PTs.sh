@@ -27,8 +27,9 @@ hash compute-wer 2>/dev/null || { echo "evaluate_PTs.sh: missing program compute
 
 mktmpdir
 
+# Make an edit distance FST with sub/ins/del costs for each phone.
 editfst=$tmpdir/edit.fst
-create-editfst.pl < $phnalphabet | fstcompile - > $editfst 
+create-editfst.pl < $phnalphabet | fstcompile > $editfst 
 
 showprogress init 15 "Evaluating PTs"
 for ip in `seq -f %02g $nparallel`; do
@@ -44,14 +45,16 @@ for ip in `seq -f %02g $nparallel`; do
 			>&2 echo -e "\nevaluate_PTs.sh: no decoded lattice file '$latfile'. Aborting."; exit 1
 		fi
 		if [[ -n $evaloracle ]]; then
-			# Accumulate each wer into the number oracleerror.
-			reffst=$tmpdir/$uttid.ref.fst 
-			prunefst=$tmpdir/$uttid.prune.fst
+			# Make an acceptor for known-good transcription (phones).
+			reffst=$tmpdir/$uttid.ref.fst
 			egrep "$uttid[ 	]" $evalreffile | cut -d' ' -f2- | make-acceptor.pl \
 				| fstcompile --acceptor=true --isymbols=$phnalphabet  > $reffst
+			# Prune the utterance FST.
+			prunefst=$tmpdir/$uttid.prune.fst
 			fstprune --weight=$prunewt $latfile | fstprint | cut -f1-4 | uniq \
 				| perl -a -n -e 'chomp; if($#F <= 2) { print "$F[0]\n"; } else { print "$_\n"; }' \
-				| fstcompile - | fstarcsort --sort_type=olabel > $prunefst
+				| fstcompile | fstarcsort --sort_type=olabel > $prunefst
+			# Accumulate each wer (actually each per) into the number oracleerror.
 			wer=`fstcompose $editfst $reffst | fstcompose $prunefst - \
 				| fstshortestdistance --reverse | head -1 | cut -f2`
 			oracleerror=`echo "$oracleerror + $wer" | bc`
@@ -74,11 +77,12 @@ done
 if [[ ! -s $tmpdir/hyp.txt ]]; then
 	>&2 echo "evaluate_PTs.sh: made no hypotheses.  Aborting."; exit 1
 fi
-
 if [[ ! -z $hypfile ]]; then
 	cp $tmpdir/hyp.txt $hypfile
 fi
 
+# This computes the phone error rate not the word error rate,
+# because hyp.txt contains sequences of phones.
 compute-wer --text --mode=present ark:$evalreffile ark:$tmpdir/hyp.txt
 
 if [[ -n $evaloracle ]]; then

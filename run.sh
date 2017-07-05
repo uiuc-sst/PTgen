@@ -467,6 +467,7 @@ fi
 # Reads the files $GTPLfst and $TPLfst.
 # Creates the files $decodelatdir/*.GTPLM.fst and $decodelatdir/*.TPLM.fst
 # Creates $decodelatdir.
+# Each GTPLM.fst maps $phnalphabet to $phnalphabet: it's a lattice over phones.
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	if [[ -n $makeTPLM && -n $makeGTPLM ]]; then
