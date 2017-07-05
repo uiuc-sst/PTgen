@@ -1,4 +1,4 @@
-# How to create tasks for Amazon Mechanical Turk
+# How to create tasks for [Amazon Mechanical Turk](https://www.mturk.com/mturk/welcome)
 
 ### [Login](https://requester.mturk.com/begin_signin).
 - Click on Create.
@@ -6,11 +6,12 @@
 - Edit the copy as needed.
 
 ### Get a collection of recordings of speech, in .wav or .flac format.
-- Concatenate them, monophonic and with a consistent sampling rate.
+- Concatenate them, monophonic (`channels 1` combines stereo channels into mono)
+and with a consistent sampling rate (`-r 22050`).
 
 Examples:
 
-- `sox in/*.wav -c 1 -r 22050 /tmp/a.wav avg`
+- `sox in/*.wav -r 22050 /tmp/a.wav channels 1`
 
 - `for f in in/*.flac; do sox "$f" in/"$( basename ${f%.flac}.wav )"; done; sox in/*.wav ...`
     
