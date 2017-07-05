@@ -7,7 +7,7 @@
 
 ### Get a collection of recordings of speech, in .wav or .flac format.
 - Concatenate them, monophonic (`channels 1` combines stereo channels into mono)
-and with a consistent sampling rate (`-r 22050`).
+and with a consistent sampling rate (`-r 22050`), into `/tmp/a.wav`.
 
 Examples:
 
