@@ -4,6 +4,10 @@
 # Creates /tmp/turkAudio.tar, which contains .mp3 and .ogg clips.
 
 # Remove silent intervals.  http://digitalcardboard.com/blog/2009/08/25/the-sox-of-silence/
+#
+# To discover *which* intervals were removed, which you'd need to recreate the timing relationship
+# between the short clips *.mp3 and the source files which were concatenated into /tmp/a.wav,
+# you need a doctored version of sox that reports those intervals.  Ask Camille for this.
 `sox /tmp/a.wav /tmp/b.wav silence 1 0.05 2% -1 1.0 2%`
 
 # Duration in seconds.
