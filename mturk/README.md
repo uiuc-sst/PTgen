@@ -47,4 +47,4 @@ the account a little at a time.
 
 - Click on Mechanical Turk's *Manage results*, *Download csv*.
 - `mv Batch*.csv PTgen/test/myTest/batchfiles-raw`
-- `cat PTgen/test/myTest/batchfiles-raw/Batch*.csv PTgen/test/myTest/data/batchfiles/myLanguageCode/batchfile/`
+- `cat PTgen/test/myTest/batchfiles-raw/Batch*.csv > PTgen/test/myTest/data/batchfiles/myLanguageCode/batchfile/Batches-downloaded.txt`
