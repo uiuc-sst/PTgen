@@ -93,7 +93,7 @@ int main(int argc, char** argv) {
 		}
 		if (numTranscripts > MAXTURKERS) {
 		  cerr << "\ncompute_turker_similarity: too many #-delimited transcripts in the line\n'"
-		       << line << "'.  Please recompile with MAXTURKERS >= " << numTranscripts << ".  Aborting.\n";
+		       << line << "'.  Please recompile compute_turker_similarity.cc with MAXTURKERS >= " << numTranscripts << ".  Aborting.\n";
 		}
 		scores.resize(numTranscripts);
 		for (auto i = 0u; i < numTranscripts; ++i) {
