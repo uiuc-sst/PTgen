@@ -150,12 +150,10 @@ $dictonlylimit = 2; # words longer than $dictonlylimit will be restricted to the
 	"zh" => "s",
 );
 
+# Read CMUdict ($engdict, let2phn/eng_dict.txt, 133k English words with pronunciations).
 binmode STDIN, ':utf8';
-
-open(DICT, $dictfile);
-
 %dict_entries = ();
-
+open(DICT, $dictfile);
 while(<DICT>) {
 	chomp;
 	($wrd, $prn) = split(/\:/);
