@@ -5,9 +5,7 @@
 # Exit if there is any error.
 set -e
 
-if [[ ! -d $mergedir ]] ; then
-	>&2 echo "mergefst.sh: no directory $mergedir.  Aborting."; exit 1
-fi
+[ -d $mergedir ] || { >&2 echo "$0: no directory $mergedir.  Aborting."; exit 1; }
 
 mkdir -p $mergefstdir
 showprogress init 100 "Merging transcript FSTs (unscaled)"
@@ -21,7 +19,7 @@ for ip in `seq -f %02g $nparallel`; do
 				| fstcompile --isymbols=$engalphabet --osymbols=$engalphabet \
 				| fstarcsort --sort_type=ilabel - > $mergefstdir/$uttid.M.fst
 		else
-			>&2 echo -e -n "\nmergefst.sh: skipping utterance $uttid."
+			>&2 echo -e -n "\n`basename $0`: skipping empty utterance $mergedir/$uttid.txt."
 		fi
 	done
 	) &
