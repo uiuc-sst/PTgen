@@ -24,7 +24,7 @@ nLOTS=98
 split --numeric-suffixes=1 -n r/$nLOTS $trainids $trainids.
 
 for ip in `seq -w 1 $nLOTS`; do
-  [ ! -s $trainids.$ip ] || { >&2 echo -e "\n$0: empty split-file $trainids.$ip. Aborting."; exit 1; }
+  [ -s $trainids.$ip ] || { >&2 echo -e "\n$0: empty split-file $trainids.$ip. Aborting."; exit 1; }
   ( for uttid in `cat $trainids.$ip`; do
     if [[ ! -s $mergefstdir/$uttid.M.fst ]]; then
       >&2 echo -e "\n`basename $0`: skipping utterance with empty $mergefstdir/$uttid.M.fst."
