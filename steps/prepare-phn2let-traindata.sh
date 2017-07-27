@@ -5,17 +5,13 @@
 # Exit if there is any error.
 set -e
 
-if [[ ! -s $trainids ]]; then
-  >&2 echo "prepare-phn2let-traindata.sh: missing or empty training file $trainids. Aborting."; exit 1
-fi
+[ -s $trainids ] || { >&2 echo "$0: missing or empty training file $trainids. Aborting."; exit 1; }
 
 showprogress init 30 "Preparing training data"
 
 reffile=$EXPLOCAL/ref_train_text
 for L in ${TRAIN_LANG[@]}; do
-	if [[ ! -s $TRANSDIR/$L/ref_train ]]; then
-		>&2 echo "\$TRAIN_LANGS includes $L, but there's no file $TRANSDIR/$L/ref_train.  Aborting."; exit 1
-	fi
+	[ -s $TRANSDIR/$L/ref_train ] || { >&2 echo "$0: \$TRAIN_LANG $TRAIN_LANG includes $L, but $TRANSDIR/$L/ref_train is empty. Aborting."; exit 1; }
 	cat $TRANSDIR/$L/ref_train
 done > $reffile
 
@@ -28,12 +24,10 @@ nLOTS=98
 split --numeric-suffixes=1 -n r/$nLOTS $trainids $trainids.
 
 for ip in `seq -w 1 $nLOTS`; do
-  if [[ ! -s $trainids.$ip ]]; then
-    >&2 echo -e "\nprepare-phn2let-traindata.sh: no split-file $trainids.$ip. Aborting."; exit 1
-  fi
+  [ ! -s $trainids.$ip ] || { >&2 echo -e "\n$0: empty split-file $trainids.$ip. Aborting."; exit 1; }
   ( for uttid in `cat $trainids.$ip`; do
     if [[ ! -s $mergefstdir/$uttid.M.fst ]]; then
-      >&2 echo -e "\nprepare-phn2let-traindata.sh: no file $mergefstdir/$uttid.M.fst. Skipping utterance."
+      >&2 echo -e "\n`basename $0`: skipping utterance with empty $mergefstdir/$uttid.M.fst."
       continue
     fi
     showprogress go
@@ -41,7 +35,7 @@ for ip in `seq -w 1 $nLOTS`; do
       cut -d' ' -f2- |
       sed -e 's/^[ \t]*/"/' -e 's/[ \t]*$/"/' -e 's/[ \t]\+/" "/g'`
     if [[ -z $refstring ]]; then
-      >&2 echo -e "\nprepare-phn2let-traindata.sh: no reference string for $uttid. Skipping utterance."
+      >&2 echo -e "\n`basename $0`: skipping utterance lacking a reference string, $uttid."
       continue
     fi
     for rn in `seq 1 $nrand`; do
