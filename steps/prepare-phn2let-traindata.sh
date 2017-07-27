@@ -7,13 +7,15 @@ set -e
 
 [ -s $trainids ] || { >&2 echo "$0: missing or empty training file $trainids. Aborting."; exit 1; }
 
-showprogress init 30 "Preparing training data"
-
 reffile=$EXPLOCAL/ref_train_text
 for L in ${TRAIN_LANG[@]}; do
 	[ -s $TRANSDIR/$L/ref_train ] || { >&2 echo "$0: \$TRAIN_LANG $TRAIN_LANG includes $L, but $TRANSDIR/$L/ref_train is empty. Aborting."; exit 1; }
 	cat $TRANSDIR/$L/ref_train
 done > $reffile
+
+[ -s $reffile ] || { >&2 echo "$0: empty $reffile, so skipping all utterances.  No training data."; exit 0; }
+
+showprogress init 30 "Preparing training data"
 
 # Without parallelizing, this stage would take 60 to 70% of run.sh's time.  (Carmel is most of the rest.)
 
