@@ -3,20 +3,20 @@
 # Create a prior over letters and represent it as an FST.
 
 if ($#ARGV != 1) {
-	print "Usage: create-letpriorfst.pl <merged transcripts dir> <uttids>\n";
+	print "Usage: $0 <merged transcripts dir> <uttids>\n";
 	exit 1;
 }
 
 $mergedir = $ARGV[0]; # $mergedir
 $uttlist  = $ARGV[1]; # $trainids
-open(UTT, $uttlist) or die "create-letpriorfst.pl: failed to open list of utterances $uttlist\n";
+open(UTT, $uttlist) or die "$0: failed to open list of utterances $uttlist\n";
 
 %labelcount = ();
 $total = 0;
 while($utt = <UTT>) {
 	chomp($utt);
 	$filename = "$mergedir/$utt".".txt";
-	open(FILE, "$filename") or print STDERR "create-letpriorfst.pl WARNING: failed to open $filename.\n";
+	open(FILE, "$filename") or print STDERR "$0 failed to open $filename.\n";
 	while($line = <FILE>) {
 		chomp;
 		$line =~ s/\s+$//; $line =~ s/^\s+//;
@@ -28,6 +28,11 @@ while($utt = <UTT>) {
 }
 close(UTT);
 
+if ($total == 0) {
+  print STDERR "$0 read nothing, so it can't make L.fst.";
+  exit 1;
+  # Were we to continue, we'd fail at log(0).
+}
 $logtot = log($total);
 foreach $let (keys %labelcount) {
 	$wt = log($labelcount{$let}) - $logtot;
