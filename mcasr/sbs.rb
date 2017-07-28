@@ -18,6 +18,7 @@ File.readlines("phones.txt") .map {|l| l.split} .each {|p,i| phones[p] = i}
 clipnames.each {|n|
   scrips = `grep #{n} #$scrips | sed -e 's/[^ ]* //' -e 's/_[BEIS]//g'` .split("\n")
   # scrips[9] = e.g., oʊ v ɑ t u m i SIL ʌ SIL
+  nNew = n.sub '-0', '-'
   scrips.map! {|s| s.split(" ") .map {|phone| phones[phone]} .join(" ")}
-  puts "#{n}:#{scrips.join " # "}"
+  puts "#{nNew}:#{scrips.join " # "}"
 }
