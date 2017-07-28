@@ -2,9 +2,7 @@
 
 . $INIT_STEPS
 
-if [[ ! -s $langmap ]]; then
-  >&2 echo -e "\ncreate-datasplits.sh: missing or empty langmap file $langmap. Check $1."; exit 1
-fi
+[ -s $langmap ] || { >&2 echo -e "\n$0: missing or empty langmap file $langmap. Check $1."; exit 1; }
 
 # Needs $datatype from run.sh's stage 3.
 # (It would be nice to pass this in as $2 instead of as an explicit variable,
@@ -12,9 +10,7 @@ fi
 
 case $datatype in
 dev | eval)
-  if [[ $TESTTYPE != $datatype ]]; then
-    >&2 echo -e "\ncreate-datasplits.sh: when \$datatype is $datatype, so must \$TESTTYPE.  Aborting."; exit 1
-  fi
+  [ $TESTTYPE == $datatype ] || { >&2 echo -e "\n$0: when \$datatype is $datatype, so must \$TESTTYPE.  Aborting."; exit 1; }
   ;;
 esac
 
@@ -23,37 +19,28 @@ train) LANG=( "${TRAIN_LANG[@]}" ); dtype="train"; ids_file=$trainids; splitids_
 adapt) LANG=( "${DEV_LANG[@]}"   ); dtype="train"; ids_file=$adaptids; splitids_file=$splitadaptids ;;
 dev)   LANG=( "${DEV_LANG[@]}"   ); dtype="dev";   ids_file=$testids;  splitids_file=$splittestids  ;;
 eval)  LANG=( "${EVAL_LANG[@]}"  ); dtype="test";  ids_file=$testids;  splitids_file=$splittestids  ;;
-*)     >&2 echo -e "\ncreate-datasplits.sh: Data split type $datatype should be [train|dev|adapt|eval].  Aborting."; exit 1 ;;
+*)     >&2 echo -e "\n$0: Data split type $datatype should be [train|dev|adapt|eval].  Aborting."; exit 1 ;;
 esac
 case $datatype in
 train)
-  if [ -z ${TRAIN_LANG+x} ]; then
-    >&2 echo -e "\ncreate-datasplits.sh: no \$TRAIN_LANG.  Check $1.  Aborting."; exit 1
-  fi ;;
+  [ ! -z ${TRAIN_LANG+x} ] || { >&2 echo -e "\n$0: no \$TRAIN_LANG.  Check $1.  Aborting."; exit 1; }
+  ;;
 adapt | dev)
-  if [ -z ${DEV_LANG+x} ]; then
-    >&2 echo -e "\ncreate-datasplits.sh: no \$DEV_LANG.  Check $1.  Aborting."; exit 1
-  fi ;;
+  [ ! -z ${DEV_LANG+x} ] || { >&2 echo -e "\n$0: no \$DEV_LANG.  Check $1.  Aborting."; exit 1; }
+  ;;
 eval)
-  if [ -z ${EVAL_LANG+x} ]; then
-    >&2 echo -e "\ncreate-datasplits.sh: no \$EVAL_LANG.  Check $1.  Aborting."; exit 1
-  fi ;;
+  [ ! -z ${EVAL_LANG+x} ] || { >&2 echo -e "\n$0: no \$EVAL_LANG.  Check $1.  Aborting."; exit 1; }
+  ;;
 esac
 mkdir -p "$(dirname "$ids_file")"
 for L in ${LANG[@]}; do
 	full_lang_name=`awk '/'$L'/ {print $2}' $langmap`
-	if [ -z "$full_lang_name" ]; then
-		>&2 echo -e "\ncreate-datasplits.sh: no language $L in $langmap.  Aborting."; exit 1
-	fi
-	if [ ! -s "$LISTDIR/$full_lang_name/$dtype" ]; then
-		>&2 echo -e "\ncreate-datasplits.sh: missing or empty file $LISTDIR/$full_lang_name/$dtype.  Aborting."; exit 1
-	fi
+	[ ! -z "$full_lang_name" ] || { >&2 echo -e "\n$0: no language $L in $langmap. Aborting."; exit 1; }
+	[ -s "$LISTDIR/$full_lang_name/$dtype" ] || { >&2 echo -e "\n$0: missing or empty file $LISTDIR/$full_lang_name/$dtype. Aborting."; exit 1; }
 	sed -e 's:.wav::' -e 's:.mp3::' $LISTDIR/$full_lang_name/$dtype
 done > $ids_file
 
-if [[ ! -s $ids_file ]]; then
-  >&2 echo -e "\ncreate-datasplits.sh generated an empty ids_file $ids_file.  Aborting."; exit 1
-fi
+[ -s $ids_file ] || { >&2 echo -e "\n$0: generated empty ids_file $ids_file. Aborting."; exit 1; }
 
 # "split -n r/42 ..." makes 42 equal-size parts, without breaking lines, with round robin distribution.
 # "--numeric-suffixes=1" names them .01 .02 ... .42, instead of .aa .ab ... .
