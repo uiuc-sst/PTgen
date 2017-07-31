@@ -26,11 +26,17 @@ if($argerr == 1) {
 }
 	
 if ($switchpenalty == 1) {
+	# March through states one at a time, printing one or more arcs to the next state.
 	$state = 0;
 	while(<STDIN>) {
 		chomp;
 		$line = $_;
 		$line =~ s/\s+$//; $line =~ s/^\s+//;
+		if($line == "") {
+			# Don't let an empty input line increment $state without printing an arc,
+			# because that would leave a gap in the chain-like FST.
+			next;
+		}
 		@labels = split(/\s+/,$line);
 		%labelcount = ();
 		$labelcount{$_}++ for @labels;
