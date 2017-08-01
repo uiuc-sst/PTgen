@@ -4,26 +4,13 @@
 
 . $INIT_STEPS
 
-if [[ -z $testids ]]; then
-  echo "evaluate_PTs.sh: no variable testids in settings file '$1'. Aborting."; exit 1
-fi
-if [[ -z $decodelatdir ]]; then
-  echo "evaluate_PTs.sh: no variable decodelatdir in settings file '$1'. Aborting."; exit 1
-fi
-if [[ -z $evalreffile ]]; then
-  echo "evaluate_PTs.sh: no variable evalreffile in settings file '$1'. Aborting."; exit 1
-fi
-if [[ ! -s $evalreffile ]]; then
-  echo "evaluate_PTs.sh: no file $evalreffile, evalreffile in settings file '$1'. Aborting."; exit 1
-  # This file is the known-good transcription for compute-wer.
-fi
-if [[ -z $phnalphabet ]]; then
-  echo "evaluate_PTs.sh: no variable phnalphabet in settings file '$1'. Aborting."; exit 1
-fi
-if [[ (-n $evaloracle && -z $prunewt) ]]; then
-  echo "evaluate_PTs.sh: corrupt variables evaloracle or prunewt in settings file '$1'. Aborting."; exit 1
-fi
-hash compute-wer 2>/dev/null || { echo "evaluate_PTs.sh: missing program compute-wer. Aborting."; exit 1; }
+[ ! -z $testids ] || { >&2 echo "$0: no variable testids in file '$1'. Aborting."; exit 1; }
+[ ! -z $decodelatdir ] || { >&2 echo "$0: no variable decodelatdir in file '$1'. Aborting."; exit 1; }
+[ ! -z $evalreffile ] || { >&2 echo "$0: no variable evalreffile in file '$1'. Aborting."; exit 1; }
+[[ ! (-n $evaloracle && -z $prunewt) ]] || { >&2 echo "$0: corrupt variables evaloracle or prunewt in file '$1'. Aborting."; exit 1; }
+[ -s $evalreffile ] || { >&2 echo "$0: missing or empty file '$evalreffile', evalreffile in file '$1'. Aborting."; exit 1; }
+# $evalreffile is the known-good transcriptions for compute-wer.
+hash compute-wer 2>/dev/null || { >&2 echo "$0: missing program compute-wer. Aborting."; exit 1; }
 
 mktmpdir
 
@@ -35,15 +22,13 @@ showprogress init 15 "Evaluating PTs"
 for ip in `seq -f %02g $nparallel`; do
 	(
 	if [[ ! -s $splittestids.$ip ]]; then
-		>&2 echo "evaluate_PTs.sh: missing or empty file $splittestids.$ip."
+		>&2 echo "`basename $0`: missing or empty file $splittestids.$ip."
 	fi
 	oracleerror=0
 	for uttid in `cat $splittestids.$ip`; do
 		showprogress go
 		latfile=$decodelatdir/$uttid.GTPLM.fst
-		if [[ ! -s $latfile ]]; then
-			>&2 echo -e "\nevaluate_PTs.sh: no decoded lattice file '$latfile'. Aborting."; exit 1
-		fi
+		[ -s $latfile ] || { >&2 echo -e "\n$0: no decoded lattice file '$latfile'. Aborting."; exit 1; }
 		if [[ -n $evaloracle ]]; then
 			# Make an acceptor for known-good transcription (phones).
 			reffst=$tmpdir/$uttid.ref.fst
@@ -54,11 +39,11 @@ for ip in `seq -f %02g $nparallel`; do
 			fstprune --weight=$prunewt $latfile | fstprint | cut -f1-4 | uniq \
 				| perl -a -n -e 'chomp; if($#F <= 2) { print "$F[0]\n"; } else { print "$_\n"; }' \
 				| fstcompile | fstarcsort --sort_type=olabel > $prunefst
-			# Accumulate each wer (actually each per) into the number oracleerror.
-			wer=`fstcompose $editfst $reffst | fstcompose $prunefst - \
+			# Accumulate each phone error rate into the number oracleerror.
+			per=`fstcompose $editfst $reffst | fstcompose $prunefst - \
 				| fstshortestdistance --reverse | head -1 | cut -f2`
-			oracleerror=`echo "$oracleerror + $wer" | bc`
-			>&2 echo -e "Oracle WER (Job $ip): WER for $uttid = $wer; Cumulative WER = $oracleerror"
+			oracleerror=`echo "$oracleerror + $per" | bc`
+			>&2 echo -e "Oracle PER (Job $ip): PER for $uttid = $per; Cumulative PER = $oracleerror"
 		fi
 		# Print the best hypothesis.
 		echo -e -n "$uttid\t"
@@ -81,7 +66,7 @@ if [[ ! -z $hypfile ]]; then
 	cp $tmpdir/hyp.txt $hypfile
 fi
 
-# This computes the phone error rate not the word error rate,
+# This computes the phone error rate rather than the word error rate,
 # because hyp.txt contains sequences of phones.
 compute-wer --text --mode=present ark:$evalreffile ark:$tmpdir/hyp.txt
 
