@@ -21,14 +21,14 @@ create-editfst.pl < $phnalphabet | fstcompile > $editfst
 showprogress init 15 "Evaluating PTs"
 for ip in `seq -f %02g $nparallel`; do
 	(
-	if [[ ! -s $splittestids.$ip ]]; then
-		>&2 echo "`basename $0`: missing or empty file $splittestids.$ip."
-	fi
+	[ -s $splittestids.$ip ] || { >&2 echo "`basename $0`: missing or empty file $splittestids.$ip."; }
 	oracleerror=0
+	# Read all the uttid's in, e.g., /tmp/Exp/uzbek/lists/testids.*.
 	for uttid in `cat $splittestids.$ip`; do
 		showprogress go
+		# $uttid ==, e.g., uzbek_371_001
 		latfile=$decodelatdir/$uttid.GTPLM.fst
-		[ -s $latfile ] || { >&2 echo -e "\n$0: no decoded lattice file '$latfile'. Aborting."; exit 1; }
+		[ -s $latfile ] || { >&2 echo -e "\n$0: no decoded lattice '$latfile'. Skipping $uttid."; continue; }
 		if [[ -n $evaloracle ]]; then
 			# Make an acceptor for known-good transcription (phones).
 			reffst=$tmpdir/$uttid.ref.fst
