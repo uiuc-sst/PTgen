@@ -16,5 +16,5 @@ Dir.glob("/r/lorelei/dry/train-and-test/shukhrat/*domain/UZB*.txt") {|u|
     .downcase .gsub(/\[[^\]]+\]/, '') .gsub(/[,?!"\.]/, '') .gsub(" - ", " ") \
     .gsub(/(?<=[0-9]) (?=000)/, '') \
     .gsub(/[\s]+/, ' ') .strip
-  puts "#{File.basename u, '.txt'} #{scrip}"
+  puts "#{(File.basename u, '.txt').sub /^UZB/, 'uzbek'} #{scrip}"
 }
