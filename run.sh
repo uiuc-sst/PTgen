@@ -111,17 +111,17 @@ fi
 if [[ ! -s $engalphabet ]]; then
   echo "Missing or empty engalphabet file $engalphabet. Check $1."; exit 1
 fi
-if [[ ! -s $phnalphabet ]]; then
-  echo "Missing or empty phnalphabet file $phnalphabet. Check $1."; exit 1
-fi
-if [[ ! -s $phonelm ]]; then
-  echo "Missing or empty phonelm file $phonelm. Check $1."; exit 1
-fi
+[ ! -z $phnalphabet ] || { echo "No variable phnalphabet in file '$1'."; exit 1; }
+[ -s $phnalphabet ] || { echo "Missing or empty phnalphabet file $phnalphabet. Check $1."; exit 1; }
 
 mktmpdir
 
->&2 echo "Creating experiment directory $EXPLOCAL."
-mkdir -p $EXPLOCAL
+if [[ -d $TURKERTEXT ]]; then
+  >&2 echo "Using experiment directory $EXPLOCAL."
+else
+  >&2 echo "Creating experiment directory $EXPLOCAL."
+  mkdir -p $EXPLOCAL
+fi
 cp "$1" $EXPLOCAL/settings
 
 if [[ -z $startstage ]]; then startstage=1;   fi
@@ -221,9 +221,9 @@ fi
 ## STAGE 4 ##
 # For each utterance ($uttid), merge all of its transcriptions.
 #
-# Creates file $aligndist.
+# Creates file $aligndist, e.g. Exp/uzbek/aligndists.txt.
 # Creates directory $mergedir and files therein:
-# language_xxx.txt, part-x-language_xxx.txt, $uttid.txt.
+# language_xxx.txt, part-x-language_xxx.txt, $uttid.txt
 # (Interspeech paper, section 2.1).
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
@@ -293,7 +293,7 @@ fi
 # Create training data to learn the phone-2-letter mappings defined in P.
 #
 # Reads files $TRANSDIR/$TRAIN_LANG[*]/ref_train.
-# Creates temporary file $reffile.
+# Creates temporary file $reffile, e.g. Exp/uzbek/ref_train_text.
 # Creates file $carmeltraintxt.
 #
 # In each ref_train file, each line is an identifier followed by a sequence of phonemes,
@@ -343,13 +343,13 @@ else
 fi
 
 ## STAGE 9 ##
-# Convert P to an OpenFst-style FST.
+# Convert P to OpenFst format.
 #
 # Reads file $initcarmel.trained.
 # Uses variables $disambigdel, $disambigins, $phneps, and $leteps.
 # May use variable $Pscale, to scale P's weights.
 # Creates logfile $tmpdir/trainedp2let.fst.txt.
-# Creates file $Pfst.
+# Creates file $Pfst, mapping $phnalphabet to $engalphabet.
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	if [[ -z $Pscale ]]; then
@@ -404,13 +404,13 @@ fi
 # Reads files in directory $mergedir.
 # Reads files $trainids and $engalphabet.
 # May use variable $Lscale, to scale L's weights.
-# Creates file $Lfst.
+# Creates file $Lfst, over the symbols $engalphabet.
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	if [[ -z $Lscale ]]; then
 		Lscale=1
 	fi
-	>&2 echo -n "Creating L (letter statistics FST) [LSCALE=$Lscale]... "
+	>&2 echo -n "Creating L (letter statistics) FST [LSCALE=$Lscale]... "
 	mkdir -p "$(dirname "$Lfst")"
 	create-letpriorfst.pl $mergedir $trainids \
 		| scale-FST-weights.pl $Lscale \
@@ -419,7 +419,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo "Done."
 	echo "Stage 11 took" $SECONDS "seconds."; SECONDS=0
 else
-	usingfile $Lfst "L (letter statistics FST)"
+	usingfile $Lfst "L (letter statistics) FST"
 fi
 
 ## STAGE 12 ##
@@ -427,16 +427,16 @@ fi
 # and letter insertions, through tunable parameters Tnumdel and Tnumins.
 #
 # Uses variables $disambigdel $disambigins $Tnumdel $Tnumins.
-# Creates file $Tfst.  
+# Creates file $Tfst, over the symbols $phnalphabet.
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
-	>&2 echo "Creating T (deletion/insertion limiting FST)... "
+	>&2 echo "Creating T (deletion/insertion limiting) FST... "
 	create-delinsfst.pl $disambigdel $disambigins $Tnumdel $Tnumins < $phnalphabet \
 		| fstcompile --osymbols=$phnalphabet --isymbols=$phnalphabet - > $Tfst
 	>&2 echo "Done."
 	echo "Stage 12 took" $SECONDS "seconds."; SECONDS=0
 else
-	usingfile $Tfst "T (deletion/insertion limiting FST)"
+	usingfile $Tfst "T (deletion/insertion limiting) FST"
 fi
 
 ## STAGE 13 ##
@@ -467,7 +467,7 @@ fi
 # Reads the files $GTPLfst and $TPLfst.
 # Creates the files $decodelatdir/*.GTPLM.fst and $decodelatdir/*.TPLM.fst
 # Creates $decodelatdir.
-# Each GTPLM.fst maps $phnalphabet to $phnalphabet: it's a lattice over phones.
+# Each GTPLM.fst is over $phnalphabet, a lattice over phones.
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	if [[ -n $makeTPLM && -n $makeGTPLM ]]; then
