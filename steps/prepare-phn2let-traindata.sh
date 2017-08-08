@@ -13,7 +13,7 @@ for L in ${TRAIN_LANG[@]}; do
 	cat $TRANSDIR/$L/ref_train
 done > $reffile
 
-[ -s $reffile ] || { >&2 echo "$0: empty $reffile, so skipping all utterances.  No training data."; exit 0; }
+[ -s $reffile ] || { >&2 echo "$0: made empty $reffile, so skipping all utterances.  No training data."; exit 1; }
 
 showprogress init 30 "Preparing training data"
 

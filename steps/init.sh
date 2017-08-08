@@ -11,10 +11,8 @@ scriptname=`basename "$0"`
 nparallel=`nproc | sed "s/$/-1/" | bc`	# One fewer than the number of CPU cores.
 
 # Read the settings file.
-if [[ $# -ne 1 ]]; then
-	echo "Usage: $scriptname settings_file."; exit 1
-fi
-[ ! -f $1 ] && echo "$scriptname: no settings file \"$1\". Aborting." && exit 1
+[ $# -eq 1 ] || { echo "Usage: $scriptname settings_file"; exit 1; }
+[ -f $1 ] || { echo "$scriptname: missing settings file '$1'." && exit 1; }
 . $1
 
 export EXPLOCAL=$EXP/$LANG_NAME
@@ -54,7 +52,7 @@ evaloutput=$EXPLOCAL/eval.txt			# Made by stage 15, read by human.
 mktmpdir() {
 	export tmpdir=/tmp/$scriptname-$$.dir
 	mkdir -p $tmpdir
-	>&2 echo "Using tmpdir $tmpdir."
+	>&2 echo "Made tmpdir $tmpdir."
 }
 
 # Verify that a previously created file exists, and report that.
@@ -63,7 +61,7 @@ usingfile() {
 		>&2 echo "$scriptname: no file \"$1\" for $2. Aborting."
 		exit 1
 	fi
-	>&2 echo "Using $2 $1."
+	>&2 echo "Reusing $2 $1."
 }
 
 # Print a row of dots.
@@ -71,8 +69,8 @@ usingfile() {
 # showprogress go:				possibly print another dot.
 # showprogress end:				print "Done."
 #
-# Unfortunately, any error message will start mid-line (after the most recent dot),
-# instead of at the start of a line where it would be more noticeable.
+# To show an error message more noticeably at the start of a line instead of
+# mid-line after the most recent dot, use echo -e "\nError message."
 showprogress() {
 	local arg="$1"
 	case $arg in

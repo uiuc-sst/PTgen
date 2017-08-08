@@ -119,7 +119,7 @@ mktmpdir
 if [[ -d $TURKERTEXT ]]; then
   >&2 echo "Using experiment directory $EXPLOCAL."
 else
-  >&2 echo "Creating experiment directory $EXPLOCAL."
+  >&2 echo "Made experiment directory $EXPLOCAL."
   mkdir -p $EXPLOCAL
 fi
 cp "$1" $EXPLOCAL/settings
@@ -183,7 +183,7 @@ fi
 ## STAGE 3 ##
 # Prepare data lists.
 #
-# Via $langmap, expands variable $TRAIN_LANG's abbreviations into full language names.
+# Via $langmap, expand variable $TRAIN_LANG's abbreviations into full language names.
 # Reads each $LISTDIR/language_name/{train, dev, test}.
 # Creates the files $trainids, $testids, $adaptids.
 # Splits those files into parts {$splittrainids, $splittestids, $splitadaptids}.xxx, where xxx is numbers.
