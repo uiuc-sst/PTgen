@@ -40,6 +40,8 @@ and caches your answers in a new file `config.sh`, for future runs.
 If you encounter errors and fix them, you can save time by starting `run.sh` partway through:
 in your settings file, set `startstage` to one past the last successfully completed stage.
 
+If you're using [MCASR](https://github.com/uiuc-sst/mcasr), instead of `run.sh` use `run-mcasr.sh`.
+
 # How to run prebuilt tests
 
 `cd test/ws15` (or any other test directory).
