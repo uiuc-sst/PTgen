@@ -9,7 +9,7 @@
 [ ! -z $evalreffile ] || { >&2 echo "$0: no variable evalreffile in file '$1'. Aborting."; exit 1; }
 [[ ! (-n $evaloracle && -z $prunewt) ]] || { >&2 echo "$0: corrupt variables evaloracle or prunewt in file '$1'. Aborting."; exit 1; }
 [ -s $evalreffile ] || { >&2 echo "$0: missing or empty file '$evalreffile', evalreffile in file '$1'. Aborting."; exit 1; }
-# $evalreffile is the known-good transcriptions for compute-wer.
+# $evalreffile is the known-good transcriptions for compute-wer, e.g. data/nativetranscripts/uzbek/dev_text.
 hash compute-wer 2>/dev/null || { >&2 echo "$0: missing program compute-wer. Aborting."; exit 1; }
 
 mktmpdir
@@ -45,9 +45,9 @@ for ip in `seq -f %02g $nparallel`; do
 			oracleerror=`echo "$oracleerror + $per" | bc`
 			>&2 echo -e "Oracle PER (Job $ip): PER for $uttid = $per; Cumulative PER = $oracleerror"
 		fi
-		# Print the best hypothesis.
+		# Print a *plausible* hypothesis (fstrandgen), not just the very best one (fstshortestpath).
 		echo -e -n "$uttid\t"
-		fstshortestpath $latfile | fstprint --osymbols=$phnalphabet | reverse_fst_path.pl
+		fstrandgen --select=log_prob $latfile | fstrmepsilon | fstprint --osymbols=$phnalphabet | reverse_fst_path.pl
 	done > $tmpdir/hyp.$ip.txt
 	[[ -n $evaloracle ]] && echo "$oracleerror" > $tmpdir/oracleerror.$ip.txt
 	) &
@@ -67,8 +67,8 @@ if [[ ! -z $hypfile ]]; then
 fi
 
 # This computes the phone error rate rather than the word error rate,
-# because hyp.txt contains sequences of phones.
-compute-wer --text --mode=present ark:$evalreffile ark:$tmpdir/hyp.txt
+# because $hypfile contains sequences of phones.
+compute-wer --text --mode=present ark:$evalreffile ark:$hypfile
 
 if [[ -n $evaloracle ]]; then
 	oracleerror=`cat $tmpdir/oracleerror.*.txt | awk 'BEGIN {sum=0} {sum=sum+$1} END{print sum}'`
