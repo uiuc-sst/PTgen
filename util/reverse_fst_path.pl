@@ -1,34 +1,31 @@
 #!/usr/bin/perl
 
-# Read a shortest-path FST's output labels (from "fstprint --osymbols").
-# Print them as a string.
+# Print, as a string, a shortest-path FST's output labels (from "fstprint --osymbols").
 
 @arcs = ();
 binmode STDIN, ':utf8';
 binmode STDOUT, ':utf8';
 while(<STDIN>) {
-	chomp;
-	push(@arcs, $_);
+  chomp;
+  push(@arcs, $_);
 }
 
+# Accumulate output labels $l into $olabel_seq.
 $olabel_seq = "";
-
 for($a = 0; $a != -1; ($a==0? $a=$#arcs : ($a==1 ? $a=-1 : $a--))) {
-	$arc = $arcs[$a];
-	@fields = split(/\s+/,$arc);
-	$olabel = "";
-	if($#fields > 2) {
-		# arc
-		$olabel = $fields[3];
-	}
-	if($olabel ne "-" &&
-	   $olabel ne "" &&
-	   $olabel ne "<eps>" &&
-	   $olabel ne "sil" &&
-	   $olabel ne "spn" &&
-	   $olabel !~ "#") {
-		$olabel_seq = "$olabel_seq $olabel";
-	}
+  @fields = split(/\s+/, $arcs[$a]);
+  $l = "";
+  if($#fields > 2) {
+    $l = $fields[3];
+  }
+  if($l ne "-" &&
+     $l ne "" &&
+     $l ne "<eps>" &&
+     $l ne "sil" &&
+     $l ne "spn" &&
+     $l !~ "#") {
+       $olabel_seq = "$olabel_seq $l";
+  }
 }
 
 $olabel_seq =~ s/^\s+//g;
