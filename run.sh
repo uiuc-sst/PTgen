@@ -82,44 +82,28 @@ if [[ ! -d $DATA ]]; then
   fi
   # Check the name of the tarball's first file (probably a directory).  Strip the trailing slash.
   tarDir=`tar tvf $tarball | head -1 | awk '{print $NF}' | sed -e 's_\/$__'`
-  if [[ "$tarDir" != "$DATA" ]]; then
-    echo "Tarball $tarball contains $tarDir, not \$DATA $DATA."; exit 1
-  fi
+  [ "$tarDir" == "$DATA" ] || { echo "Tarball $tarball contains $tarDir, not \$DATA $DATA."; exit 1; }
   echo "Extracting $tarball, hopefully into \$DATA $DATA."
   tar xzf $tarball || ( echo "Unexpected contents in $tarball.  Aborting."; exit 1 )
-  if [[ ! -d $DATA ]]; then
-    echo "Still missing DATA directory $DATA. Check $DATA_URL and $1."; exit 1
-  fi
+  [ -d $DATA ] || { echo "Still missing DATA directory $DATA. Check $DATA_URL and $1."; exit 1; }
   echo "Installed \$DATA $DATA."
 fi
-if [[ ! -d $DATA ]]; then
-  echo "Still missing DATA directory $DATA. Check $DATA_URL and $1."; exit 1
-fi
-
-if [[ ! -d $LISTDIR ]]; then
-  echo "Missing LISTDIR directory $LISTDIR. Check $1."; exit 1
-fi
-if [[ ! -d $TRANSDIR ]]; then
-  echo "Missing TRANSDIR directory $TRANSDIR. Check $1."; exit 1
-fi
-if [[ ! -d $TURKERTEXT ]]; then
-  echo "Missing TURKERTEXT directory $TURKERTEXT. Check $1."; exit 1
-fi
-if [[ ! -s $engdict ]]; then
-  echo "Missing or empty engdict file $engdict. Check $1."; exit 1
-fi
-if [[ ! -s $engalphabet ]]; then
-  echo "Missing or empty engalphabet file $engalphabet. Check $1."; exit 1
-fi
+[ -d $DATA ] || { echo "Still missing DATA directory $DATA. Check $DATA_URL and $1."; exit 1; }
+[ -d $LISTDIR ] || { echo "Missing LISTDIR directory $LISTDIR. Check $1."; exit 1; }
+[ -d $TRANSDIR ] || { echo "Missing TRANSDIR directory $TRANSDIR. Check $1."; exit 1; }
+[ -d $TURKERTEXT ] || { echo "Missing TURKERTEXT directory $TURKERTEXT. Check $1."; exit 1; }
+[ -s $engdict ] || { echo "Missing or empty engdict file $engdict. Check $1."; exit 1; }
+[ -s $engalphabet ] || { echo "Missing or empty engalphabet file $engalphabet. Check $1."; exit 1; }
 [ ! -z $phnalphabet ] || { echo "No variable phnalphabet in file '$1'."; exit 1; }
 [ -s $phnalphabet ] || { echo "Missing or empty phnalphabet file $phnalphabet. Check $1."; exit 1; }
+[ -s $phonelm ] || { echo "Missing or empty phonelm file $phonelm. Check $1."; exit 1; }
 
 mktmpdir
 
-if [[ -d $TURKERTEXT ]]; then
+if [[ -d $EXPLOCAL ]]; then
   >&2 echo "Using experiment directory $EXPLOCAL."
 else
-  >&2 echo "Made experiment directory $EXPLOCAL."
+  >&2 echo "Creating experiment directory $EXPLOCAL."
   mkdir -p $EXPLOCAL
 fi
 cp "$1" $EXPLOCAL/settings
