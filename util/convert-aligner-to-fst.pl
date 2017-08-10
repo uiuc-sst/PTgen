@@ -20,8 +20,8 @@ while ((@ARGV) && ($argerr == 0)) {
 }
 
 if($argerr == 1) {
-	print "Usage: convert_aligner_to_fst.pl [--switchpenalty <penalty>] [--delimiter <symbol>] [--epsilon <symbol>]\n";
-	print "Standard input is aligner output.  Standard output is the fst in OpenFST text format";
+	print "Usage: $0 [--switchpenalty <penalty>] [--delimiter <symbol>] [--epsilon <symbol>]\n";
+	print "Reads aligner's output.  Outputs an fst in OpenFST text format.";
 	exit(1);
 }
 	
@@ -67,7 +67,7 @@ while(<STDIN>) {
 			print "0 $i - - 1\n";
 		}
 	}
-	die "Not a valid alignment" if $strands != $#labels + 1;
+	die "$0: invalid alignment" if $strands != $#labels + 1;
 	for ($i=1; $i <= $strands; $i++) {
 		$begin = $link*$strands + $i;
 		$let = $labels[$i-1];
