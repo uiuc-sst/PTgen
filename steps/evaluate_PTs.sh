@@ -66,8 +66,11 @@ if [[ ! -z $hypfile ]]; then
 	cp $tmpdir/hyp.txt $hypfile
 fi
 
-# This computes the phone error rate rather than the word error rate,
-# because $hypfile contains sequences of phones.
+# Compute word error rate rather than phone error rate.
+>&2 echo "Converting $hypfile from phone strings to word strings."
+cp $hypfile $hypfile.PERnotWER
+phone2word.rb < $hypfile.PERnotWER > $hypfile
+
 compute-wer --text --mode=present ark:$evalreffile ark:$hypfile
 
 if [[ -n $evaloracle ]]; then
