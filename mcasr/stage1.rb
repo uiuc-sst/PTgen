@@ -1,10 +1,17 @@
 #!/usr/bin/env ruby
 
-# Usage: ./stage1.rb < uzb-clips.txt > stage1.txt
+# Reads transcriptions of clips as phones from mcasr.
+# Simplifies the phone set, coalesces each clip's transcriptions,
+# and rewrites those as phone index numbers.
 
-# Reads mcasr's uzb-clips.txt, which comes from
+# Usage: ./stage1.rb < uzb-clips.txt > stage1.txt
+# Usage: ./stage1.rb < rus-clips.txt > stage1.txt
+
+# The file xxx-clips.txt comes from mcasr, e.g.:
 #
-#     /ws/ifp-53_1/hasegawa/tools/kaldi/kaldi/src/bin/ali-to-phones exp/Uzbek/mono/final.mdl ark:'gunzip -c exp/Uzbek/mono_ali/ali.*.gz|' ark,t:- | utils/int2sym.pl -f 2- data/Russian/lang/phones.txt - > uzb-clips.txt
+# ifp-53:mcasr/s5c% /ws/ifp-53_1/hasegawa/tools/kaldi/kaldi/src/bin/ali-to-phones exp/Uzbek/mono/final.mdl ark:'gunzip -c exp/Uzbek/mono_ali/ali.*.gz|' ark,t:- | utils/int2sym.pl -f 2- data/Russian/lang/phones.txt - > uzb-clips.txt
+#
+# ifp-53:mcasr/s5c% /ws/ifp-53_1/hasegawa/tools/kaldi/kaldi/src/bin/ali-to-phones exp/Russian/tri4b/final.mdl ark:'gunzip -c exp/Russian/tri4b_ali/ali.*.gz|' ark,t:- | utils/int2sym.pl -f 2- data/Russian/lang/phones.txt - > /tmp/rus-clips.txt
 #
 # Reformats that as one line per mp3 clip, with #-delimited transcriptions.
 # Removes _B _E _I _S suffixes from phones, because word boundaries are meaningless for nonsense words.
@@ -13,7 +20,7 @@
 # because those help PTgen score and align transcriptions.
 # Does *not* remove duplicate transcriptions, for the same reason.
 
-# Maybe todo: remove consecutive duplicate phones, esp. SPN and SIL.  They're in 3% of transcriptions.
+# Maybe todo: remove consecutive duplicate phones, esp. SPN and SIL.  They're in 3% of uzbek transcriptions, 7% of russian.
 
 raw = ARGF.readlines .map {|l| l.split}
 
