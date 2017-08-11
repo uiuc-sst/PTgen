@@ -35,8 +35,8 @@ mkdir -p "$(dirname "$ids_file")"
 for L in ${LANG[@]}; do
 	full_lang_name=`awk '/'$L'/ {print $2}' $langmap`
 	[ ! -z "$full_lang_name" ] || { >&2 echo -e "\n$0: no language $L in $langmap. Aborting."; exit 1; }
-	[ -d "$LISTDIR/$full_lang_name" ] || { >&2 echo -e "\n$0: missing directory $LISTDIR/$full_lang_name. Aborting."; exit 1; }
-	[ -s "$LISTDIR/$full_lang_name/$dtype" ] || { >&2 echo -e "\n$0: missing or empty file $LISTDIR/$full_lang_name/$dtype. Aborting."; exit 1; }
+	[ -d "$LISTDIR/$full_lang_name" ] || { >&2 echo -e "\n$0: missing directory $LISTDIR/$full_lang_name. Aborting.\nSee https://github.com/uiuc-sst/PTgen/blob/master/datasplit.md."; exit 1; }
+	[ -s "$LISTDIR/$full_lang_name/$dtype" ] || { >&2 echo -e "\n$0: missing or empty file $LISTDIR/$full_lang_name/$dtype. Aborting.\nSee https://github.com/uiuc-sst/PTgen/blob/master/datasplit.md."; exit 1; }
 	sed -e 's:.wav::' -e 's:.mp3::' $LISTDIR/$full_lang_name/$dtype
 done > $ids_file
 
