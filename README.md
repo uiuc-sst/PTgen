@@ -26,13 +26,19 @@ make
 The first time you `make`, you'll be asked to enter the directory of OpenFST's file `fst/compat.h`.
 This is usually `/usr/local/include`.  If that fails, `rm config.mk; make`, and instead try a result from the command `locate fst/compat.h`.
 
+# How to ask crowdsourced people to transcribe speech
+
+See the subdirectory [mturk](./mturk).
+
 # How to create and evaluate PT's
 
 Edit the settings file, e.g. `test/ws15/settings_full`.
 - Ensure that the required files within that file's `$DATA` exist,
 or can be downloaded from that file's `$DATA_URL`.
 
-`run.sh settings_full`
+If needed, split the transcriptions into [train/dev/eval sets](datasplit.md).
+
+Process the PT's: `run.sh settings_full`.
 
 If `run.sh` can't find the executable programs of OpenFST, Carmel, or Kaldi, it prompts you for their locations,
 and caches your answers in a new file `config.sh`, for future runs.
@@ -54,6 +60,3 @@ which is too unwieldy to store on github.
 
 If `../../run.sh` prompts you again for the locations of exes, you can just abort it with `ctrl+C`, retrieve those settings with `cp ../../config.sh .`, and retry.
 
-# How to ask crowdsourced people to transcribe speech
-
-See the subdirectory [mturk](./mturk).
