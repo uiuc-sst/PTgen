@@ -111,8 +111,11 @@ cp "$1" $EXPLOCAL/settings
 if [[ -z $startstage ]]; then startstage=1;   fi
 if [[ -z $endstage ]];   then endstage=99999; fi
 
+if [[ $startstage -le 2 && 2 -le $endstage ]]; then
+  hash compute_turker_similarity 2>/dev/null || { echo >&2 "Missing program 'compute_turker_similarity'. First \"cd PTgen/src; make\"."; exit 1; }
+fi
 if [[ $startstage -le 8 && 8 -le $endstage ]]; then
-  hash carmel 2>/dev/null || { echo >&2 "Missing program 'carmel'.  Stage 8 would abort."; exit 1; }
+  hash carmel 2>/dev/null || { echo >&2 "Missing program 'carmel'. Stage 8 would abort.  Please install it from www.isi.edu/licensed-sw/carmel."; exit 1; }
 fi
 if [[ $startstage -le 15 && 15 -le $endstage ]]; then
   hash compute-wer 2>/dev/null || { echo >&2 "Missing program 'compute-wer'.  Stage 15 would abort."; exit 1; }
