@@ -21,21 +21,21 @@ dev)   LANG=( "${DEV_LANG[@]}"   ); dtype="dev";   ids_file=$testids;  splitids_
 eval)  LANG=( "${EVAL_LANG[@]}"  ); dtype="test";  ids_file=$testids;  splitids_file=$splittestids  ;;
 *)     >&2 echo -e "\n$0: Data split type $datatype should be [train|dev|adapt|eval].  Aborting."; exit 1 ;;
 esac
+
 case $datatype in
 train)
-  [ ! -z ${TRAIN_LANG+x} ] || { >&2 echo -e "\n$0: no \$TRAIN_LANG.  Check $1.  Aborting."; exit 1; }
-  ;;
+  [ ! -z ${TRAIN_LANG+x} ] || { >&2 echo -e "\n$0: no \$TRAIN_LANG. Check $1. Aborting."; exit 1; } ;;
 adapt | dev)
-  [ ! -z ${DEV_LANG+x} ] || { >&2 echo -e "\n$0: no \$DEV_LANG.  Check $1.  Aborting."; exit 1; }
-  ;;
+  [ ! -z ${DEV_LANG+x}   ] || { >&2 echo -e "\n$0: no \$DEV_LANG. Check $1. Aborting."; exit 1; } ;;
 eval)
-  [ ! -z ${EVAL_LANG+x} ] || { >&2 echo -e "\n$0: no \$EVAL_LANG.  Check $1.  Aborting."; exit 1; }
-  ;;
+  [ ! -z ${EVAL_LANG+x}  ] || { >&2 echo -e "\n$0: no \$EVAL_LANG. Check $1. Aborting."; exit 1; } ;;
 esac
+
 mkdir -p "$(dirname "$ids_file")"
 for L in ${LANG[@]}; do
 	full_lang_name=`awk '/'$L'/ {print $2}' $langmap`
 	[ ! -z "$full_lang_name" ] || { >&2 echo -e "\n$0: no language $L in $langmap. Aborting."; exit 1; }
+	[ -d "$LISTDIR/$full_lang_name" ] || { >&2 echo -e "\n$0: missing directory $LISTDIR/$full_lang_name. Aborting."; exit 1; }
 	[ -s "$LISTDIR/$full_lang_name/$dtype" ] || { >&2 echo -e "\n$0: missing or empty file $LISTDIR/$full_lang_name/$dtype. Aborting."; exit 1; }
 	sed -e 's:.wav::' -e 's:.mp3::' $LISTDIR/$full_lang_name/$dtype
 done > $ids_file
