@@ -1,8 +1,8 @@
-# How to split utterances (uttid's) into train/dev/eval sets.
+# How to split utterances into train/dev/eval sets.
 
 This explains how to create the uttid's (utterance identifiers),
 split them randomly into three disjoint train/dev/eval sets,
-and put those uttid's in `data/lists/$lang/{train,dev,eval}`.
+and store them in `data/lists/$lang/{train,dev,eval}`.
 They will also end up in `$ids_file` aka `$trainids` aka `Exp/$lang/lists/train`.
 
 Stage 1's `preprocess_turker_transcripts.pl` makes uttid's like `part-7-uzbek_432_013` from the batchfile.
@@ -44,6 +44,7 @@ If the split worked, this command's output will be empty.
     diff <(cat train dev eval) /tmp/ids
 
 Move the files to the destination directory.
+
      mv train dev eval data/lists/$lang
 
 In `settings`, set `startstage=2`, and rerun.
