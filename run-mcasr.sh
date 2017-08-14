@@ -302,6 +302,12 @@ fi
 ((stage++))
 if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]; then
 	>&2 echo -n "Training phone-2-letter model (see $tmpdir/carmelout)..."
+	# Read a list of I/O pairs, e.g. Exp/russian/carmel/simple.
+	# This list is pairs of lines; each pair is an input sequence followed by an output sequence.
+	# Rewrite this list as an FST with new weights, e.g. Exp/russian/carmel/simple.trained.
+	# -f 1 does Dirichlet-prior smoothing.
+	# -M 20 limits training iterations to 20.
+	# -HJ honors our fearless leader (actually, output formatting)
 	hash carmel 2>/dev/null || { >&2 echo "Missing program 'carmel'.  Aborting."; exit 1; }
 	carmel -\? --train-cascade -t -f 1 -M 20 -HJ $carmeltraintxt $initcarmel 2>&1 \
 		| tee $tmpdir/carmelout | awk '/^i=|^Computed/ {printf "."; fflush (stdout)}' >&2
