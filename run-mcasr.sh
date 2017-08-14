@@ -263,7 +263,7 @@ fi
 #
 # Uses variables $carmelinitopt and $delimsymbol.
 # Reads files $phnalphabet and $engalphabet.
-# Creates file $initcarmel.
+# Creates file $initcarmel, e.g. Exp/uzbek/carmel/simple.
 ((stage++))
 if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]; then
 	>&2 echo -n "Creating untrained phone-2-letter model ($Pstyle style)... "
@@ -279,8 +279,8 @@ fi
 # Create training data to learn the phone-2-letter mappings defined in P.
 #
 # Reads files $TRANSDIR/$TRAIN_LANG[*]/ref_train.
-# Creates temporary file $reffile, e.g. Exp/uzbek/ref_train_text.
-# Creates file $carmeltraintxt.
+# Concatenates them into temporary file $reffile, e.g. Exp/uzbek/ref_train_text.
+# Creates file $carmeltraintxt, e.g. Exp/uzbek/carmel/training.txt.
 #
 # In each ref_train file, each line is an identifier followed by a sequence of phonemes,
 # given by passing the transcription through a G2P converter or a dictionary.
