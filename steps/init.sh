@@ -4,7 +4,7 @@
 # Define some utility functions.
 
 # Exit if there is any error.
-set -e
+#set -e
 
 scriptname=`basename "$0"`
 

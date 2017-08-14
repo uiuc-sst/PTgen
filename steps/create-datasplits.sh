@@ -2,6 +2,10 @@
 
 . $INIT_STEPS
 
+if [ "$DEBUG"==yes ]; then
+    set -x
+fi
+
 [ -s $langmap ] || { >&2 echo -e "\n$0: missing or empty langmap file $langmap. Check $1."; exit 1; }
 
 # Needs $datatype from run.sh's stage 3.

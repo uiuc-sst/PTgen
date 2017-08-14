@@ -4,6 +4,10 @@
 
 . $INIT_STEPS
 
+if [ "$DEBUG"==yes ]; then
+    set -x
+fi
+
 [ ! -z $testids ] || { >&2 echo "$0: no variable testids in file '$1'. Aborting."; exit 1; }
 [ ! -z $decodelatdir ] || { >&2 echo "$0: no variable decodelatdir in file '$1'. Aborting."; exit 1; }
 [ ! -z $evalreffile ] || { >&2 echo "$0: no variable evalreffile in file '$1'. Aborting."; exit 1; }
