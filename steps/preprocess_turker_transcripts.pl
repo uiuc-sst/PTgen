@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 
 # Preprocess crowd workers' (English) transcriptions.
+# Used only by run.sh, not by run-mcasr.sh.
 # On STDIN, expects something like the contents of data/batchfiles/DT/batchfile,
 # in CSV format with 55 fields (the used fields are starred):
 #  0 HITId
