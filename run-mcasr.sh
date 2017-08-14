@@ -268,7 +268,7 @@ fi
 if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]; then
 	>&2 echo -n "Creating untrained phone-2-letter model ($Pstyle style)... "
 	mkdir -p "$(dirname "$initcarmel")"
-	create-initcarmel.pl `echo $carmelinitopt` $phnalphabet $engalphabet $delimsymbol > $initcarmel
+	create-initcarmel.pl $carmelinitopt $phnalphabet $engalphabet $delimsymbol > $initcarmel
 	>&2 echo "Done."
 	echo "Stage 6 took" $SECONDS "seconds."; SECONDS=0
 else
