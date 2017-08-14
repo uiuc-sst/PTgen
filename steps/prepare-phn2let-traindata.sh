@@ -15,7 +15,7 @@ done > $reffile
 
 [ -s $reffile ] || { >&2 echo "$0: made empty $reffile, so skipping all utterances.  No training data."; exit 1; }
 
-showprogress init 30 "Preparing training data"
+showprogress init 60 "Preparing training data"
 
 # Without parallelizing, this stage would take 60 to 70% of run.sh's time.  (Carmel is most of the rest.)
 
@@ -42,10 +42,9 @@ for ip in `seq -w 1 $nLOTS`; do
     fi
     for rn in `seq 1 $nrand`; do
       echo $refstring
-      fstrandgen --npath=1 --select=log_prob $mergefstdir/$uttid.M.fst |
       #   --max_length: type = int32, default = 2147483647
       #    Number of paths to generate
-
+      fstrandgen --npath=1 --select=log_prob $mergefstdir/$uttid.M.fst |
 	fstprint --osymbols=$engalphabet |
 	reverse_randgenfstpaths.pl $uttid |
 	cut -d' ' -f2- |
