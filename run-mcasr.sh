@@ -122,12 +122,9 @@ if [[ $startstage -le 15 && 15 -le $endstage ]]; then
 fi
 
 ## STAGE 1 ##
-# Preprocess transcripts from crowd workers.
-#
-# Reads the files $engdict and $TURKERTEXT/*/batchfile, where * covers $ALL_LANGS.
-# Uses the variable $rmprefix, if defined.
+# Copies preprocessed transcripts from crowd workers.
+# Reads the files $SCRIPTPATH/mcasr/*.txt.
 # Creates the file $transcripts, e.g. tmp/Exp/uzbek/transcripts.txt
-# (Interspeech paper, figure 1, y^(i)).
 SECONDS=0
 stage=1
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
