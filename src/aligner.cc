@@ -100,7 +100,7 @@ dmap_t* makedmap(string dfile)
 {
     ifstream din(dfile.c_str());
     if (!din.is_open()) {
-        cerr << "Warning: Could not open file '" << dfile << "'. Using defaults instead.\n";
+        std::cerr << "Warning: Could not open file '" << dfile << "'. Using defaults instead.\n";
         return NULL;
     }
     dmap_t* dmap = new dmap_t;
@@ -222,7 +222,7 @@ int main(int argc, char** argv)
 	    }
 	}
 	if (!argerr.empty()) {
-	    cerr << "Error: " << argerr << "\nUsage: " << argv[0] << " [--empty empty_token] [--dist <distance file>]\n";
+	    std::cerr << "Error: " << argerr << "\nUsage: " << argv[0] << " [--empty empty_token] [--dist <distance file>]\n";
 	    exit(1);
 	}
     }
@@ -233,7 +233,7 @@ int main(int argc, char** argv)
     vector <vector <tok_t> > input;
     {
 	string line;
-	while (getline(cin, line) && input.size() < MAXSTRINGS) {
+	while (getline(std::cin, line) && input.size() < MAXSTRINGS) {
 	    if (line.empty())
 		continue;
 	    line = dummytoken + " " + line;
@@ -248,14 +248,14 @@ int main(int argc, char** argv)
     if (flip) {
         for (auto j=0u; j < width; ++j) {
             for (auto i=0u; i < output.size(); ++i)
-                cout << output[i][j] << " ";
-            cout << "\n";
+                std::cout << output[i][j] << " ";
+            std::cout << "\n";
         }
     } else {
         for (auto i=0u; i < output.size(); ++i) {
             for (auto j=0u; j < width; ++j)
-                cout << output[i][j] << " ";
-            cout << "\n";
+                std::cout << output[i][j] << " ";
+            std::cout << "\n";
         }
     }
     return 0;
