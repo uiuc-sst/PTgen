@@ -71,6 +71,10 @@ fi
 cp $hypfile $hypfile.PERnotWER
 phone2word.rb < $hypfile.PERnotWER > $hypfile
 
+jonmay=${hypfile}.jonmay.txt
+>&2 echo "Concatenating $hypfile entries into $jonmay."
+hyp2jonmay.rb < $hypfile > $jonmay
+
 compute-wer --text --mode=present ark:$evalreffile ark:$hypfile
 
 if [[ -n $evaloracle ]]; then
