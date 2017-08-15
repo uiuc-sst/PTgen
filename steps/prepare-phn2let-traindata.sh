@@ -15,6 +15,16 @@ done > $reffile
 
 [ -s $reffile ] || { >&2 echo "$0: made empty $reffile, so skipping all utterances.  No training data."; exit 1; }
 
+# Only for mcasr!
+if true; then
+  >&2 echo "$0: for MCASR, converting IPA phones to mcasr phone-indexes."
+  # Convert IPA phones to mcasr phone-indexes.
+  rm -f $reffile.tmp
+  mv $reffile $reffile.tmp
+  mcasr-phone2index.rb < $reffile.tmp > $reffile
+  rm -f $reffile.tmp
+fi
+
 showprogress init 60 "Preparing training data"
 
 # Without parallelizing, this stage would take 60 to 70% of run.sh's time.  (Carmel is most of the rest.)

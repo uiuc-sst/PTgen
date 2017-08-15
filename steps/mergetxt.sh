@@ -4,7 +4,9 @@
 
 mkdir -p $mergedir
 
-create-distances.pl > $aligndist # e.g., Exp/uzbek/aligndists.txt
+>&2 echo "$0: for MCASR, create-distances in PHONES not LETTERS."
+create-distances-phones.pl > $aligndist # e.g., Exp/uzbek/aligndists.txt
+# ;;;; create-distances.pl > $aligndist # e.g., Exp/uzbek/aligndists.txt
 
 showprogress init 100 "Merging transcripts"
 for ip in `seq -f %02g $nparallel`; do
