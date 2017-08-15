@@ -22,7 +22,7 @@ end
 
 # Restrict the set of phones, just like mcasr/phonelm/make-bigram-LM.rb.
 $restrict = Hash[ 
-  "aɪ", "a",
+  "aɪ", "ɑɪ",
   "bː", "b",
   "dː", "d",
   "eɪ", "ei",
@@ -44,7 +44,7 @@ $restrict = Hash[
   "tʰ", "t",
   "tː", "t",
   "zː", "z",
-  "œ", "æ",
+  "œ", "ɚ",
   "ɑɻ", "ɑ",
   "ɒ", "ɑ",
   "ɔɪ", "ɔi",
