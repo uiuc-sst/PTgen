@@ -22,10 +22,17 @@ begin
   # If the prondict's lines are [word SPACE spacedelimited-phones], change them to [word TAB spacedelimited-phones].
   pd.map! {|l| l =~ /\t/ ? l : l.sub(" ", "\t")}
   pd.map! {|l| l.split("\t") }
-  # Cull words with 5 or more in a row of the same letter or letter-pair ("hahahahaaaaaaa").
+  # Cull words with 4 or more in a row of the same letter or letter-pair ("hahahahaaaaaaa").
   # https://regex101.com/r/pJ3hJ9/1
-  pd.select! {|w,p| w !~ /(.)\1{4,}/ }
-  pd.select! {|w,p| w !~ /(..)\1{4,}/ }
+  pd.select! {|w,p| w !~ /(.)\1{3,}/ }
+  pd.select! {|w,p| w !~ /(..)\1{3,}/ }
+
+  if Prondict.downcase =~ /rus/
+    # For Russian, cull any word with a digit, or with 3+ consecutive latin letters.
+    # todo: handle square brackets somehow, they're pretty rare.
+    pd.select! {|w,p| w !~ /[0-9]/ }
+    pd.select! {|w,p| w !~ /[a-z]{3,}/ }
+  end
 
   # Like mcasr/phonelm/make-bigram-LM.rb and mcasr/stage1.rb.
   pd.select! {|w,p| p !~ / ABORT$/}
