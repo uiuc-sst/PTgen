@@ -2,10 +2,6 @@
 
 . $INIT_STEPS
 
-if [ "$DEBUG"==yes ]; then
-    set -x
-fi
-
 # Exit if there is any error.
 set -e
 

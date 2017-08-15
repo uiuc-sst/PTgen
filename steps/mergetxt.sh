@@ -2,10 +2,6 @@
 
 . $INIT_STEPS
 
-if [ "$DEBUG"==yes ]; then
-    set -x
-fi
-
 mkdir -p $mergedir
 
 create-distances.pl > $aligndist # e.g., Exp/uzbek/aligndists.txt
