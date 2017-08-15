@@ -50,6 +50,11 @@ STDERR.puts "#$0: loaded #{i} pronunciations from pronlex.  Converting utterance
 while l = gets
   uttid,phones = l.chomp.split("\t")
   print uttid + "\t"
+  if !phones
+    # Empty pronunciation.
+    puts
+    next
+  end
   phones = phones.split(" ")
   prefix = ""
   prefixPrev = ""
@@ -64,8 +69,9 @@ while l = gets
       next
     end
     if trie.has_key? prefixPrev
-      iStart = i
+      i = iStart = i+1
       words = h[prefixPrev]
+#     puts "\nPick one of: #{words.join(' ')}";
       word = words[rand(words.size)] # Choose a homonym at random.
       print word + " "
     else
