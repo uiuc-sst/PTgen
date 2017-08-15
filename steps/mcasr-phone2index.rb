@@ -68,7 +68,7 @@ raw.each {|l|
       # STDERR.puts "#{phIn} -> #{$restrict[phIn]} -> #{phOut}"
     end
     if !phOut
-      STDERR.puts "#$0: skipping unmapped phone #{phIn}, fyi #{phones[phIn]} #{phones[$restrict[phIn]]}\n\n"
+      STDERR.puts "#$0: skipping unmapped phone #{phIn}"
       next
     end
     m += phOut + " " # phOut may itself have spaces, e.g. "ɛ ə"
