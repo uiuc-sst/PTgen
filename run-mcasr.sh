@@ -12,12 +12,9 @@
 # for tuning hyper-parameters such as # of phone deletions/insertions,
 # and because they *are* functionally distinct.
 
-# export DEBUG=yes in order to launch set -x in all subscripts
-# any other setting will not use set -x
-export DEBUG=yes
-if [ "$DEBUG"==yes ]; then
-    set -x
-fi
+# To show debug info, export DEBUG=yes.
+export DEBUG=no
+[ "$DEBUG"==yes ] || set -x
 
 SCRIPT="$(readlink --canonicalize-existing "$0")"
 SCRIPTPATH="$(dirname "$SCRIPT")"
