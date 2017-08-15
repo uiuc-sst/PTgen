@@ -4,7 +4,7 @@
 # Convert phone strings to word strings using a trie.
 # Very fast, but unlikely to be optimal.
 
-# Word, tab, space-delimited phones.
+# Word, tab (or space), space-delimited phones.
 Prondict = "rus-prondict-july26.txt" # "mcasr/phonelm/prondict_uzbek-from-wenda.txt"
 $phoneFile="../../mcasr/phones.txt"
 
@@ -24,14 +24,12 @@ begin
   pd.map! {|l| l.split("\t") }
   # Cull words with 4 or more in a row of the same letter or letter-pair ("hahahahaaaaaaa").
   # https://regex101.com/r/pJ3hJ9/1
-  pd.select! {|w,p| w !~ /(.)\1{3,}/ }
-  pd.select! {|w,p| w !~ /(..)\1{3,}/ }
+  pd.select! {|w,p| w !~ /(.)\1{3,}/ && w !~ /(..)\1{3,}/ }
 
   if Prondict.downcase =~ /rus/
     # For Russian, cull any word with a digit, or with 3+ consecutive latin letters.
-    # todo: handle square brackets somehow, they're pretty rare.
-    pd.select! {|w,p| w !~ /[0-9]/ }
-    pd.select! {|w,p| w !~ /[a-z]{3,}/ }
+    # todo: somehow handle [ and ], they're pretty rare.  And (usually trailing) "…".
+    pd.select! {|w,p| w !~ /[0-9]/ && w !~ /[a-z]{3,}/ }
   end
 
   # Like mcasr/phonelm/make-bigram-LM.rb and mcasr/stage1.rb.
