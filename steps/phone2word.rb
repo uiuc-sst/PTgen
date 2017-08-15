@@ -5,16 +5,23 @@
 # Very fast, but unlikely to be optimal.
 
 # Word, tab, space-delimited phones.
-Prondict = "/r/lorelei/mcasr/phonelm/prondict_uzbek-from-wenda.txt"
-$phoneFile="/r/lorelei/PTgen/mcasr/phones.txt"
+Prondict = "rus-prondict-july26.txt" # "mcasr/phonelm/prondict_uzbek-from-wenda.txt"
+$phoneFile="../../mcasr/phones.txt"
 
-require "trie" # gem install fast-trie
+begin
+  require "trie" # gem install fast-trie
+rescue LoadError
+  require "/home/camilleg/gems/fast_trie-0.5.1/ext/trie.so" # ifp-53
+end
 trie = Trie.new
 h =  Hash.new {|h,k| h[k] = []} # A hash mapping each pronunciation to an array of homonym words.
 i = 0
 STDERR.puts "#$0: reading pronlex..."
 begin
-  pd = File.readlines(Prondict).map {|l| l.chomp.strip.split("\t") }
+  pd = File.readlines(Prondict) .map {|l| l.chomp.strip }
+  # If the prondict's lines are [word SPACE spacedelimited-phones], change them to [word TAB spacedelimited-phones].
+  pd.map! {|l| l =~ /\t/ ? l : l.sub(" ", "\t")}
+  pd.map! {|l| l.split("\t") }
   # Cull words with 5 or more in a row of the same letter or letter-pair ("hahahahaaaaaaa").
   # https://regex101.com/r/pJ3hJ9/1
   pd.select! {|w,p| w !~ /(.)\1{4,}/ }
