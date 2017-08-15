@@ -18,7 +18,7 @@ mktmpdir
 editfst=$tmpdir/edit.fst
 create-editfst.pl < $phnalphabet | fstcompile > $editfst 
 
-showprogress init 15 "Evaluating PTs"
+showprogress init 50 "Evaluating PTs"
 for ip in `seq -f %02g $nparallel`; do
 	(
 	[ -s $splittestids.$ip ] || { >&2 echo "`basename $0`: missing or empty file $splittestids.$ip."; }
@@ -72,8 +72,9 @@ cp $hypfile $hypfile.PERnotWER
 phone2word.rb < $hypfile.PERnotWER > $hypfile
 
 jonmay=${hypfile}.jonmay.txt
->&2 echo "Concatenating $hypfile entries into $jonmay."
-hyp2jonmay.rb < $hypfile > $jonmay
+jonmaydir=${hypfile}.jonmay.dir
+>&2 echo "Concatenating $hypfile entries into $jonmay and $jonmaydir."
+hyp2jonmay.rb $jonmaydir < $hypfile > $jonmay
 
 compute-wer --text --mode=present ark:$evalreffile ark:$hypfile
 
