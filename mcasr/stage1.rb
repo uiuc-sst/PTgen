@@ -22,11 +22,9 @@
 
 # Maybe todo: remove consecutive duplicate phones, esp. SPN and SIL.  They're in 3% of uzbek transcriptions, 7% of russian.
 
-raw = ARGF.readlines .map {|l| l.split}
-
 clips = Hash.new {|h,k| h[k] = []} # Map each clip-name to an array of transcriptions.
 
-raw.each {|l|
+ARGF.readlines .map {|l| l.split} .each {|l|
   name = l[0][0..-5]
   scrip = l[1..-1].map {|p| p.sub /_[BEIS]/, ''}
   clips[name] << scrip
