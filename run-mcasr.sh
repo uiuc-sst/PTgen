@@ -76,7 +76,7 @@ export PATH=$PATH:$SRCDIR:$UTILDIR:$OPENFSTDIR:$CARMELDIR:$KALDIDIR
 
 if [[ ! -d $DATA ]]; then
   if [ -z ${DATA_URL+x} ]; then
-    echo "Missing DATA directory $DATA, and no \$DATA_URL to get it from. Check $1."; exit 1
+    echo "Missing DATA directory '$DATA', and no \$DATA_URL to get it from. Check $1."; exit 1
   fi
   tarball=`basename $DATA_URL`
   # $DATA_URL is e.g. http://www.ifp.illinois.edu/something/foo.tgz
@@ -89,13 +89,13 @@ if [[ ! -d $DATA ]]; then
   fi
   # Check the name of the tarball's first file (probably a directory).  Strip the trailing slash.
   tarDir=`tar tvf $tarball | head -1 | awk '{print $NF}' | sed -e 's_\/$__'`
-  [ "$tarDir" == "$DATA" ] || { echo "Tarball $tarball contains $tarDir, not \$DATA $DATA."; exit 1; }
-  echo "Extracting $tarball, hopefully into \$DATA $DATA."
+  [ "$tarDir" == "$DATA" ] || { echo "Tarball $tarball contains $tarDir, not \$DATA '$DATA'."; exit 1; }
+  echo "Extracting $tarball, hopefully into \$DATA '$DATA'."
   tar xzf $tarball || ( echo "Unexpected contents in $tarball.  Aborting."; exit 1 )
-  [ -d $DATA ] || { echo "Still missing DATA directory $DATA. Check $DATA_URL and $1."; exit 1; }
-  echo "Installed \$DATA $DATA."
+  [ -d $DATA ] || { echo "Still missing DATA directory '$DATA'. Check $DATA_URL and $1."; exit 1; }
+  echo "Installed \$DATA '$DATA'."
 fi
-[ -d $DATA ] || { echo "Still missing DATA directory $DATA. Check $DATA_URL and $1."; exit 1; }
+[ -d $DATA ] || { echo "Still missing DATA directory '$DATA'. Check $DATA_URL and $1."; exit 1; }
 [ -d $LISTDIR ] || { echo "Missing LISTDIR directory $LISTDIR. Check $1."; exit 1; }
 [ -d $TRANSDIR ] || { echo "Missing TRANSDIR directory $TRANSDIR. Check $1."; exit 1; }
 [ -d $TURKERTEXT ] || { echo "Missing TURKERTEXT directory $TURKERTEXT. Check $1."; exit 1; }
@@ -132,13 +132,16 @@ fi
 SECONDS=0
 stage=1
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
+	[ ! -z $LANG_CODE ] || { >&2 echo "No variable LANG_CODE in file '$1'."; exit 1; }
+	[ -s $SCRIPTPATH/mcasr/stage1-$LANG_CODE.txt ] || { >&2 echo "Missing or empty file $SCRIPTPATH/mcasr/stage1-$LANG_CODE.txt. Check $1."; exit 1; }
 	mkdir -p "$(dirname "$transcripts")"
+	cp $SCRIPTPATH/mcasr/stage1-$LANG_CODE.txt $transcripts
 	if true; then
 	  # Full dataset
-	  cat $SCRIPTPATH/mcasr/stage1.txt $SCRIPTPATH/mcasr/stage1-sbs.txt > $transcripts
+	  cat $SCRIPTPATH/mcasr/stage1-sbs.txt >> $transcripts
 	else
-	  # Just for debugging
-	  cat $SCRIPTPATH/mcasr/stage1.txt > $transcripts
+	  # Fast (esp. stage 3), just for debugging
+	  echo "Stage 1 shortcut skipping almost all of the SBS transcripts."
 	  head -50 $SCRIPTPATH/mcasr/stage1-sbs.txt >> $transcripts
 	fi
 	echo "Stage 1 took" $SECONDS "seconds."; SECONDS=0
