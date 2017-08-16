@@ -4,9 +4,22 @@
 # Convert phone strings to word strings using a trie.
 # Very fast, but unlikely to be optimal.
 
+if ARGV.size != 1
+  STDERR.puts "Usage: #$0 pronlex.txt < hypotheses-as-phones.txt > hypotheses-as-words.txt"
+  exit 1
+end
 # Word, tab (or space), space-delimited phones.
-Prondict = "rus-prondict-july26.txt" # "mcasr/phonelm/prondict_uzbek-from-wenda.txt"
+Prondict = ARGV[0]
+if !File.file? Prondict
+  STDERR.puts "#$0: missing pronlex #{Prondict}."
+  exit 1
+end
+
 $phoneFile="../../mcasr/phones.txt"
+if !File.file? $phoneFile
+  STDERR.puts "#$0: missing list of phones #$phoneFile."
+  exit 1
+end
 
 begin
   require "trie" # gem install fast-trie
@@ -16,7 +29,8 @@ end
 trie = Trie.new
 h =  Hash.new {|h,k| h[k] = []} # A hash mapping each pronunciation to an array of homonym words.
 i = 0
-STDERR.puts "#$0: reading pronlex..."
+
+STDERR.puts "#{File.basename $0}: reading pronlex #{Prondict}..."
 begin
   pd = File.readlines(Prondict) .map {|l| l.chomp.strip }
   # If the prondict's lines are [word SPACE spacedelimited-phones], change them to [word TAB spacedelimited-phones].
@@ -47,12 +61,12 @@ begin
   pd.each {|w,p| trie.add p; i += 1 }
   pd.each {|w,p| h[p] << w }
 end
-STDERR.puts "#$0: loaded #{i} pronunciations from pronlex.  Converting utterance transcriptions from phones to words..."
+STDERR.puts "#{File.basename $0}: loaded #{i} pronunciations from pronlex.  Converting utterance transcriptions from phones to words..."
 # Now trie has all the pronunciations, and h has all the homonyms.
 
 # Parse and convert hypotheses.txt from STDIN, one line at a time.
 # Each line is uttid, tab, space-delimited phone-numbers.
-while l = gets
+$stdin.each_line {|l|
   uttid,phones = l.chomp.split("\t")
   print uttid + "\t"
   if !phones
@@ -87,5 +101,5 @@ while l = gets
     prefix = ""
   end
   puts
-end
-STDERR.puts "#$0: done."
+}
+STDERR.puts "#{File.basename $0}: done."

@@ -7,8 +7,10 @@
 [ ! -z $testids ] || { >&2 echo "$0: no variable testids in file '$1'. Aborting."; exit 1; }
 [ ! -z $decodelatdir ] || { >&2 echo "$0: no variable decodelatdir in file '$1'. Aborting."; exit 1; }
 [ ! -z $evalreffile ] || { >&2 echo "$0: no variable evalreffile in file '$1'. Aborting."; exit 1; }
+[ ! -z $pronlex ] || { >&2 echo "$0: no variable pronlex in file '$1'. Aborting."; exit 1; }
 [[ ! (-n $evaloracle && -z $prunewt) ]] || { >&2 echo "$0: corrupt variables evaloracle or prunewt in file '$1'. Aborting."; exit 1; }
 [ -s $evalreffile ] || { >&2 echo "$0: missing or empty file '$evalreffile', evalreffile in file '$1'. Aborting."; exit 1; }
+[ -s $pronlex ] || { >&2 echo "$0: missing or empty file '$pronlex', pronlex in file '$1'. Aborting."; exit 1; }
 # $evalreffile is the known-good transcriptions for compute-wer, e.g. data/nativetranscripts/uzbek/dev_text.
 hash compute-wer 2>/dev/null || { >&2 echo "$0: missing program compute-wer. Aborting."; exit 1; }
 
@@ -28,7 +30,7 @@ for ip in `seq -f %02g $nparallel`; do
 		showprogress go
 		# $uttid ==, e.g., uzbek_371_001
 		latfile=$decodelatdir/$uttid.GTPLM.fst
-		[ -s $latfile ] || { >&2 echo -e "\n$0: no decoded lattice '$latfile'. Skipping $uttid."; continue; }
+		[ -s $latfile ] || { >&2 echo -e "`basename $0`: no decoded lattice '$latfile'. Skipping $uttid."; continue; }
 		if [[ -n $evaloracle ]]; then
 			# Make an acceptor for known-good transcription (phones).
 			reffst=$tmpdir/$uttid.ref.fst
@@ -67,14 +69,16 @@ if [[ ! -z $hypfile ]]; then
 fi
 
 # Compute word error rate rather than phone error rate.
+set -e
 >&2 echo "Converting $hypfile from phone strings to word strings."
-cp $hypfile $hypfile.PERnotWER
-phone2word.rb < $hypfile.PERnotWER > $hypfile
-
+cp $hypfile $hypfile.phones
+phone2word.rb $pronlex < $hypfile.phones > $hypfile
+# Format transcriptions for Jon May.
 jonmay=${hypfile}.jonmay.txt
 jonmaydir=${hypfile}.jonmay.dir
 >&2 echo "Concatenating $hypfile entries into $jonmay and $jonmaydir."
 hyp2jonmay.rb $jonmaydir < $hypfile > $jonmay
+set +e
 
 compute-wer --text --mode=present ark:$evalreffile ark:$hypfile
 
