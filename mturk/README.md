@@ -5,6 +5,11 @@
 - Using an existing project, at right click on Copy.
 - Edit the copy as needed.
 
+### *Deprecated*
+
+Most of the rest of these instructions are obsolete.
+Instead, see the revised [mcasr](https://github.com/uiuc-sst/mcasr/tree/master/0-mturk) version.
+
 ### Get a collection of recordings of speech, in .wav or .flac format.
 - Concatenate them, monophonic (`channels 1` combines stereo channels into mono)
 and with a consistent sampling rate (`-r 22050`), into `/tmp/a.wav`.

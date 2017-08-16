@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+puts "#$0 is deprecated.  Instead use mcasr's 0-mturk/split.rb."; exit 1
+
 # Reads monophonic /tmp/a.wav.
 # Creates /tmp/turkAudio.tar, which contains .mp3 and .ogg clips.
 
