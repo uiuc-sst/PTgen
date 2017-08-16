@@ -8,6 +8,8 @@
 [ ! -z $decodelatdir ] || { >&2 echo "$0: no variable decodelatdir in file '$1'. Aborting."; exit 1; }
 [ ! -z $evalreffile ] || { >&2 echo "$0: no variable evalreffile in file '$1'. Aborting."; exit 1; }
 [ ! -z $pronlex ] || { >&2 echo "$0: no variable pronlex in file '$1'. Aborting."; exit 1; }
+[ ! -z $LANG_CODE ] || { >&2 echo "$0: no variable LANG_CODE in file '$1'. Aborting."; exit 1; }
+[ ! -z $DATE_USC ] || { >&2 echo "$0: no variable DATE_USC in file '$1'. Aborting."; exit 1; }
 [[ ! (-n $evaloracle && -z $prunewt) ]] || { >&2 echo "$0: corrupt variables evaloracle or prunewt in file '$1'. Aborting."; exit 1; }
 [ -s $evalreffile ] || { >&2 echo "$0: missing or empty file '$evalreffile', evalreffile in file '$1'. Aborting."; exit 1; }
 [ -s $pronlex ] || { >&2 echo "$0: missing or empty file '$pronlex', pronlex in file '$1'. Aborting."; exit 1; }
@@ -68,16 +70,17 @@ if [[ ! -z $hypfile ]]; then
 	cp $tmpdir/hyp.txt $hypfile
 fi
 
-# Compute word error rate rather than phone error rate.
+# Convert from phones to words,
+# to compute word error rate rather than phone error rate.
 set -e
 >&2 echo "Converting $hypfile from phone strings to word strings."
 cp $hypfile $hypfile.phones
 phone2word.rb $pronlex < $hypfile.phones > $hypfile
 # Format transcriptions for Jon May.
-jonmay=${hypfile}.jonmay.txt
+jonmay=${hypfile}.restitched.txt
 jonmaydir=${hypfile}.jonmay.dir
 >&2 echo "Concatenating $hypfile entries into $jonmay and $jonmaydir."
-hyp2jonmay.rb $jonmaydir < $hypfile > $jonmay
+hyp2jonmay.rb $jonmaydir $LANG_CODE $DATE_USC $EXPLOCAL < $hypfile > $jonmay
 set +e
 
 compute-wer --text --mode=present ark:$evalreffile ark:$hypfile

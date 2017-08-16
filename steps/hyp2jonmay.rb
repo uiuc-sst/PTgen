@@ -5,11 +5,12 @@
 # Write the single text file $jonmay,
 # and the dir of utterance-files jonmaydir for Jon's flat2elisa.py.
 
-if ARGV.size != 1
-  STDERR.puts "Usage: #$0 jonmay_dir < hyp.txt > jonmay_hyp.txt"
+if ARGV.size != 4
+  STDERR.puts "Usage: #$0 jonmay_dir three_letter_language_code date_USC EXPLOCAL < hyp.txt > jonmay_hyp.txt"
   exit 1
 end
 $jonmaydir = ARGV[0]
+$EXPLOCAL = ARGV[3]
 
 scrips = Hash.new {|h,k| h[k] = []} # Map each uttid to an array of transcriptions.
 
@@ -26,11 +27,21 @@ scrips.map! {|uttid,ss| [uttid, ss.sort_by {|t,s| t}]}      # Within each uttid,
 scrips.map! {|uttid,ss| [uttid, ss.transpose[1].join(' ')]} # Within each uttid, concat its scrips.
 scrips.each {|uttid,ss| puts "#{uttid} #{ss}"}
 
+$sourceLanguage = ARGV[1]
+$genre = "SP" # "SP"eech
+$provenance = "000000" # Media outlet.  Might be in the files given to UIUC.
+$date = ARGV[2] # "20170817"
+$langForJon = $sourceLanguage.downcase
+
 `rm -rf #$jonmaydir; mkdir #$jonmaydir`
-scrips.each {|uttid,ss| File.open("#$jonmaydir/#{uttid}.txt", "w") {|f| f.puts ss}}
+scrips.each {|uttid,ss|
+  indexID = uttid.gsub /[_a-zA-Z]/, ""
+  name = "#{$sourceLanguage}_#{$genre}_#{$provenance}_#{$date}_#{indexID}"
+  File.open("#$jonmaydir/#{name}.txt", "w") {|f| f.puts ss}
+}
 
-$tojon = "il5.eval-asr-uiuc.xml"
-`/ws/ifp-53_1/hasegawa/data/lorelei/PTgen/test/mcasr-rus/flat2elisa/flat2elisa.py -i #$jonmaydir -l rus -o #$tojon`
-`gzip --best #$tojon`
-
-STDERR.puts "todo: sftp the file #$tojon.gz to Jon." # See aug/a.txt.
+$tojon = "#$EXPLOCAL/#$langForJon.eval-asr-uiuc.xml"
+puts "/ws/ifp-53_1/hasegawa/data/lorelei/PTgen/test/mcasr-rus/flat2elisa/flat2elisa.py -i #$jonmaydir -l #$langForJon -o #$tojon"
+`/ws/ifp-53_1/hasegawa/data/lorelei/PTgen/test/mcasr-rus/flat2elisa/flat2elisa.py -i #$jonmaydir -l #$langForJon -o #$tojon`
+`rm -rf #$jonmaydir #$tojon.gz; gzip --best #$tojon`
+STDERR.puts "Please sftp to Jon the file #$tojon.gz." # See aug/a.txt.
