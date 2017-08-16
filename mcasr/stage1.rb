@@ -4,16 +4,15 @@
 # Simplifies the phone set, coalesces each clip's transcriptions,
 # and rewrites those as phone index numbers.
 
-# Usage: ./stage1.rb < uzb-clips.txt > stage1.txt
-# Usage: ./stage1.rb < rus-clips.txt > stage1.txt
-
-# The file xxx-clips.txt comes from mcasr, e.g.:
+# Usage: ./stage1.rb < xxx-clips.txt > stage1-$LANG_CODE.txt
+#
+# xxx-clips.txt comes from mcasr's outputs, with a command like:
 #
 # ifp-53:mcasr/s5c% /ws/ifp-53_1/hasegawa/tools/kaldi/kaldi/src/bin/ali-to-phones exp/Uzbek/mono/final.mdl ark:'gunzip -c exp/Uzbek/mono_ali/ali.*.gz|' ark,t:- | utils/int2sym.pl -f 2- data/Russian/lang/phones.txt - > uzb-clips.txt
 #
 # ifp-53:mcasr/s5c% /ws/ifp-53_1/hasegawa/tools/kaldi/kaldi/src/bin/ali-to-phones exp/Russian/tri4b/final.mdl ark:'gunzip -c exp/Russian/tri4b_ali/ali.*.gz|' ark,t:- | utils/int2sym.pl -f 2- data/Russian/lang/phones.txt - > /tmp/rus-clips.txt
-#
-# Reformats that as one line per mp3 clip, with #-delimited transcriptions.
+
+# This script reformats xxx-clips.txt as one line per mp3 clip, with #-delimited transcriptions.
 # Removes _B _E _I _S suffixes from phones, because word boundaries are meaningless for nonsense words.
 #
 # Does *not* trim off leading or trailing SIL silence and SPN speaker noise,
