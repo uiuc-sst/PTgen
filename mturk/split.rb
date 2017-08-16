@@ -17,10 +17,10 @@ $slice = 1.25 # seconds
 
 puts "Splitting #$dur seconds into slices each #$slice s long."
 
-# For clips this short, prefer sox to ffmpeg, because ffmpeg has a bug,
-# sometimes making clips too long:  -t 1.25 may act like -t 1.30.
-# (When converting .wav to .mp3, even sox may append 30 ms of silence,
-# but turkers can't notice that.)
+# For clips this short, prefer sox to ffmpeg, because ffmpeg may
+# incorrectly makes clips too long:  -t 1.25 may act like -t 1.30.
+# (When converting .wav to .mp3, sox may append 30 ms of silence,
+# but that doesn't matter.)
 
 Dir.mkdir '/tmp/a'
 Dir.chdir '/tmp/a'
