@@ -19,13 +19,28 @@
 # because those help PTgen score and align transcriptions.
 # Does *not* remove duplicate transcriptions, for the same reason.
 
-# Maybe todo: remove consecutive duplicate phones, esp. SPN and SIL.  They're in 3% of uzbek transcriptions, 7% of russian.
+# Maybe todo: remove consecutive duplicate phones, esp. SPN and SIL.
+# They're in 3% of uzbek transcriptions, 7% of russian, 13% of oromo.
+if false
+  # Report if a prondict has any duplicate phones.
+  prondict = "prondicts/rus-prondict-july26.txt"
+  prondict = "prondicts/Tigrinya/dictionary.txt"
+  prondict = "prondicts/Tigrinya/prondict-from-amharic-phones.txt"
+  prondict = "prondicts/Oromo/dictionary.txt"
+  File.readlines(prondict) .map {|l| l.split(/\s+/)[1..-1]} .each {|l|
+    f = false
+    (l.size-1).times {|i| f |= l[i]==l[i+1]}
+    p l.join(' ') if f
+  }
+  exit 0
+end
 
 clips = Hash.new {|h,k| h[k] = []} # Map each clip-name to an array of transcriptions.
 
 ARGF.readlines .map {|l| l.split} .each {|l|
   name = l[0][0..-5]
-  scrip = l[1..-1].map {|p| p.sub /_[BEIS]/, ''}
+  scrip = l[1..-1].map {|p| p.sub /_[BEIS]/, ''} \
+    .chunk {|x| x}.map(&:first) # Remove consecutive duplicates.
   clips[name] << scrip
 
   if false
