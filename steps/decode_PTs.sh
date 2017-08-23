@@ -15,7 +15,7 @@ else
   splitids=$splittestids
 fi
 
-showprogress init 5 "" # Long description is in caller, ../run.sh.
+showprogress init 30 "" # Long description is in caller, ../run.sh.
 for ip in `seq -f %02g $nparallel`; do
   (
   for uttid in `cat $splitids.$ip`; do
