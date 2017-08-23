@@ -22,6 +22,7 @@ mktmpdir
 editfst=$tmpdir/edit.fst
 create-editfst.pl < $phnalphabet | fstcompile > $editfst 
 
+# todo: move this showprogress block into its own stage.
 showprogress init 50 "Evaluating PTs"
 for ip in `seq -f %02g $nparallel`; do
 	(
@@ -74,13 +75,16 @@ fi
 # to compute word error rate rather than phone error rate.
 set -e
 >&2 echo "Converting $hypfile from phone strings to word strings."
-cp $hypfile $hypfile.phones
-phone2word.rb $pronlex < $hypfile.phones > $hypfile
-# Format transcriptions for Jon May.
+sort -n < $hypfile > $hypfile.phones
+
+# Restitch clips, then convert phone strings to word strings.
+# Update $hypfile too, for compute-wer?
 jonmay=${hypfile}.restitched.txt
 jonmaydir=${hypfile}.jonmay.dir
->&2 echo "Concatenating $hypfile entries into $jonmay and $jonmaydir."
-hyp2jonmay.rb $jonmaydir $LANG_CODE $DATE_USC $EXPLOCAL < $hypfile > $jonmay
+phone2word.rb $pronlex < $hypfile.phones > $jonmay
+
+>&2 echo "Formatting $jonmay entries into $jonmaydir."
+hyp2jonmay.rb $jonmaydir $LANG_CODE $DATE_USC $EXPLOCAL < $jonmay
 set +e
 
 compute-wer --text --mode=present ark:$evalreffile ark:$hypfile

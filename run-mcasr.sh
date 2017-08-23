@@ -193,6 +193,7 @@ fi
 # (40/10/10 minutes, in the TASLP paper).
 
 ((stage++))
+set -e
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	case $TESTTYPE in
 	dev | eval)  ;;
@@ -207,6 +208,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 else
 	usingfile "$(dirname "$splittestids")" "test & train ID lists in"
 fi
+set +e
 
 ## STAGE 4 ##
 # For each utterance ($uttid), merge all of its transcriptions.

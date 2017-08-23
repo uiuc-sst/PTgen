@@ -6,6 +6,7 @@
 
 if ARGV.size != 1
   STDERR.puts "Usage: #$0 pronlex.txt < hypotheses-as-phones.txt > hypotheses-as-words.txt"
+  # STDIN must be sorted, for prepending SIL to noncontiguous clips.
   exit 1
 end
 # Word, tab (or space), space-delimited phones.
@@ -20,6 +21,36 @@ if !File.file? $phoneFile
   STDERR.puts "#$0: missing list of phones #$phoneFile."
   exit 1
 end
+
+# First, restitch clips' transcriptions into transcriptions of full utterances.
+# Each line is uttid, tab, space-delimited phone-numbers.
+scrips = Hash.new {|h,k| h[k] = []} # Map each uttid to an array of transcriptions.
+$endtimePrev = -1
+$uttidPrev = uttid = "bogus"
+$stdin.each_line {|l|
+  l = l.split
+  s = l[1..-1].join(" ")				# иисусу хоста иаа
+  next if s.empty?
+  if true						# todo: find the penultimate _ and split there.
+    $uttidPrev = uttid
+    uttid = l[0][0..15]					# IL5_EVAL_019_012
+    starttime = l[0][17..-1].sub(/_.*/, '').to_i	# 101824705
+    $endtimePrev = l[0][27..-1].to_i
+  else
+    uttid = l[0][0..10]					# RUS_134_004
+    starttime = l[0][12..-1].sub(/_.*/, '').to_i	# 101824705
+  end
+
+  # Prepend SIL if this clip wasn't immediately after the previous one.
+  s = "1 " + s if $endtimePrev >= 0 && $endtimePrev+1 < starttime
+
+  scrips[uttid] << [starttime, s]
+  $endtimePrev = -1 if uttid != $uttidPrev
+}
+scrips = scrips.to_a.sort_by {|uttid,ss| uttid}
+scrips.map! {|uttid,ss| [uttid, ss.sort_by {|t,s| t}]}      # Within each uttid, sort the scrips by time.
+scrips.map! {|uttid,ss| [uttid, ss.transpose[1].join(' ')]} # Within each uttid, concat its scrips.
+#scrips.each {|uttid,ss| puts "#{uttid} #{ss}"} # e.g., IL6_EVAL_024_013 53 42 15 56 22 42 44 28 30 19 ...
 
 begin
   require "trie" # gem install fast-trie
@@ -84,11 +115,8 @@ end
 STDERR.puts "#{File.basename $0}: loaded #{i} pronunciations from pronlex.  Converting utterance transcriptions from phones to words..."
 # Now trie has all the pronunciations, and h has all the homonyms.
 
-
-# Parse and convert hypotheses.txt from STDIN, one line at a time.
-# Each line is uttid, tab, space-delimited phone-numbers.
-$stdin.each_line {|l|
-  uttid,phones = l.chomp.split("\t")
+# Output the restitched and phone2word'ed transcriptions.
+scrips.each {|uttid,phones|
   print uttid + "\t"
   if !phones
     # Empty pronunciation.
