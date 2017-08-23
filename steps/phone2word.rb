@@ -40,11 +40,30 @@ begin
   # https://regex101.com/r/pJ3hJ9/1
   pd.select! {|w,p| w !~ /(.)\1{3,}/ && w !~ /(..)\1{3,}/ }
 
+  # Compress tripled-or-more letters "aaa" to doubled letters "aa".
+  # (Tripled letters are in *some* valid words,
+  # https://linguistics.stackexchange.com/q/9713/17197,
+  # but they are much rarer than what shows up in Prondict (e.g. Oromo),
+  # so optimize for the common case.)
+  pd.map! {|w,p| [w.gsub(/(.)\1{2,}/, '\1\1'), p]}
+  pd.sort!
+  if false
+    # Report any duplicated word with different pronunciations.  Rare, in practice.
+    (pd.size-1).times {|i|
+      if pd[i][0] == pd[i+1][0] && pd[i][1] != pd[i+1][1]
+	STDERR.puts pd[i]; STDERR.puts pd[i+1]
+      end
+    }
+  end
+  pd.uniq!
+
   if Prondict.downcase =~ /rus/
     # For Russian, cull any word with a digit, or with 3+ consecutive latin letters.
     # todo: somehow handle [ and ], they're pretty rare.  And (usually trailing) "…".
     pd.select! {|w,p| w !~ /[0-9]/ && w !~ /[a-z]{3,}/ }
   end
+
+  pd.map! {|w,p| [w, p.split(" ") .chunk {|x| x} .map(&:first) .join(" ")]} # Remove consecutive duplicate phones.
 
   # Like mcasr/phonelm/make-bigram-LM.rb and mcasr/stage1.rb.
   pd.select! {|w,p| p !~ / ABORT$/}
@@ -56,13 +75,15 @@ begin
 
   # Convert each pronunciation's entries from a phone to the phone's index in the symbol table.
   # Convert each phone, then join the array back into a string, for the trie.
-  pd.map! {|w,pron| [w, pron.map {|ph| $phones[ph]} .join(" ")] }
+  pd.map! {|w,pron| [w, pron.map {|ph| $phones[ph]} .join(" ") .gsub(/\s+/, ' ') .strip] }
 
   pd.each {|w,p| trie.add p; i += 1 }
   pd.each {|w,p| h[p] << w }
 end
+# File.open("/tmp/prondict-reconstituted.txt", "w") {|f| h.each {|pron,words| f.puts "#{pron}\t\t#{words.join(' ')}"} }
 STDERR.puts "#{File.basename $0}: loaded #{i} pronunciations from pronlex.  Converting utterance transcriptions from phones to words..."
 # Now trie has all the pronunciations, and h has all the homonyms.
+
 
 # Parse and convert hypotheses.txt from STDIN, one line at a time.
 # Each line is uttid, tab, space-delimited phone-numbers.
