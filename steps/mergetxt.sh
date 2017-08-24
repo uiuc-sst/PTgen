@@ -8,6 +8,17 @@ mkdir -p $mergedir
 create-distances-phones.pl > $aligndist # e.g., Exp/uzbek/aligndists.txt
 # ;;;; create-distances.pl > $aligndist # e.g., Exp/uzbek/aligndists.txt
 
+>&2 echo "$0: parsing $transcripts and $simfile."
+rm -f /tmp/hash_transcripts.sh
+makeHash.rb scrips < $transcripts > /tmp/hash_transcripts.sh
+. /tmp/hash_transcripts.sh
+makeHash.rb sims < $simfile > /tmp/hash_transcripts.sh
+. /tmp/hash_transcripts.sh
+rm -f /tmp/hash_transcripts.sh
+# Values are "${scrips[@]}".  Keys are "${!scrips[@]}".  Ditto for sims[].
+# Before looking up a key in scrips, downcase it: key="${key,,}"
+# echo "${scrips[uzb_001_001_017709_018816]}"
+
 showprogress init 100 "Merging transcripts"
 for ip in `seq -f %02g $nparallel`; do
 	(
@@ -36,15 +47,17 @@ for ip in `seq -f %02g $nparallel`; do
 			set +e # prevent matchless grep from exiting this script
 			if [ "$oldway" = "true" ]; then
 			  part="part-$p-$uttid"
-			  str=`grep "$part," $simfile`
-			  tstr=`grep -i "$part:" $transcripts`
+			  str=$[sims[${part,,}]]
+			  tstr=$[scrips[${part,,}]]
 			else
 			  part=${actualparts[`expr $p - 1`]}
 			  # echo reading part $part
-			  # The next two greps are a major bottleneck when $transcripts is 13 MB, $simfile 4 MB.
-			  # Replace with a hash table or something?
-			  tstr=`grep -i "$part:" $transcripts`
-			  str=`grep -i "$part," $simfile`
+
+			  # $part is e.g. IL6_EVAL_001_002_011245212_012494679
+			  # After uzb, i.e., rus, tig, orm,
+			  # there's only one match, and that's at the start of the line.
+			  str=$[sims[${part,,}]]
+			  tstr=$[scrips[${part,,}]]
 			fi
 			set -e
 			if [[ -z $str || -z $tstr ]]; then
