@@ -104,9 +104,36 @@ begin
   $phonesRev = {};
   File.readlines($phoneFile) .map {|l| l.split} .each {|p,i| $phones[p] = i; $phonesRev[i] = p}
 
+  if true
+    # Soft match, like https://en.wikipedia.org/wiki/Soundex.
+    # Remap phone indices to a smaller set of phone classes.
+    $remap = Hash[
+      4,100, 5,100, 6,100, 11,100, 12,100, 16,100, 17,100, 23,100, 24,100, 30,100, 31,100, 35,100, # aeiouy aʊ aː ei iː oʊ uː 
+      37,100, 39,100,  41,100, 42,100, 43,100, 44,100, 45,100, 48,100, 49,100, 50,100, 51,100, 55,100, 56,100, 60,100, 65,100, # æ ɐ ɑɪ ø ɑ ɚ ɝ ɨ ɪ ʉ ə ɛ ɵ ɔ ɔi
+      15,101, 33,101, # hw
+      38,101, 70,101, 68,101, # ð θ ʒ 
+      7,102, 13,102, 25,102, 32,102, # bfpv
+      8,103, 10,103, 14,103, 18,103, 19,103, 27,103, 34,103, 36,103, # c dʒ gjksxz
+      9,104, 28,104, 29,104, 63,104, 64,104, # dt tʃ ʂ ʃ 
+      # l
+      21,105, 22,105, # mn
+      40,105, 52,105, 53,105, 57,105, 58,105, 59,105, # ŋ ɟ ɡ ɯ  ɱ  ɲ 
+      26,106, 61,106, 62,106, # r ɹ ɾ 
+    ]
+    def soft(ph)
+      r = $remap[ph.to_i]
+#     puts "#{ph} -> #{r}"
+      r ? r.to_s : ph
+    end
+  else
+    def soft(ph) ph end
+  end
+
   # Convert each pronunciation's entries from a phone to the phone's index in the symbol table.
   # Convert each phone, then join the array back into a string, for the trie.
-  pd.map! {|w,pron| [w, pron.map {|ph| $phones[ph]} .join(" ") .gsub(/\s+/, ' ') .strip] }
+  pd.map! {|w,pron| [w, pron.map {|ph| soft($phones[ph])}                                      .join(" ") .gsub(/\s+/, ' ') .strip] }
+  # Remove consecutive duplicate phones, once more:
+  pd.map! {|w,pron| [w, pron.split(" ").chunk{|x|x}.map(&:first) .join(" ")]}
 
   pd.each {|w,p| trie.add p; i += 1 }
   pd.each {|w,p| h[p] << w }
@@ -130,7 +157,7 @@ scrips.each {|uttid,phones|
   iStart = 0
   while i < phones.size
     prefixPrev = prefix.rstrip
-    prefix += phones[i] + " "
+    prefix += soft(phones[i]) + " "
     if trie.has_children?(prefix.rstrip)
       # Extend prefix.
       i += 1
