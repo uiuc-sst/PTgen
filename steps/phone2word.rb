@@ -4,8 +4,8 @@
 # Convert phone strings to word strings using a trie.
 # Very fast, but unlikely to be optimal.
 
-if ARGV.size != 1
-  STDERR.puts "Usage: #$0 pronlex.txt < hypotheses-as-phones.txt > hypotheses-as-words.txt"
+if ARGV.size != 2
+  STDERR.puts "Usage: #$0 pronlex.txt mtvocab.txt < hypotheses-as-phones.txt > hypotheses-as-words.txt"
   # STDIN must be sorted, for prepending SIL to noncontiguous clips.
   exit 1
 end
@@ -13,6 +13,12 @@ end
 Prondict = ARGV[0]
 if !File.file? Prondict
   STDERR.puts "#$0: missing pronlex #{Prondict}."
+  exit 1
+end
+Vocab = ARGV[1]
+if !File.file? Vocab
+  STDERR.puts "#$0: missing MT in-vocab list #{Vocab}."
+  # Vocab is words recognized by ISI's machine translation.  One word per line.
   exit 1
 end
 
@@ -108,16 +114,21 @@ begin
     # Soft match, like https://en.wikipedia.org/wiki/Soundex.
     # Remap phone indices to a smaller set of phone classes.
     $remap = Hash[
-      4,100, 5,100, 6,100, 11,100, 12,100, 16,100, 17,100, 23,100, 24,100, 30,100, 31,100, 35,100, # aeiouy aʊ aː ei iː oʊ uː 
-      37,100, 39,100,  41,100, 42,100, 43,100, 44,100, 45,100, 48,100, 49,100, 50,100, 51,100, 55,100, 56,100, 60,100, 65,100, # æ ɐ ɑɪ ø ɑ ɚ ɝ ɨ ɪ ʉ ə ɛ ɵ ɔ ɔi
+      # Relaxed: front/central vowels separate from back vowels.
+      4,100, 5,100, 6,100, 11,100, 12,100, 16,100, 17,100, 35,100, # aeiy aʊ aː ei iː
+      37,100, 39,100, 41,100, 43,100, 48,100, 49,100, 50,100, 51,100, 55,100, 56,100, 60,100, 65,100, # æ ɐ ɑɪ ø ɑ ɚ ɝ ɨ ɪ ʉ ə ɛ ɵ
+
+      23,107, 24,107, 30,107, 31,107, 57,105, 44,107, 45,107, 42,107, 67,107, 54,107, # o oʊ u uː ɯ  ɔ ɔi ɑ ʌ ɣ
+
       15,101, 33,101, # hw
       38,101, 70,101, 68,101, # ð θ ʒ 
-      7,102, 13,102, 25,102, 32,102, # bfpv
+      7,102,         25,102,         # bp
+             13,107,         32,107, # fv
       8,103, 10,103, 14,103, 18,103, 19,103, 27,103, 34,103, 36,103, # c dʒ gjksxz
       9,104, 28,104, 29,104, 63,104, 64,104, # dt tʃ ʂ ʃ 
       # l
       21,105, 22,105, # mn
-      40,105, 52,105, 53,105, 57,105, 58,105, 59,105, # ŋ ɟ ɡ ɯ  ɱ  ɲ 
+      40,105, 52,105, 53,105, 58,105, 59,105, # ŋ ɟ ɡ  ɱ  ɲ 
       26,106, 61,106, 62,106, # r ɹ ɾ 
     ]
     def soft(ph)
@@ -138,7 +149,38 @@ begin
   pd.each {|w,p| trie.add p; i += 1 }
   pd.each {|w,p| h[p] << w }
 end
-# File.open("/tmp/prondict-reconstituted.txt", "w") {|f| h.each {|pron,words| f.puts "#{pron}\t\t#{words.join(' ')}"} }
+
+# Read in-vocab words.  Discard invalid UTF-8.  .toset, so .include? takes O(1) not O(n).
+require 'set'
+STDERR.puts "#$0: reading MT's vocab."
+$wordsVocab = File.readlines(Vocab) .map(&:chomp) .map {|l| l.chars.select{|i| i.valid_encoding?}.join } .to_set
+# If a set of homonyms includes both in-vocab and oov words, keep only the in-vocab ones.
+STDERR.puts "#$0: preferring MT's vocab."
+hNew = Hash.new
+h.each {|pron,words|
+  has_oov = false
+  has_v = false
+  $both = false
+  words.each {|w|
+    oov = !$wordsVocab.include?(w)
+    has_oov |=  oov
+    has_v   |= !oov
+    $both = has_v && has_oov
+    break if $both
+  }
+  if $both
+    #tmp = words.size
+    # Set .include? is much faster than words &= $wordsVocab.
+    words.select! {|w| $wordsVocab.include? w}
+    #STDERR.puts "Reduced #{tmp} words to #{words.size}, e.g. #{words[0]}."
+  end
+  hNew[pron] = words
+}
+h = hNew
+STDERR.puts "#$0: MT vocab done."
+
+File.open("/tmp/prondict-reconstituted.txt", "w") {|f| h.each {|pron,words| f.puts "#{pron}\t\t#{words.join(' ')}"} }
+
 STDERR.puts "#{File.basename $0}: loaded #{i} pronunciations from pronlex.  Converting utterance transcriptions from phones to words..."
 # Now trie has all the pronunciations, and h has all the homonyms.
 
@@ -159,6 +201,31 @@ scrips.each {|uttid,phones|
     prefixPrev = prefix.rstrip
     prefix += soft(phones[i]) + " "
     if trie.has_children?(prefix.rstrip)
+=begin
+      # HACK to choose more words with just 2 to 4 phones (for TIR):
+      rrr = prefix.rstrip
+      words = h[rrr]
+      n = rrr.split(" ").size
+      # rand-threshold, and % freq of 2,3,4 phone words, reported by wordlengths.rb:
+      # 0.0: 2.6 4.1 8.2
+      # 0.3: 6.0 10.3 14.5
+      # 0.4: 6.5 11.1 15.4
+      # 0.6: 7.2 12.2 16.5
+      # 963: 9.8 14.7 16.5
+      # 95,7,1: 10.3 16.0 16.6
+      # 98,8,4: 9.3 14.9 17.1
+      # 99,9,7: 8.4 14 17.6
+      #
+      # 18.4 23.3 26 is the target.
+      if words && !words.empty? && 2 <= n && n <= 4 && rand < [1,1, 0.98,0.9,0.7][n]
+	# Copied from "if trie.has_key? prefixPrev".
+	i = iStart = i+1
+	word = words[rand(words.size)]
+	print word + " "
+	next
+      end
+=end
+
       # Extend prefix.
       i += 1
       next

@@ -8,11 +8,13 @@
 [ ! -z $decodelatdir ] || { >&2 echo "$0: no variable decodelatdir in file '$1'. Aborting."; exit 1; }
 [ ! -z $evalreffile ] || { >&2 echo "$0: no variable evalreffile in file '$1'. Aborting."; exit 1; }
 [ ! -z $pronlex ] || { >&2 echo "$0: no variable pronlex in file '$1'. Aborting."; exit 1; }
+[ ! -z $mtvocab ] || { >&2 echo "$0: no variable mtvocab in file '$1'. Aborting."; exit 1; }
 [ ! -z $LANG_CODE ] || { >&2 echo "$0: no variable LANG_CODE in file '$1'. Aborting."; exit 1; }
 [ ! -z $DATE_USC ] || { >&2 echo "$0: no variable DATE_USC in file '$1'. Aborting."; exit 1; }
 [[ ! (-n $evaloracle && -z $prunewt) ]] || { >&2 echo "$0: corrupt variables evaloracle or prunewt in file '$1'. Aborting."; exit 1; }
 [ -s $evalreffile ] || { >&2 echo "$0: missing or empty file '$evalreffile', evalreffile in file '$1'. Aborting."; exit 1; }
 [ -s $pronlex ] || { >&2 echo "$0: missing or empty file '$pronlex', pronlex in file '$1'. Aborting."; exit 1; }
+[ -s $mtvocab ] || { >&2 echo "$0: missing or empty file '$mtvocab', mtvocab in file '$1'. Aborting."; exit 1; }
 # $evalreffile is the known-good transcriptions for compute-wer, e.g. data/nativetranscripts/uzbek/dev_text.
 hash compute-wer 2>/dev/null || { >&2 echo "$0: missing program compute-wer. Aborting."; exit 1; }
 
@@ -22,7 +24,7 @@ mktmpdir
 editfst=$tmpdir/edit.fst
 create-editfst.pl < $phnalphabet | fstcompile > $editfst 
 
-# todo: move this showprogress block into its own stage.
+# todo: move this showprogress block into its own stage.  Really!!  It's much slower than the rest of this script.
 showprogress init 50 "Evaluating PTs"
 for ip in `seq -f %02g $nparallel`; do
 	(
@@ -81,7 +83,7 @@ sort -n < $hypfile > $hypfile.phones
 # Update $hypfile too, for compute-wer?
 jonmay=${hypfile}.restitched.txt
 jonmaydir=${hypfile}.jonmay.dir
-phone2word.rb $pronlex < $hypfile.phones > $jonmay
+phone2word.rb $pronlex $mtvocab < $hypfile.phones > $jonmay
 
 >&2 echo "Formatting $jonmay entries into $jonmaydir."
 hyp2jonmay.rb $jonmaydir $LANG_CODE $DATE_USC $EXPLOCAL < $jonmay
