@@ -20,7 +20,7 @@ for ip in `seq -f %02g $nparallel`; do
   (
   for uttid in `cat $splitids.$ip`; do
     if [[ ! -s $mergefstdir/$uttid.M.fst.txt ]]; then
-      >&2 echo -e "`basename $0`: omitting $uttid because of missing file $mergefstdir/$uttid.M.fst.txt."
+      >&2 echo -e "`basename $0`: omitting $uttid because of missing `basename $mergefstdir/$uttid.M.fst.txt`."
       # That file might exist and be empty, but usually it is just missing.
       continue
     fi
