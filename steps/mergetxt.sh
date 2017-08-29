@@ -15,7 +15,7 @@ makeHash.rb scrips < $transcripts > /tmp/hash_transcripts.sh
 makeHash.rb sims < $simfile > /tmp/hash_transcripts.sh
 . /tmp/hash_transcripts.sh
 rm -f /tmp/hash_transcripts.sh
-# Values are "${scrips[@]}".  Keys are "${!scrips[@]}".  Ditto for sims[].
+# Values are ${scrips[@]}.  Keys are ${!scrips[@]}.  Size is ${#scrips[@]}.  Ditto for sims[].
 # Before looking up a key in scrips, downcase it: key="${key,,}"
 # echo "${scrips[uzb_001_001_017709_018816]}"
 
@@ -44,11 +44,10 @@ for ip in `seq -f %02g $nparallel`; do
 		showprogress go
 		touch $mergedir/$uttid.txt
 		for p in `seq 1 $npartsReal`; do
-			set +e # prevent matchless grep from exiting this script
 			if [ "$oldway" = "true" ]; then
 			  part="part-$p-$uttid"
-			  str=$[sims[${part,,}]]
-			  tstr=$[scrips[${part,,}]]
+			  str=${sims[${part,,}]}
+			  tstr=${scrips[${part,,}]}
 			else
 			  part=${actualparts[`expr $p - 1`]}
 			  # echo reading part $part
@@ -56,14 +55,19 @@ for ip in `seq -f %02g $nparallel`; do
 			  # $part is e.g. IL6_EVAL_001_002_011245212_012494679
 			  # After uzb, i.e., rus, tig, orm,
 			  # there's only one match, and that's at the start of the line.
-			  str=$[sims[${part,,}]]
-			  tstr=$[scrips[${part,,}]]
+			  str=${sims[${part,,}]}
+			  tstr=${scrips[${part,,}]}
 			fi
-			set -e
 			if [[ -z $str || -z $tstr ]]; then
-				>&2 echo -e "\nmergetxt.sh WARNING: either $simfile or $transcripts lacks\n  $part,\n  which came from an uttid in one of $splittrainids.$ip $splittestids.$ip $splitadaptids.$ip."
-				echo Abandoning and deleting $mergedir/$uttid.txt.
-				rm -f $mergedir/$uttid.txt 2>/dev/null
+			  	# This happens when
+				# grep IL5_EVAL_033_012_086570606_087807328 ~/l/PTgen/mcasr/tir-clips.txt
+				# yields only SPN_S.  Ignore it silently.
+				#
+				# But shouldn't a silent clip still map to a SIL phone, instead of being removed???
+				#
+				# >&2 echo -e "\nmergetxt.sh WARNING: either $simfile or $transcripts lacks\n  $part,\n  which came from an uttid in one of $splittrainids.$ip $splittestids.$ip $splitadaptids.$ip."
+				# echo Abandoning and deleting $mergedir/$uttid.txt.
+				# rm -f $mergedir/$uttid.txt 2>/dev/null
 				break
 			fi
 
