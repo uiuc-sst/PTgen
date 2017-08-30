@@ -3,10 +3,9 @@
 
 # Report the lengths of the words in a set of transcriptions.
 
-$in = "/tmp/Exp/tigrinya/hypotheses.txt.restitched.txt"
 $in = "/home/camilleg/l/PTgen/native-scrips-il5/transcription.txt"
-$in = "/tmp/Exp/oromo/hypotheses.txt.restitched.txt.tmp"
-$in = "/tmp/Exp/oromo/hypotheses.txt.restitched.txt"
+$in = "/home/camilleg/l/PTgen/Exp/oromo/hypotheses.txt.restitched.txt"
+$in = "/home/camilleg/l/PTgen/Exp/tigrinya/hypotheses.txt.restitched.txt"
 
 words = File.readlines($in).map {|l| l.chomp.strip.split(' ')[1..-1]} .flatten .sort
 
