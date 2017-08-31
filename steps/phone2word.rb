@@ -104,7 +104,9 @@ begin
 
   # Like mcasr/phonelm/make-bigram-LM.rb and mcasr/stage1.rb.
   pd.select! {|w,p| p !~ / ABORT$/}
-  Restrict = Hash[ "d̪","d", "q","k", "t̪","t", "ɒ","a", "ɨː","iː", "ɸ","f", "ʁ","r", "χ","h" ]
+  Restrict = Hash[ "d̪","d", "q","k", "t̪","t", "ɒ","a", "ɨː","iː", "ɸ","f", "ʁ","r", "χ","h",
+  	"ʷa","a", "[section]","eps", "[clause]","eps", "[phrase]","eps", "[semicolon]","eps", "[colon]","eps", "[preface_colon]","eps", "[question]","eps", "[paragraph]","eps",
+  	]
   pd.map! {|w,p| [w, p.split(" ").map {|ph| r=Restrict[ph]; r ? r : ph}]}
   $phones = {};
   $phonesRev = {};
