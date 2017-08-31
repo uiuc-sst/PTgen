@@ -3,7 +3,8 @@
 
 # Read stage 15's $hypfile.
 # Write the single text file $jonmay,
-# and the dir of utterance-files jonmaydir to send to Jon's flat2elisa.py.
+# the dir of utterance-files jonmaydir,
+# and an XML file to sftp to Jon May.
 
 if ARGV.size != 4
   STDERR.puts "Usage: #$0 jonmay_dir three_letter_language_code date_USC EXPLOCAL < hyp.txt > jonmay_hyp.txt"
@@ -26,9 +27,9 @@ $stdin.each_line {|l|
   File.open("#$jonmaydir/#{name}.txt", "w") {|f| f.puts scrip}
 }
 
-$version = "2" # Increment this for each sftp.
+$version = "6" # Increment this before each sftp.  Todo: read this from settings file, via ARGV.
 $tojon = "#$EXPLOCAL/elisa.#{$langForJon}-eng.eval-asr-uiuc.y2r1.v#$version.xml"
 
-`/ws/ifp-53_1/hasegawa/data/lorelei/PTgen/test/mcasr-rus/flat2elisa/flat2elisa.py -i #$jonmaydir -l #$langForJon -o #$tojon`
-`rm -rf #$tojon.gz; gzip --best #$tojon` # Also rm #$jonmaydir
-STDERR.puts "Please sftp to Jon the file #$tojon.gz." # See aug/a.txt.
+`flat2elisa.py -i #$jonmaydir -l #$langForJon -o #$tojon`
+`rm -rf #$tojon.gz #$jonmaydir; gzip --best #$tojon`
+STDERR.puts "Please sftp to Jon the file #$tojon.gz."
