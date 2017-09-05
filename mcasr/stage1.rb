@@ -51,8 +51,12 @@ ARGF.readlines .map {|l| l.split} .each {|l|
   end
 }
 
-# Sort the hash, to be pretty.
-clips = clips.to_a.sort_by {|c| c[0]} .map {|name,ss| [name,ss.sort]}
+class Array
+  def pretty() u = self.uniq; u.size == 1 ? u : self.sort; end
+end
+
+# If a clip's scrips are identical, keep only one.
+clips = clips.to_a.sort_by {|c| c[0]} .map {|name,ss| [name,ss.pretty]}
 
 # Convert each phone to its index in phones.txt.
 # As a string, not an int, for easier join()ing.
