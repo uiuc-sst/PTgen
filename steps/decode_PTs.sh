@@ -20,8 +20,9 @@ for ip in `seq -f %02g $nparallel`; do
   (
   for uttid in `cat $splitids.$ip`; do
     if [[ ! -s $mergefstdir/$uttid.M.fst.txt ]]; then
-      >&2 echo -e "`basename $0`: omitting $uttid because of missing `basename $mergefstdir/$uttid.M.fst.txt`."
-      # That file might exist and be empty, but usually it is just missing.
+      # Stage 5 mergefst.sh didn't make that M.fst.txt, because mergdir/$uttid.txt was empty.
+      # No big deal, just a clip with no speech, e.g. only music.  Don't whine.
+#     >&2 echo -e "`basename $0`: no M.fst.txt, so omitting $uttid."
       continue
     fi
     showprogress go
