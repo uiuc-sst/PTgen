@@ -17,12 +17,11 @@
 #
 # Does *not* trim off leading or trailing SIL silence and SPN speaker noise,
 # because those help PTgen score and align transcriptions.
-# Does *not* remove duplicate transcriptions, for the same reason.
+# Does *not* remove duplicate transcriptions of a clip, for the same reason,
+# unless *all* transcriptions are identical.
 
-# Maybe todo: remove consecutive duplicate phones, esp. SPN and SIL.
-# They're in 3% of uzbek transcriptions, 7% of russian, 13% of oromo.
 if false
-  # Report if a prondict has any duplicate phones.
+  # Report if a prondict has any consecutive duplicate phones.
   prondict = "prondicts/rus-prondict-july26.txt"
   prondict = "prondicts/Tigrinya/dictionary.txt"
   prondict = "prondicts/Tigrinya/prondict-from-amharic-phones.txt"
@@ -38,9 +37,13 @@ end
 clips = Hash.new {|h,k| h[k] = []} # Map each clip-name to an array of transcriptions.
 
 ARGF.readlines .map {|l| l.split} .each {|l|
-  name = l[0][0..-5]
+  name = l[0]
+  # IL5_EVAL_001_001_000000000_001238265_003 (MCASR), or
+  # IL5_EVAL_001_001-0-1238265 (Tigrinya alignments from Babel phone set).
+  hasSuffix = name =~ /_[0-9][0-9][0-9]$/
+  name = name[0..-5] if hasSuffix
   scrip = l[1..-1].map {|p| p.sub /_[BEIS]/, ''} \
-    .chunk {|x| x}.map(&:first) # Remove consecutive duplicates.
+    .chunk {|x| x}.map(&:first) # Remove consecutive duplicate phones.
   clips[name] << scrip
 
   if false
@@ -60,8 +63,18 @@ clips = clips.to_a.sort_by {|c| c[0]} .map {|name,ss| [name,ss.pretty]}
 
 # Convert each phone to its index in phones.txt.
 # As a string, not an int, for easier join()ing.
-phones = {}
-File.readlines("phones.txt") .map {|l| l.split} .each {|p,i| phones[p] = i}
+$phones = {}
+File.readlines("phones.txt") .map {|l| l.split} .each {|p,i| $phones[p] = i}
+$phones["NSN"] = $phones["SPN"] # Synonym for SPN, from Babel phone set.
 
-clips.map! {|name,ss| [name, ss.map {|ss| ss.map {|s| phones[s]} .join(" ")}]}
+def iFromPhone(ph)
+  i = $phones[ph]
+  if !i
+    STDERR.puts "#$0: phone '#{ph}' not in phones.txt."
+    return $phones["SPN"] # Map unrecognized phones to noise.
+  end
+  i
+end
+
+clips.map! {|name,ss| [name, ss.map {|ss| ss.map {|s| iFromPhone(s)} .join(" ")}]}
 clips.each {|name,ss| puts "#{name}:#{ss.join ' # '}" }
