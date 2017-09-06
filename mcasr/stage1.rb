@@ -41,7 +41,16 @@ ARGF.readlines .map {|l| l.split} .each {|l|
   # IL5_EVAL_001_001_000000000_001238265_003 (MCASR), or
   # IL5_EVAL_001_001-0-1238265 (Tigrinya alignments from Babel phone set).
   hasSuffix = name =~ /_[0-9][0-9][0-9]$/
-  name = name[0..-5] if hasSuffix
+  if hasSuffix
+    # name == IL5_EVAL_111_007_023498070_024734810_003
+    name = name[0..-5]
+    # name == IL5_EVAL_111_007_023498070_024734810
+  else
+    # name == IL5_EVAL_111_007-23498070-24734810
+    name = name.split('-')
+    name = name[0] + '_' + ('%09d' % name[1]) + '_' + ('%09d' % name[2])
+    # name == IL5_EVAL_111_007_023498070_024734810
+  end
   scrip = l[1..-1].map {|p| p.sub /_[BEIS]/, ''} \
     .chunk {|x| x}.map(&:first) # Remove consecutive duplicate phones.
   clips[name] << scrip
