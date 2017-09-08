@@ -39,12 +39,19 @@ clips = Hash.new {|h,k| h[k] = []} # Map each clip-name to an array of transcrip
 ARGF.readlines .map {|l| l.split} .each {|l|
   name = l[0]
   # IL5_EVAL_001_001_000000000_001238265_003 (MCASR), or
-  # IL5_EVAL_001_001-0-1238265 (Tigrinya alignments from Babel phone set).
+  # IL5_EVAL_001_001-0-1238265 (Tigrinya alignments from Babel phone set), or
+  # IL5_EVAL_001_001-11144400-12382665-10 (Tigrinya ali, 10-best).
   hasSuffix = name =~ /_[0-9][0-9][0-9]$/
+  hasSuffix10 = name =~ /\-[0-9]$/ || name =~ /\-[0-9][0-9]$/ 
   if hasSuffix
     # name == IL5_EVAL_111_007_023498070_024734810_003
     name = name[0..-5]
     # name == IL5_EVAL_111_007_023498070_024734810
+  elsif hasSuffix10
+    # name == IL5_EVAL_001_001-11144400-12382665-6
+    name = name.split('-')[0..2]
+    name = name[0] + '_' + ('%09d' % name[1]) + '_' + ('%09d' % name[2])
+    # name == IL5_EVAL_001_001-11144400-12382665
   else
     # name == IL5_EVAL_111_007-23498070-24734810
     name = name.split('-')
