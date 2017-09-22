@@ -4,25 +4,30 @@
 
 mkdir -p $mergedir
 
->&2 echo "$0: for MCASR, create-distances in PHONES not LETTERS."
+>&2 echo "`basename $0`: for MCASR, create-distances in PHONES not LETTERS."
 create-distances-phones.pl > $aligndist # e.g., Exp/uzbek/aligndists.txt
 # ;;;; create-distances.pl > $aligndist # e.g., Exp/uzbek/aligndists.txt
 
->&2 echo "$0: parsing $transcripts and $simfile."
+>&2 echo "`basename $0`: parsing $transcripts and $simfile."
 rm -f /tmp/hash_transcripts.sh
 makeHash.rb scrips < $transcripts > /tmp/hash_transcripts.sh
 . /tmp/hash_transcripts.sh
 makeHash.rb sims < $simfile > /tmp/hash_transcripts.sh
 . /tmp/hash_transcripts.sh
 rm -f /tmp/hash_transcripts.sh
+
 # Values are ${scrips[@]}.  Keys are ${!scrips[@]}.  Size is ${#scrips[@]}.  Ditto for sims[].
 # Before looking up a key in scrips, downcase it: key="${key,,}"
 # echo "${scrips[uzb_001_001_017709_018816]}"
 
-showprogress init 100 "Merging transcripts"
+# Parallelizing more than $nparallel doesn't exploit more cores,
+# because the files foo.$ip were split over only $nparallel parts
+# by stage 3's create-datasplits.sh.  So just use shuf to balance
+# the load somewhat.
+showprogress init 200 "Merging transcripts"
 for ip in `seq -f %02g $nparallel`; do
 	(
-	for uttid in `cat $splittrainids.$ip $splittestids.$ip $splitadaptids.$ip`; do
+	for uttid in `cat $splittrainids.$ip $splittestids.$ip $splitadaptids.$ip | shuf`; do
 		vttid=`echo $uttid | sed 's/uzbek/UZB/'`
 		# These two yield the same number, often about 22, sporadically 0.
 		#   grep $vttid $simfile | wc -l
