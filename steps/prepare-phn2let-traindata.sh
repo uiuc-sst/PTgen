@@ -17,7 +17,7 @@ done > $reffile
 
 # Only for mcasr!
 if true; then
-  >&2 echo "$0: for MCASR, converting IPA phones to mcasr phone-indexes."
+  >&2 echo "`basename $0`: for MCASR, converting IPA phones to mcasr phone-indexes."
   # Convert IPA phones to mcasr phone-indexes.
   rm -f $reffile.tmp
   mv $reffile $reffile.tmp
@@ -33,6 +33,7 @@ showprogress init 60 "Preparing training data"
 # Better might be a precise value like $nparallel * $nrand,
 # or parallelizing the inner $nrand loop as well as the outer $nLOTS loop.
 nLOTS=98
+rm -f $trainids.* $carmeltraintxt.* # Just in case old temporary files were still there.
 split --numeric-suffixes=1 -n r/$nLOTS $trainids $trainids.
 
 for ip in `seq -w 1 $nLOTS`; do
@@ -65,5 +66,5 @@ done
 wait
 
 cat $carmeltraintxt.*
-rm -f $trainids.* $carmeltraintxt.*
+rm -f $trainids.* $carmeltraintxt.* # Clean up temporary files.
 showprogress end
