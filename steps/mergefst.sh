@@ -11,7 +11,7 @@ mkdir -p $mergefstdir
 showprogress init 100 "Merging transcript FSTs (unscaled)"
 for ip in `seq -f %02g $nparallel`; do
 	(
-	for uttid in `cat $splittrainids.$ip $splittestids.$ip $splitadaptids.$ip`; do
+	cat $splittrainids.$ip $splittestids.$ip $splitadaptids.$ip | shuf | while read uttid; do
 		if [[ ! -s $mergedir/$uttid.txt ]] ; then
 			>&2 echo -e -n "\n`basename $0`: skipping empty utterance $mergedir/$uttid.txt."
 		else

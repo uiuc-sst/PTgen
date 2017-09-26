@@ -18,7 +18,7 @@ fi
 showprogress init 30 "" # Long description is in caller, ../run.sh.
 for ip in `seq -f %02g $nparallel`; do
   (
-  for uttid in `cat $splitids.$ip`; do
+  while read uttid; do
     if [[ ! -s $mergefstdir/$uttid.M.fst.txt ]]; then
       # Stage 5 mergefst.sh didn't make that M.fst.txt, because mergdir/$uttid.txt was empty.
       # No big deal, just a clip with no speech, e.g. only music.  Don't whine.
@@ -49,7 +49,7 @@ for ip in `seq -f %02g $nparallel`; do
 #	>&2 echo -e "`basename $0`: made empty $decodelatdir/$uttid.TPLM.fst."
 #     fi
     fi
-  done
+  done < $splitids.$ip
   ) &
 done
 wait

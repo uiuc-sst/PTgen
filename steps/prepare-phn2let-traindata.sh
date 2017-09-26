@@ -38,7 +38,8 @@ split --numeric-suffixes=1 -n r/$nLOTS $trainids $trainids.
 
 for ip in `seq -w 1 $nLOTS`; do
   [ -s $trainids.$ip ] || { >&2 echo -e "\n$0: empty split-file $trainids.$ip. Aborting."; exit 1; }
-  ( for uttid in `cat $trainids.$ip`; do
+	
+  ( while read uttid; do
     if [[ ! -s $mergefstdir/$uttid.M.fst ]]; then
       >&2 echo -e "\n`basename $0`: skipping utterance with empty $mergefstdir/$uttid.M.fst."
       continue
@@ -61,7 +62,8 @@ for ip in `seq -w 1 $nLOTS`; do
 	cut -d' ' -f2- |
 	sed -e 's/^[ \t]*/"/' -e 's/[ \t]*$/"/' -e 's/[ \t]\+/" "/g'
     done
-  done ) > $carmeltraintxt.$ip &
+  done < $trainids.$ip > $carmeltraintxt.$ip
+  ) &
 done
 wait
 

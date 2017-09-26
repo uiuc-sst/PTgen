@@ -27,7 +27,7 @@ rm -f /tmp/hash_transcripts.sh
 showprogress init 200 "Merging transcripts"
 for ip in `seq -f %02g $nparallel`; do
 	(
-	for uttid in `cat $splittrainids.$ip $splittestids.$ip $splitadaptids.$ip | shuf`; do
+	cat $splittrainids.$ip $splittestids.$ip $splitadaptids.$ip | shuf | while read uttid; do
 		vttid=`echo $uttid | sed 's/uzbek/UZB/'`
 		# These two yield the same number, often about 22, sporadically 0.
 		#   grep -c $vttid $simfile

@@ -31,7 +31,7 @@ for ip in `seq -f %02g $nparallel`; do
 	[ -s $splittestids.$ip ] || { >&2 echo "`basename $0`: missing or empty file $splittestids.$ip."; }
 	oracleerror=0
 	# Read all the uttid's in, e.g., /tmp/Exp/uzbek/lists/testids.*.
-	for uttid in `cat $splittestids.$ip`; do
+	while read uttid; do
 		showprogress go
 		# $uttid ==, e.g., uzbek_371_001
 		latfile=$decodelatdir/$uttid.GTPLM.fst
@@ -55,7 +55,7 @@ for ip in `seq -f %02g $nparallel`; do
 		# Print a *plausible* hypothesis (fstrandgen), not just the very best one (fstshortestpath).
 		echo -e -n "$uttid\t"
 		fstrandgen --select=log_prob $latfile | fstrmepsilon | fstprint --osymbols=$phnalphabet | reverse_fst_path.pl
-	done > $tmpdir/hyp.$ip.txt
+	done < $splittestids.$ip > $tmpdir/hyp.$ip.txt
 	[[ -n $evaloracle ]] && echo "$oracleerror" > $tmpdir/oracleerror.$ip.txt
 	) &
 done
