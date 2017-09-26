@@ -30,8 +30,8 @@ for ip in `seq -f %02g $nparallel`; do
 	for uttid in `cat $splittrainids.$ip $splittestids.$ip $splitadaptids.$ip | shuf`; do
 		vttid=`echo $uttid | sed 's/uzbek/UZB/'`
 		# These two yield the same number, often about 22, sporadically 0.
-		#   grep $vttid $simfile | wc -l
-		#   grep $vttid $transcripts | wc -l
+		#   grep -c $vttid $simfile
+		#   grep -c $vttid $transcripts
 		actualparts=(`grep $vttid $simfile | sed 's/,.*//'`)
 		npartsReal=${#actualparts[*]}
 		oldway=false
@@ -39,7 +39,7 @@ for ip in `seq -f %02g $nparallel`; do
 		  npartsReal=$nparts
 		  oldway=true
 		fi
-		if [[ -s $mergedir/$uttid.txt && `grep "$delimsymbol" $mergedir/$uttid.txt | wc -l` == $npartsReal ]]; then
+		if [[ -s $mergedir/$uttid.txt && `grep -c "$delimsymbol" $mergedir/$uttid.txt` == $npartsReal ]]; then
 		  echo Already merged uttid $uttid.
 		  continue
 		fi
