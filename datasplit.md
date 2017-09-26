@@ -54,5 +54,5 @@ In `settings`, set `startstage=2`, and rerun.
 ### How to instead split ids into *all* train, 0 dev, 0 eval.
 
      cp /tmp/ids data/lists/$lang/train
-     rm -f data/lists/$lang/dev; touch data/lists/$lang/dev
-     rm -f data/lists/$lang/eval; touch data/lists/$lang/eval
+     > data/lists/$lang/dev
+     > data/lists/$lang/eval
