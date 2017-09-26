@@ -13,7 +13,8 @@ for ip in `seq -f %02g $nparallel`; do
 	(
 	cat $splittrainids.$ip $splittestids.$ip $splitadaptids.$ip | shuf | while read uttid; do
 		if [[ ! -s $mergedir/$uttid.txt ]] ; then
-			>&2 echo -e -n "\n`basename $0`: skipping empty utterance $mergedir/$uttid.txt."
+			# Don't whine.  The clip had no speech.  Probably just music.
+			: #>&2 echo -e -n "\n`basename $0`: skipping empty utterance $mergedir/$uttid.txt."
 		else
 			showprogress go
 			convert-aligner-to-fst.pl $alignertofstopt < $mergedir/$uttid.txt \
