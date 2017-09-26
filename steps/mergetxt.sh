@@ -40,7 +40,7 @@ for ip in `seq -f %02g $nparallel`; do
 		  oldway=true
 		fi
 		if [[ -s $mergedir/$uttid.txt && `grep -c "$delimsymbol" $mergedir/$uttid.txt` == $npartsReal ]]; then
-		  echo Already merged uttid $uttid.
+		  #echo Already merged uttid $uttid.
 		  continue
 		fi
 		if $oldway ; then
