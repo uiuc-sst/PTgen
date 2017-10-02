@@ -20,7 +20,7 @@ for ip in `seq -f %02g $nparallel`; do
   (
   while read uttid; do
     if [[ ! -s $mergefstdir/$uttid.M.fst.txt ]]; then
-      # Stage 5 mergefst.sh didn't make that M.fst.txt, because mergdir/$uttid.txt was empty.
+      # Stage 5 mergefst.sh didn't make that M.fst.txt, because mergedir/$uttid.txt was empty.
       # No big deal, just a clip with no speech, e.g. only music.  Don't whine.
 #     >&2 echo -e "`basename $0`: no M.fst.txt, so omitting $uttid."
       continue
@@ -54,3 +54,10 @@ for ip in `seq -f %02g $nparallel`; do
 done
 wait
 showprogress end
+
+if [ $(find $decodelatdir -maxdepth 0 -type d -empty 2>/dev/null) ]; then
+  # $decodelatdir is empty.  Made no TPLMs or GTPLMs.
+  >&2 echo "$0: no uttid in $splitids.* had speech.  Are the uttids in data/lists/*/eval missing from $transcripts?"
+  # Todo: check much earlier that data/lists/*/*'s uttids are in $transcripts.
+  exit 1
+fi
