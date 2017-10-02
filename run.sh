@@ -266,7 +266,7 @@ fi
 # Reads files $phnalphabet and $engalphabet.
 # Creates file $initcarmel.
 ((stage++))
-if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]; then
+if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo -n "Creating untrained phone-2-letter model ($Pstyle style)... "
 	mkdir -p "$(dirname "$initcarmel")"
 	create-initcarmel.pl $carmelinitopt $phnalphabet $engalphabet $delimsymbol > $initcarmel
@@ -286,7 +286,7 @@ fi
 # In each ref_train file, each line is an identifier followed by a sequence of phonemes,
 # given by passing the transcription through a G2P converter or a dictionary.
 ((stage++))
-if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]; then
+if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo "Creating carmel training data... "
 	prepare-phn2let-traindata.sh $1 > $carmeltraintxt
 	echo "Stage 7 took" $SECONDS "seconds."; SECONDS=0
@@ -301,7 +301,7 @@ fi
 # Creates logfile $tmpdir/carmelout.
 # Creates file $initcarmel.trained.
 ((stage++))
-if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]; then
+if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo -n "Training phone-2-letter model (see $tmpdir/carmelout)..."
 	hash carmel 2>/dev/null || { >&2 echo "Missing program 'carmel'.  Aborting."; exit 1; }
 	carmel -\? --train-cascade -t -f 1 -M 20 -HJ $carmeltraintxt $initcarmel 2>&1 \
