@@ -204,7 +204,6 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 else
 	usingfile "$(dirname "$splittestids")" "test & train ID lists in"
 fi
-set +e
 
 ## STAGE 4 ##
 # For each utterance ($uttid), merge all of its transcriptions.
@@ -220,6 +219,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 else
 	usingfile $mergedir "merged transcripts in"
 fi
+set +e
 
 ## STAGE 5 ##
 # Convert each merged transcript into a sausage, "a confusion network rho(lambda|T)

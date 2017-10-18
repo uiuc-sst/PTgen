@@ -1,6 +1,8 @@
 #!/usr/bin/perl
 
 # Preprocess crowd workers' (English) transcriptions.
+# English words found in an English dictionary (CMUDict) are replaced with their pronunciations.
+# The outputs of all runs of this script are concatenated into $transcripts, e.g. Exp/uzbek/transcripts.txt.
 # Used only by run.sh, not by run-mcasr.sh.
 # On STDIN, expects something like the contents of data/batchfiles/DT/batchfile,
 # in CSV format with 55 fields (the used fields are starred):
@@ -59,15 +61,12 @@
 # 52 Answer.text8		*
 # 53 Approve
 # 54 Reject
-#
-# Valid English words are looked for in an English dictionary 
-# (CMUDict) and replaced with their pronunciations, if found.
-#
-# The outputs of all runs of this script are concatenated into $transcripts, e.g. /tmp/Exp/uzbek/transcripts.txt.
 
-# If the next line fails, type "/usr/bin/perl -MCPAN -e'install Text::CSV_XS'",
-# use the option "[local::lib]" if you're not root,
-# and then type ". ~/.bashrc".
+# If the next line fails:
+# - type "perl -MCPAN -e'install Text::CSV_XS'"
+# - if you're not root, when that asks you to use the option "[local::lib]", type local::lib
+# - answer the other questions with the default answers
+# - when you're back at a shell prompt, type ". ~/.bashrc".
 use Text::CSV_XS;
 
 $argerr = 0;

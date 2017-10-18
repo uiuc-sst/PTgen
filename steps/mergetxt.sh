@@ -8,6 +8,9 @@ mkdir -p $mergedir
 create-distances-phones.pl > $aligndist # e.g., Exp/uzbek/aligndists.txt
 # ;;;; create-distances.pl > $aligndist # e.g., Exp/uzbek/aligndists.txt
 
+[ -s $transcripts ] || { echo "$0: missing or empty transcripts file $transcripts."; exit 1; }
+[ -s $simfile ] || { echo "$0: missing or empty transcripts file $simfile."; exit 1; }
+
 >&2 echo "`basename $0`: parsing $transcripts and $simfile."
 rm -f /tmp/hash_transcripts.sh
 makeHash.rb scrips < $transcripts > /tmp/hash_transcripts.sh

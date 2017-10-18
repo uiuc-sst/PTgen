@@ -135,6 +135,7 @@ fi
 # (Interspeech paper, figure 1, y^(i)).
 SECONDS=0
 stage=1
+set -e
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	mkdir -p "$(dirname "$transcripts")"
 	showprogress init 1 "Preprocessing transcripts"
@@ -150,6 +151,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 else
 	usingfile "$transcripts" "preprocessed transcripts"
 fi
+set +e
 
 ## STAGE 2 ##
 # Filter data.
@@ -210,7 +212,6 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 else
 	usingfile "$(dirname "$splittestids")" "test & train ID lists in"
 fi
-set +e
 
 ## STAGE 4 ##
 # For each utterance ($uttid), merge all of its transcriptions.
@@ -226,6 +227,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 else
 	usingfile $mergedir "merged transcripts in"
 fi
+set +e
 
 ## STAGE 5 ##
 # Convert each merged transcript into a sausage, "a confusion network rho(lambda|T)
