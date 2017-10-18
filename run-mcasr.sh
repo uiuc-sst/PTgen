@@ -119,8 +119,11 @@ if [[ -z $startstage ]]; then startstage=1;   fi
 if [[ -z $endstage ]];   then endstage=99999; fi
 echo "Running stages $startstage through $endstage."
 
+if [[ $startstage -le 2 && 2 -le $endstage ]]; then
+  hash compute_turker_similarity 2>/dev/null || { echo >&2 "Missing program 'compute_turker_similarity'. First \"cd PTgen/src; make\"."; exit 1; }
+fi
 if [[ $startstage -le 8 && 8 -le $endstage ]]; then
-  hash carmel 2>/dev/null || { echo >&2 "Missing program 'carmel'.  Stage 8 would abort."; exit 1; }
+  hash carmel 2>/dev/null || { echo >&2 "Missing program 'carmel'. Stage 8 would abort.  Please install it from www.isi.edu/licensed-sw/carmel."; exit 1; }
 fi
 if [[ $startstage -le 15 && 15 -le $endstage ]]; then
   hash compute-wer 2>/dev/null || { echo >&2 "Missing program 'compute-wer'.  Stage 15 would abort."; exit 1; }
@@ -185,8 +188,8 @@ fi
 # data/batchfiles/*/batchfile, shuffled, and split 2/3, 1/6, 1/6 for train/dev/eval
 # (40/10/10 minutes, in the TASLP paper).
 
-((stage++))
 set -e
+((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	case $TESTTYPE in
 	dev | eval)  ;;
@@ -379,9 +382,6 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	fi
 	>&2 echo -n "Creating G (phone-model) FST with disambiguation symbols [GSCALE=$Gscale]... "
 	mkdir -p "$(dirname "$Gfst")"
-	fstprint --isymbols=$phnalphabet --osymbols=$phnalphabet $phonelm \
-		| addloop.pl "$disambigdel" "$disambigins" \
-		| scale-FST-weights.pl $Gscale > /tmp/bla.fst.txt
 	# Because addloop.pl adds #2 and #3 symbols via settings' disambigdel and disambigins,
 	# data/phonesets/univ.compact.txt must include #2 and #3.
 	fstprint --isymbols=$phnalphabet --osymbols=$phnalphabet $phonelm \
@@ -409,8 +409,6 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	fi
 	>&2 echo -n "Creating L (letter statistics) FST [LSCALE=$Lscale]... "
 	mkdir -p "$(dirname "$Lfst")"
-	create-letpriorfst.pl $mergedir $trainids \
-		| scale-FST-weights.pl $Lscale > /tmp/xxx
 	create-letpriorfst.pl $mergedir $trainids \
 		| scale-FST-weights.pl $Lscale \
 		| fstcompile --osymbols=$engalphabet --isymbols=$engalphabet - \

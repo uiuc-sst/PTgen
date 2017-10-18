@@ -9,6 +9,10 @@
 # for tuning hyper-parameters such as # of phone deletions/insertions,
 # and because they *are* functionally distinct.
 
+# To show debug info, export DEBUG=yes.
+export DEBUG=no
+[ "$DEBUG"==yes ] || set -x
+
 SCRIPT="$(readlink --canonicalize-existing "$0")"
 SCRIPTPATH="$(dirname "$SCRIPT")"
 SRCDIR="$SCRIPTPATH/steps"
@@ -69,7 +73,7 @@ export PATH=$PATH:$SRCDIR:$UTILDIR:$OPENFSTDIR:$CARMELDIR:$KALDIDIR
 
 if [[ ! -d $DATA ]]; then
   if [ -z ${DATA_URL+x} ]; then
-    echo "Missing DATA directory $DATA, and no \$DATA_URL to get it from. Check $1."; exit 1
+    echo "Missing DATA directory '$DATA', and no \$DATA_URL to get it from. Check $1."; exit 1
   fi
   tarball=`basename $DATA_URL`
   # $DATA_URL is e.g. http://www.ifp.illinois.edu/something/foo.tgz
@@ -82,13 +86,13 @@ if [[ ! -d $DATA ]]; then
   fi
   # Check the name of the tarball's first file (probably a directory).  Strip the trailing slash.
   tarDir=`tar tvf $tarball | head -1 | awk '{print $NF}' | sed -e 's_\/$__'`
-  [ "$tarDir" == "$DATA" ] || { echo "Tarball $tarball contains $tarDir, not \$DATA $DATA."; exit 1; }
-  echo "Extracting $tarball, hopefully into \$DATA $DATA."
+  [ "$tarDir" == "$DATA" ] || { echo "Tarball $tarball contains $tarDir, not \$DATA '$DATA'."; exit 1; }
+  echo "Extracting $tarball, hopefully into \$DATA '$DATA'."
   tar xzf $tarball || ( echo "Unexpected contents in $tarball.  Aborting."; exit 1 )
-  [ -d $DATA ] || { echo "Still missing DATA directory $DATA. Check $DATA_URL and $1."; exit 1; }
-  echo "Installed \$DATA $DATA."
+  [ -d $DATA ] || { echo "Still missing DATA directory '$DATA'. Check $DATA_URL and $1."; exit 1; }
+  echo "Installed \$DATA '$DATA'."
 fi
-[ -d $DATA ] || { echo "Still missing DATA directory $DATA. Check $DATA_URL and $1."; exit 1; }
+[ -d $DATA ] || { echo "Still missing DATA directory '$DATA'. Check $DATA_URL and $1."; exit 1; }
 [ -d $LISTDIR ] || { echo "Missing LISTDIR directory $LISTDIR. Check $1."; exit 1; }
 [ -d $TRANSDIR ] || { echo "Missing TRANSDIR directory $TRANSDIR. Check $1."; exit 1; }
 [ -d $TURKERTEXT ] || { echo "Missing TURKERTEXT directory $TURKERTEXT. Check $1."; exit 1; }
@@ -110,6 +114,7 @@ cp "$1" $EXPLOCAL/settings
 
 if [[ -z $startstage ]]; then startstage=1;   fi
 if [[ -z $endstage ]];   then endstage=99999; fi
+echo "Running stages $startstage through $endstage."
 
 if [[ $startstage -le 2 && 2 -le $endstage ]]; then
   hash compute_turker_similarity 2>/dev/null || { echo >&2 "Missing program 'compute_turker_similarity'. First \"cd PTgen/src; make\"."; exit 1; }
@@ -126,7 +131,7 @@ fi
 #
 # Reads the files $engdict and $TURKERTEXT/*/batchfile, where * covers $ALL_LANGS.
 # Uses the variable $rmprefix, if defined.
-# Creates the file $transcripts, e.g. tmp/Exp/uzbek/transcripts.txt
+# Creates the file $transcripts, e.g. Exp/uzbek/transcripts.txt
 # (Interspeech paper, figure 1, y^(i)).
 SECONDS=0
 stage=1
@@ -153,13 +158,13 @@ fi
 # other transcripts (Interspeech paper, section 3).
 #
 # Modifies the file $transcripts.
-# Creates the file $simfile.
+# Creates the file $simfile, which is read by stage 4's steps/mergetxt.sh.
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo -n "Creating transcript similarity scores... "
 	mkdir -p "$(dirname "$simfile")"
-	grep "#" $transcripts > $tmpdir/transcripts 
-	mv $tmpdir/transcripts $transcripts
+	grep "#" $transcripts > $tmpdir/transcripts; mv $tmpdir/transcripts $transcripts
+	# Or, apt-get install moreutils, and then, grep "#" $transcripts | sponge $transcripts
 	compute_turker_similarity < $transcripts > $simfile
 	>&2 echo "Done."
 	echo "Stage 2 took" $SECONDS "seconds."; SECONDS=0
@@ -189,6 +194,7 @@ fi
 # data/batchfiles/*/batchfile, shuffled, and split 2/3, 1/6, 1/6 for train/dev/eval
 # (40/10/10 minutes, in the TASLP paper).
 
+set -e
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	case $TESTTYPE in
@@ -204,6 +210,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 else
 	usingfile "$(dirname "$splittestids")" "test & train ID lists in"
 fi
+set +e
 
 ## STAGE 4 ##
 # For each utterance ($uttid), merge all of its transcriptions.
@@ -264,7 +271,7 @@ fi
 #
 # Uses variables $carmelinitopt and $delimsymbol.
 # Reads files $phnalphabet and $engalphabet.
-# Creates file $initcarmel.
+# Creates file $initcarmel, e.g. Exp/uzbek/carmel/simple.
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo -n "Creating untrained phone-2-letter model ($Pstyle style)... "
@@ -280,8 +287,8 @@ fi
 # Create training data to learn the phone-2-letter mappings defined in P.
 #
 # Reads files $TRANSDIR/$TRAIN_LANG[*]/ref_train.
-# Creates temporary file $reffile, e.g. Exp/uzbek/ref_train_text.
-# Creates file $carmeltraintxt.
+# Concatenates them into temporary file $reffile, e.g. Exp/uzbek/ref_train_text.
+# Creates file $carmeltraintxt, e.g. Exp/uzbek/carmel/training.txt.
 #
 # In each ref_train file, each line is an identifier followed by a sequence of phonemes,
 # given by passing the transcription through a G2P converter or a dictionary.
@@ -303,6 +310,12 @@ fi
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo -n "Training phone-2-letter model (see $tmpdir/carmelout)..."
+	# Read a list of I/O pairs, e.g. Exp/russian/carmel/simple.
+	# This list is pairs of lines; each pair is an input sequence followed by an output sequence.
+	# Rewrite this list as an FST with new weights, e.g. Exp/russian/carmel/simple.trained.
+	# -f 1 does Dirichlet-prior smoothing.
+	# -M 20 limits training iterations to 20.
+	# -HJ honors our fearless leader (actually, output formatting)
 	hash carmel 2>/dev/null || { >&2 echo "Missing program 'carmel'.  Aborting."; exit 1; }
 	carmel -\? --train-cascade -t -f 1 -M 20 -HJ $carmeltraintxt $initcarmel 2>&1 \
 		| tee $tmpdir/carmelout | awk '/^i=|^Computed/ {printf "."; fflush (stdout)}' >&2
@@ -339,6 +352,7 @@ fi
 # Creates file $Pfst, mapping $phnalphabet to $engalphabet.
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
+	[ -s ${initcarmel}.trained ] || { >&2 echo "Empty ${initcarmel}.trained, so can't create $Pfst. Aborting."; exit 1; }
 	if [[ -z $Pscale ]]; then
 		Pscale=1
 	fi
@@ -348,7 +362,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 		| scale-FST-weights.pl $Pscale \
 		| fixp2let.pl "$disambigdel" "$disambigins" "$phneps" "$leteps" \
 		| tee $tmpdir/trainedp2let.fst.txt \
-		| fstcompile --isymbols=$phnalphabet --osymbols=$engalphabet  > $Pfst
+		| fstcompile --isymbols=$phnalphabet --osymbols=$engalphabet > $Pfst
 	>&2 echo "Done."
 	echo "Stage 9 took" $SECONDS "seconds."; SECONDS=0
 else
@@ -374,6 +388,8 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	fi
 	>&2 echo -n "Creating G (phone-model) FST with disambiguation symbols [GSCALE=$Gscale]... "
 	mkdir -p "$(dirname "$Gfst")"
+	# Because addloop.pl adds #2 and #3 symbols via settings' disambigdel and disambigins,
+	# data/phonesets/univ.compact.txt must include #2 and #3.
 	fstprint --isymbols=$phnalphabet --osymbols=$phnalphabet $phonelm \
 		| addloop.pl "$disambigdel" "$disambigins" \
 		| scale-FST-weights.pl $Gscale \
@@ -455,6 +471,7 @@ fi
 # Creates the files $decodelatdir/*.GTPLM.fst and $decodelatdir/*.TPLM.fst
 # Creates $decodelatdir.
 # Each GTPLM.fst is over $phnalphabet, a lattice over phones.
+set -e
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	if [[ -n $makeTPLM && -n $makeGTPLM ]]; then
@@ -463,6 +480,9 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 		msgtext="TPLM"
 	elif [[ -n $makeGTPLM ]]; then
 		msgtext="GTPLM"
+	else
+		>&2 echo "Neither makeTPLM nor makeGTPLM is set.  Check $1."
+		exit 1
 	fi
 	if [[ -z $Mscale ]]; then
 		Mscale=1
@@ -474,6 +494,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 else
 	usingfile "$decodelatdir" "decoded lattices in"
 fi
+set +e
 
 ## STAGE 15 ##
 # Evaluate the GTPLM lattices, stand-alone.
