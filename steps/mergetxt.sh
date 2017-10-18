@@ -89,6 +89,10 @@ for ip in `seq -f %02g $nparallel`; do
 				# Then $turker is 4,7,2, etc.
 			for turkerindex in `seq 2 $idx`; do
 				turker=`echo $str | cut -d',' -f$turkerindex | cut -d':' -f1`
+				if [[ -z $turker ]]; then
+				  # This utterance had only one turker, one transcription.
+				  turker=1
+				fi
 				echo $tstr | cut -d':' -f2- | cut -d'#' -f$turker
 			done | aligner $aligneropt | grep "[^ ]" > $mergedir/part-$p-$uttid.txt
 			# $aligneropt contains $aligndist, made at the start of this script.

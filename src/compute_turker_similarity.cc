@@ -7,7 +7,7 @@
 #include <tr1/unordered_map>
 #include "extra-utils.h"
 
-const auto MAXTURKERS = 15;
+const auto MAXTURKERS = 12;
 
 using namespace std;
 
@@ -83,21 +83,36 @@ int main(int argc, char** argv) {
 		cout << trim(entries[0]); // uttid
 		const vector<string> transcripts = split(entries[1], '#');
 		const auto numTranscripts = transcripts.size();
-		if (numTranscripts <= 1) {
-		  cerr << "\ncompute_turker_similarity: comparing transcripts requires at least two #-delimited transcripts in the substring\n'"
-		       << entries[1] << "' of the line\n'"
-		       << line << "'.  Aborting.\n";
+		if (numTranscripts <= 0) {
+		  cerr << "\ncompute_turker_similarity: no #-delimited transcripts in '" << line << "'.  Aborting.\n";
 		  return 1;
-		  // If we continued, scores[] would be [(0.0, 0)],
-		  // and then assert(bestscore < 0.0) would fail.
 		}
 		if (numTranscripts > MAXTURKERS) {
-		  cerr << "\ncompute_turker_similarity: too many #-delimited transcripts in the line\n'"
-		       << line << "'.  Please recompile compute_turker_similarity.cc with MAXTURKERS >= " << numTranscripts << ".  Aborting.\n";
+		  cerr << "\ncompute_turker_similarity: too many #-delimited transcripts in\n'"
+		       << line << "'.  Recompile compute_turker_similarity.cc with MAXTURKERS >= " << numTranscripts << ".  Aborting.\n";
+		  return 1;
+		}
+		if (numTranscripts == 1) {
+#if 0
+		    // Clone the single transcript so everything downstream works,
+		    // albeit slower than with a single transcript instead of two.
+		    // This emits "IL5_EVAL_037_009_034761998_036003497,1:1,2:1";
+		    // mergedir/IL5_EVAL_072_008_042195975_043437033.txt then gets
+		    // two identical columns of phone-indices.
+		    // This hack validates the non-hack in the #else.
+		    transcripts.push_back(transcripts[0]); // Clone.
+		    numTranscripts = 2; // Not const.
+#else
+		    // First 1: the (unique) turker index.
+		    // Second 1: the turker's score, because simscore becomes 1 below
+		    // when there's only one score because bestscore==worstscore.
+		    cout << ",1:1\n";
+		    continue;
+#endif
 		}
 		scores.resize(numTranscripts);
 		for (auto i = 0u; i < numTranscripts; ++i) {
-			// Store a large score in the entry corresponding to Turker i
+			// Store a large score in the i'th turker's entry.
 			for (auto k = i+1; k < numTranscripts; ++k) {
 				turk_matrix[k][i] =
 				turk_matrix[i][k] =
@@ -116,7 +131,7 @@ int main(int argc, char** argv) {
 		const auto bestscore =  scores[0              ].first;
 		assert(bestscore < 0.0);
 
-		// Print each turker's index (starting at 1) and score-so-far.
+		// Print each turker's index (starting at 1) and score.
 		auto simscore = 1.0;
 		for (const auto& score: scores) {
 			if (bestscore != worstscore) // Avoid DBZ.
