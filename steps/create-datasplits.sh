@@ -42,7 +42,7 @@ done > $ids_file
 
 [ -s $ids_file ] || { >&2 echo -e "\n$0: generated empty ids_file $ids_file. Aborting."; exit 1; }
 
-# "split -n r/42 ..." makes 42 equal-size parts, without breaking lines, with round robin distribution.
+# "split -n r/42 ..." makes 42 equal-size parts, without breaking lines, with round robin (shuffled) distribution.
 # "--numeric-suffixes=1" names them .01 .02 ... .42, instead of .aa .ab ... .
 # To iterate over these files, use "seq -f %02g $nparallel".
 mkdir -p "$(dirname "$splitids_file")"
