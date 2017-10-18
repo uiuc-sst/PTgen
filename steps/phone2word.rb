@@ -110,7 +110,7 @@ begin
   pd.map! {|w,p| [w, p.split(" ").map {|ph| r=Restrict[ph]; r ? r : ph}]}
   $phones = {};
   $phonesRev = {};
-  File.readlines($phoneFile) .map {|l| l.split} .each {|p,i| $phones[p] = i; $phonesRev[i] = p}
+  File.readlines($phoneFile).map(&:split) .each {|p,i| $phones[p]=i; $phonesRev[i]=p}
 
   if true
     # Soft match, like https://en.wikipedia.org/wiki/Soundex.

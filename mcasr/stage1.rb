@@ -79,8 +79,7 @@ clips = clips.to_a.sort_by {|c| c[0]} .map {|name,ss| [name,ss.pretty]}
 
 # Convert each phone to its index in phones.txt.
 # As a string, not an int, for easier join()ing.
-$phones = {}
-File.readlines("phones.txt") .map {|l| l.split} .each {|p,i| $phones[p] = i}
+$phones = Hash[*File.read("phones.txt").split(/\s+/)]
 $phones["NSN"] = $phones["SPN"] # Synonym for SPN, from Babel phone set.
 
 def iFromPhone(ph)

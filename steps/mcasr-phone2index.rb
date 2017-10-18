@@ -6,8 +6,7 @@
 
 # Convert each phone to its index in phones.txt.
 # As a string, not an int, for easier join()ing.
-phones = {}
-File.readlines("../../mcasr/phones.txt") .map {|l| l.split} .each {|p,i| phones[p] = i}
+Phones = Hash[*File.read("../../mcasr/phones.txt").split(/\s+/)]
 # Brittle: ../../mcasr assumes an invocation: cd PTgen/test/something; ../../run.sh settings.
 
 raw = ARGF.readlines.map {|l| l.split}
@@ -15,7 +14,7 @@ raw = ARGF.readlines.map {|l| l.split}
 # Report phones in the input that lie outside mcasr/phones.txt.
 if false
   unmapped = []
-  raw.each {|l| l[1..-1].each {|ph| unmapped << ph if !phones[ph] }}
+  raw.each {|l| l[1..-1].each {|ph| unmapped << ph if !Phones[ph] }}
   unmapped.uniq.sort.each {|ph| puts ph}
   exit 0
 end
@@ -57,14 +56,14 @@ $restrict = Hash[
   "ʕ", " " # A space, not the empty string, to distinguish it from an unmapped phone.
 ]
 
-# Because some phones in $restrict map to more than one phone, we can't just extend phones[].
+# Because some phones in $restrict map to more than one phone, we can't just extend Phones[].
 # Instead, convert each line (an array) back to a string, for actual string substitution.
 raw.each {|l|
   m = l[0] + " "
   l[1..-1].each {|phIn|
-    phOut = phones[phIn]
+    phOut = Phones[phIn]
     if !phOut
-      phOut = $restrict[phIn].split.map {|p| phones[p]} .join(" ")
+      phOut = $restrict[phIn].split.map {|p| Phones[p]} .join(" ")
       # STDERR.puts "#{phIn} -> #{$restrict[phIn]} -> #{phOut}"
     end
     if !phOut
