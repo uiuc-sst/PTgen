@@ -117,6 +117,7 @@ cp "$1" $EXPLOCAL/settings
 
 if [[ -z $startstage ]]; then startstage=1;   fi
 if [[ -z $endstage ]];   then endstage=99999; fi
+echo "Running stages $startstage through $endstage."
 
 if [[ $startstage -le 8 && 8 -le $endstage ]]; then
   hash carmel 2>/dev/null || { echo >&2 "Missing program 'carmel'.  Stage 8 would abort."; exit 1; }
@@ -128,7 +129,7 @@ fi
 ## STAGE 1 ##
 # Copies preprocessed transcripts from crowd workers.
 # Reads the files $SCRIPTPATH/mcasr/*.txt.
-# Creates the file $transcripts, e.g. tmp/Exp/uzbek/transcripts.txt
+# Creates the file $transcripts, e.g. Exp/uzbek/transcripts.txt
 SECONDS=0
 stage=1
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
@@ -136,14 +137,8 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	[ -s $SCRIPTPATH/mcasr/stage1-$LANG_CODE.txt ] || { >&2 echo "Missing or empty file $SCRIPTPATH/mcasr/stage1-$LANG_CODE.txt. Check $1."; exit 1; }
 	mkdir -p "$(dirname "$transcripts")"
 	cp $SCRIPTPATH/mcasr/stage1-$LANG_CODE.txt $transcripts
-	if true; then
-	  # Full dataset
-	  cat $SCRIPTPATH/mcasr/stage1-sbs.txt >> $transcripts
-	else
-	  # Fast (esp. stage 3), just for debugging
-	  echo "Stage 1 shortcut skipping almost all of the SBS transcripts."
-	  head -50 $SCRIPTPATH/mcasr/stage1-sbs.txt >> $transcripts
-	fi
+	cat $SCRIPTPATH/mcasr/stage1-sbs.txt >> $transcripts
+	echo "Stage 1 collected transcripts $SCRIPTPATH/mcasr/stage1-$LANG_CODE.txt and $SCRIPTPATH/mcasr/stage1-sbs.txt."
 	echo "Stage 1 took" $SECONDS "seconds."; SECONDS=0
 else
 	usingfile "$transcripts" "preprocessed transcripts"
@@ -156,13 +151,11 @@ fi
 # other transcripts (Interspeech paper, section 3).
 #
 # Modifies the file $transcripts.
-# Creates the file $simfile.
+# Creates the file $simfile, which is read by stage 4's steps/mergetxt.sh.
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo -n "Creating transcript similarity scores... "
 	mkdir -p "$(dirname "$simfile")"
-	grep "#" $transcripts > $tmpdir/transcripts 
-	mv $tmpdir/transcripts $transcripts
 	compute_turker_similarity < $transcripts > $simfile
 	>&2 echo "Done."
 	echo "Stage 2 took" $SECONDS "seconds."; SECONDS=0
@@ -271,7 +264,7 @@ fi
 # Reads files $phnalphabet and $engalphabet.
 # Creates file $initcarmel, e.g. Exp/uzbek/carmel/simple.
 ((stage++))
-if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]; then
+if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo -n "Creating untrained phone-2-letter model ($Pstyle style)... "
 	mkdir -p "$(dirname "$initcarmel")"
 	create-initcarmel.pl $carmelinitopt $phnalphabet $engalphabet $delimsymbol > $initcarmel
@@ -291,7 +284,7 @@ fi
 # In each ref_train file, each line is an identifier followed by a sequence of phonemes,
 # given by passing the transcription through a G2P converter or a dictionary.
 ((stage++))
-if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]; then
+if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo "Creating carmel training data... "
 	prepare-phn2let-traindata.sh $1 > $carmeltraintxt
 	echo "Stage 7 took" $SECONDS "seconds."; SECONDS=0
@@ -306,7 +299,7 @@ fi
 # Creates logfile $tmpdir/carmelout.
 # Creates file $initcarmel.trained.
 ((stage++))
-if [[ $startstage -le $stage && "$TESTTYPE" != "eval" && $stage -le $endstage ]]; then
+if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo -n "Training phone-2-letter model (see $tmpdir/carmelout)..."
 	# Read a list of I/O pairs, e.g. Exp/russian/carmel/simple.
 	# This list is pairs of lines; each pair is an input sequence followed by an output sequence.
@@ -474,6 +467,7 @@ fi
 # Creates the files $decodelatdir/*.GTPLM.fst and $decodelatdir/*.TPLM.fst
 # Creates $decodelatdir.
 # Each GTPLM.fst is over $phnalphabet, a lattice over phones.
+set -e
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	if [[ -n $makeTPLM && -n $makeGTPLM ]]; then
@@ -482,6 +476,9 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 		msgtext="TPLM"
 	elif [[ -n $makeGTPLM ]]; then
 		msgtext="GTPLM"
+	else
+		>&2 echo "Neither makeTPLM nor makeGTPLM is set.  Check $1."
+		exit 1
 	fi
 	if [[ -z $Mscale ]]; then
 		Mscale=1
@@ -493,6 +490,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 else
 	usingfile "$decodelatdir" "decoded lattices in"
 fi
+set +e
 
 ## STAGE 15 ##
 # Evaluate the GTPLM lattices, stand-alone.
