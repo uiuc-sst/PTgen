@@ -4,12 +4,16 @@
 
 mkdir -p $mergedir
 
->&2 echo "`basename $0`: for MCASR, create-distances in PHONES not LETTERS."
-create-distances-phones.pl > $aligndist # e.g., Exp/uzbek/aligndists.txt
-# ;;;; create-distances.pl > $aligndist # e.g., Exp/uzbek/aligndists.txt
+# Make $aligndist, e.g., Exp/uzbek/aligndists.txt
+if [[ -n $mcasr ]]; then
+  create-distances-phones.pl > $aligndist
+else
+  create-distances.pl > $aligndist
+fi
 
+[ -s $aligndist ]   || { echo "$0: missing or empty aligndist file $aligndist"; exit 1; }
 [ -s $transcripts ] || { echo "$0: missing or empty transcripts file $transcripts."; exit 1; }
-[ -s $simfile ] || { echo "$0: missing or empty transcripts file $simfile."; exit 1; }
+[ -s $simfile ]     || { echo "$0: missing or empty transcripts file $simfile."; exit 1; }
 
 >&2 echo "`basename $0`: parsing $transcripts and $simfile."
 rm -f /tmp/hash_transcripts.sh
@@ -25,8 +29,7 @@ rm -f /tmp/hash_transcripts.sh
 
 # Parallelizing more than $nparallel doesn't exploit more cores,
 # because the files foo.$ip were split over only $nparallel parts
-# by stage 3's create-datasplits.sh.  So just use shuf to balance
-# the load somewhat.
+# by stage 3's create-datasplits.sh.  So just balance the load with shuf.
 showprogress init 200 "Merging transcripts"
 for ip in `seq -f %02g $nparallel`; do
 	(

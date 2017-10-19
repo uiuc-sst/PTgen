@@ -1,13 +1,17 @@
 #!/bin/bash
+
 # Script to build and evaluate probabilistic transcriptions.
-#
+
 # This script is split into 15 stages.
-# To resume execution at a particular stage,
-# set the variable $startstage in the settings file.
-#
+# See $startstage and $endstage in the settings file.
 # Although stages 9-13 are very fast, we keep them as separate stages
 # for tuning hyper-parameters such as # of phone deletions/insertions,
 # and because they *are* functionally distinct.
+
+# If the settings file has mcasr=1, then for each short mp3 clip this reads,
+# instead of English-letter transcriptions,
+# mcasr/s5c/data/LANGUAGE/lang/phones.txt phone-string transcriptions
+# computed by https://github.com/uiuc-sst/mcasr.
 
 # To show debug info, export DEBUG=yes.
 export DEBUG=no
@@ -21,13 +25,12 @@ UTILDIR="$SCRIPTPATH/util"
 export INIT_STEPS=$SRCDIR/init.sh
 . $INIT_STEPS
 
-# config.sh is in the local directory, which might not be the same as that of run.sh.
+# config.sh is in the local directory, which might differ from that of run.sh.
+# If there's no config.sh, that's still okay if binaries are already in $PATH.
 if [[ -s config.sh ]]; then
   . config.sh
   export PATH=$PATH:$OPENFSTDIR:$CARMELDIR:$KALDIDIR
   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPENFSTLIB1:$OPENFSTLIB2 # for libfstscript.so and libfst.so
-else
-  : # No config.sh, but that's okay if binaries are already in $PATH.
 fi
 
 if hash compute-wer 2>/dev/null; then
@@ -35,8 +38,7 @@ if hash compute-wer 2>/dev/null; then
 else
   read -p "Enter the Kaldi directory containing compute-wer: " KALDIDIR
   # Typical values:
-  # /ws/rz-cl-2/hasegawa/xyang45/work/kaldi-trunk/src/bin
-  # /r/lorelei/kaldi/kaldi-trunk/src/bin
+  # foo/kaldi-trunk/src/bin
   # Append this value, without erasing any previous values.
   echo "KALDIDIR=\"$KALDIDIR\"" >> config.sh
 fi
@@ -46,7 +48,7 @@ if hash carmel 2>/dev/null; then
 else
   read -p "Enter the directory containing carmel: " CARMELDIR
   # Typical values:
-  # /r/lorelei/bin-carmel/linux64
+  # foo/bin-carmel/linux64
   # $HOME/carmel/linux64
   echo "CARMELDIR=\"$CARMELDIR\"" >> config.sh
 fi
@@ -56,12 +58,12 @@ if hash fstcompile 2>/dev/null; then
 else
   read -p "Enter the directory containing fstcompile and other OpenFST programs (/foo/bar/.../bin/.libs): " OPENFSTDIR
   # Typical values:
-  # /ws/rz-cl-2/hasegawa/amitdas/corpus/ws15-pt-data/data/rsloan/openfst-1.5.0/src/bin/.libs
+  # foo/openfst-1.5.0/src/bin/.libs
   echo "OPENFSTDIR=\"$OPENFSTDIR\"" >> config.sh
   # Expect to find libfstscript.so and libfst.so relative to OPENFSTDIR.
-  # /ws/rz-cl-2/hasegawa/amitdas/corpus/ws15-pt-data/data/rsloan/openfst-1.5.0/src/bin/.libs becomes
-  # /ws/rz-cl-2/hasegawa/amitdas/corpus/ws15-pt-data/data/rsloan/openfst-1.5.0/src/lib/.libs and
-  # /ws/rz-cl-2/hasegawa/amitdas/corpus/ws15-pt-data/data/rsloan/openfst-1.5.0/src/script/.libs
+  # foo/openfst-1.5.0/src/bin/.libs becomes
+  # foo/openfst-1.5.0/src/lib/.libs and
+  # foo/openfst-1.5.0/src/script/.libs
   OPENFSTLIB1=$(echo "$OPENFSTDIR" | sed 's_bin/.libs$_lib/.libs_')
   OPENFSTLIB2=$(echo "$OPENFSTDIR" | sed 's_bin/.libs$_script/.libs_')
   echo "OPENFSTLIB1=\"$OPENFSTLIB1\"" >> config.sh
@@ -128,15 +130,25 @@ fi
 
 ## STAGE 1 ##
 # Preprocess transcripts from crowd workers.
-#
-# Reads the files $engdict and $TURKERTEXT/*/batchfile, where * covers $ALL_LANGS.
-# Uses the variable $rmprefix, if defined.
-# Creates the file $transcripts, e.g. Exp/uzbek/transcripts.txt
+# Creates the file $transcripts, e.g. Exp/uzbek/transcripts.txt.
 # (Interspeech paper, figure 1, y^(i)).
 SECONDS=0
 stage=1
 set -e
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
+    if [[ -n $mcasr ]]; then
+	# Copies preprocessed transcripts from crowd workers.
+	# Reads the files $SCRIPTPATH/mcasr/*.txt.
+	[ ! -z $LANG_CODE ] || { >&2 echo "No variable LANG_CODE in file '$1'."; exit 1; }
+	[ -s $SCRIPTPATH/mcasr/stage1-$LANG_CODE.txt ] || { >&2 echo "Missing or empty file $SCRIPTPATH/mcasr/stage1-$LANG_CODE.txt. Check $1."; exit 1; }
+	mkdir -p "$(dirname "$transcripts")"
+	cp $SCRIPTPATH/mcasr/stage1-$LANG_CODE.txt $transcripts
+	cat $SCRIPTPATH/mcasr/stage1-sbs.txt >> $transcripts
+	echo "Stage 1 collected transcripts $SCRIPTPATH/mcasr/stage1-$LANG_CODE.txt and $SCRIPTPATH/mcasr/stage1-sbs.txt."
+	echo "Stage 1 took" $SECONDS "seconds."; SECONDS=0
+    else
+	# Reads the files $engdict and $TURKERTEXT/*/batchfile, where * covers $ALL_LANGS.
+	# Uses the variable $rmprefix, if defined.
 	mkdir -p "$(dirname "$transcripts")"
 	showprogress init 1 "Preprocessing transcripts"
 	for L in "${ALL_LANGS[@]}"; do
@@ -148,6 +160,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	done > $transcripts
 	showprogress end
 	echo "Stage 1 took" $SECONDS "seconds."; SECONDS=0
+    fi
 else
 	usingfile "$transcripts" "preprocessed transcripts"
 fi
@@ -165,8 +178,6 @@ set +e
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo -n "Creating transcript similarity scores... "
 	mkdir -p "$(dirname "$simfile")"
-	grep "#" $transcripts > $tmpdir/transcripts; mv $tmpdir/transcripts $transcripts
-	# Or, apt-get install moreutils, and then, grep "#" $transcripts | sponge $transcripts
 	compute_turker_similarity < $transcripts > $simfile
 	>&2 echo "Done."
 	echo "Stage 2 took" $SECONDS "seconds."; SECONDS=0
@@ -315,12 +326,22 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	# Read a list of I/O pairs, e.g. Exp/russian/carmel/simple.
 	# This list is pairs of lines; each pair is an input sequence followed by an output sequence.
 	# Rewrite this list as an FST with new weights, e.g. Exp/russian/carmel/simple.trained.
-	# -f 1 does Dirichlet-prior smoothing.
-	# -M 20 limits training iterations to 20.
-	# -HJ honors our fearless leader (actually, output formatting)
-	hash carmel 2>/dev/null || { >&2 echo "Missing program 'carmel'.  Aborting."; exit 1; }
-	carmel -\? --train-cascade -t -f 1 -M 20 -HJ $carmeltraintxt $initcarmel 2>&1 \
-		| tee $tmpdir/carmelout | awk '/^i=|^Computed/ {printf "."; fflush (stdout)}' >&2
+	#   -f 1 does Dirichlet-prior smoothing.
+	#   -M 20 limits training iterations to 20.
+	#   -HJ formats output.
+	#
+	#   "coproc" runs carmel in a parallel shell whose stdout we can grep,
+	#   to kill it when it prints something that shows that it's about to
+	#   get stuck in an infinite loop.
+	# Or:
+	#   sudo apt-get install expect;
+	#   carmel | tee carmelout | expect -c 'expect -timeout -1 "No derivations"
+	coproc { carmel -\? --train-cascade -t -f 1 -M 20 -HJ $carmeltraintxt $initcarmel 2>&1 | tee $tmpdir/carmelout; }
+	grep -q -m1 "No derivations in transducer" <&${COPROC[0]} && \
+	  [[ $COPROC_PID ]] && kill -9 $COPROC_PID && \
+	  >&2 echo -e "\nAborted carmel before it entered an infinite loop."
+	# Another grep would be "0 states, 0 arcs".
+	# The grep obviates the need for an explicit wait statement.
 	>&2 echo " Done."
 
 	# Todo: sanity check for carmel's training.
