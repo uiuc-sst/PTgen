@@ -21,7 +21,7 @@ while ((@ARGV) && ($argerr == 0)) {
 
 if($argerr == 1) {
 	print "Usage: $0 [--switchpenalty <penalty>] [--delimiter <symbol>] [--epsilon <symbol>]\n";
-	print "Reads aligner's output.  Outputs an fst in OpenFST text format.";
+	print "Reads aligner's output.  Outputs an fst in OpenFST text format.\n";
 	exit(1);
 }
 	
@@ -32,7 +32,7 @@ if ($switchpenalty == 1) {
 		chomp;
 		$line = $_;
 		$line =~ s/\s+$//; $line =~ s/^\s+//;
-		if($line == "") {
+		if($line eq "") {
 			# Don't let an empty input line increment $state without printing an arc,
 			# because that would leave a gap in the chain-like FST.
 			next;
