@@ -7,6 +7,10 @@ EVAL_LANG=(MD)					# Used by stage 3.
 TEST_LANG=(MD)					# Used by stage 3.
 LANG_NAME=mandarin # For test or dev.  Used by $EXPLOCAL, $evalreffile, $phonelm, and $Gfst.  Compatible with $langmap.
 
+# Bug 2017-10-20: stage 5 reports half a dozen
+#   ERROR: FstHeader::Read: Bad FST header: ...mergefstdir/mandarin_141006_365296-1.M.fst
+# , different files each run.  But fstinfo says they're fine.
+
 # %WER 87.24 [ 7192 / 8244, 23 ins, 6243 del,  926 sub ]
 # %WER 87.30 [ 7197 / 8244, 24 ins, 6168 del, 1005 sub ]
 # %WER 87.31 [ 7198 / 8244, 24 ins, 6247 del,  927 sub ]
