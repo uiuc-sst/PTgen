@@ -3,9 +3,9 @@
 # Parse settings_file ($1) into a bunch of $variables.
 # Define some utility functions.
 
-scriptname=`basename "$0"`
+scriptname=$(basename "$0")
 
-nparallel=`nproc | sed "s/$/-1/" | bc`	# One fewer than the number of CPU cores.
+nparallel=$(nproc | sed "s/$/-1/" | bc)	# One fewer than the number of CPU cores.
 
 # Read the settings file.
 [ $# -eq 1 ] || { echo "Usage: $scriptname settings_file"; exit 1; }

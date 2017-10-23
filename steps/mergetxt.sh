@@ -1,8 +1,5 @@
 #!/bin/bash
-
 . $INIT_STEPS
-
-mkdir -p $mergedir
 
 # Make $aligndist, e.g., Exp/uzbek/aligndists.txt
 if [[ -n $mcasr ]]; then
@@ -15,13 +12,15 @@ fi
 [ -s $transcripts ] || { echo "$0: missing or empty transcripts file $transcripts."; exit 1; }
 [ -s $simfile ]     || { echo "$0: missing or empty transcripts file $simfile."; exit 1; }
 
->&2 echo "`basename $0`: parsing $transcripts and $simfile."
+>&2 echo "$(basename $0): parsing $transcripts and $simfile."
 rm -f /tmp/hash_transcripts.sh
 makeHash.rb scrips < $transcripts > /tmp/hash_transcripts.sh
 . /tmp/hash_transcripts.sh
 makeHash.rb sims < $simfile > /tmp/hash_transcripts.sh
 . /tmp/hash_transcripts.sh
 rm -f /tmp/hash_transcripts.sh
+
+mkdir -p $mergedir
 
 # Values are ${scrips[@]}.  Keys are ${!scrips[@]}.  Size is ${#scrips[@]}.  Ditto for sims[].
 # Before looking up a key in scrips, downcase it: key="${key,,}"
@@ -31,21 +30,22 @@ rm -f /tmp/hash_transcripts.sh
 # because the files foo.$ip were split over only $nparallel parts
 # by stage 3's create-datasplits.sh.  So just balance the load with shuf.
 showprogress init 200 "Merging transcripts"
-for ip in `seq -f %02g $nparallel`; do
+for ip in $(seq -f %02g $nparallel); do
 	(
-	cat $splittrainids.$ip $splittestids.$ip $splitadaptids.$ip | shuf | while read uttid; do
-		vttid=`echo $uttid | sed 's/uzbek/UZB/'`
+	# 2>/dev/null hides complaints of missing $splittestids and $splitadaptids, for prepare.rb.
+	cat $splittrainids.$ip $splittestids.$ip $splitadaptids.$ip 2>/dev/null | shuf | while read uttid; do
+		vttid=$(echo $uttid | sed 's/uzbek/UZB/')
 		# These two yield the same number, often about 22, sporadically 0.
 		#   grep -c $vttid $simfile
 		#   grep -c $vttid $transcripts
-		actualparts=(`grep $vttid $simfile | sed 's/,.*//'`)
+		actualparts=($(grep $vttid $simfile | sed 's/,.*//'))
 		npartsReal=${#actualparts[*]}
 		oldway=false
 		if [ $npartsReal == 0 ]; then
 		  npartsReal=$nparts
 		  oldway=true
 		fi
-		if [[ -s $mergedir/$uttid.txt && `grep -c "$delimsymbol" $mergedir/$uttid.txt` == $npartsReal ]]; then
+		if [[ -s $mergedir/$uttid.txt && $(grep -c "$delimsymbol" $mergedir/$uttid.txt) == $npartsReal ]]; then
 		  #echo Already merged uttid $uttid.
 		  continue
 		fi
@@ -54,13 +54,13 @@ for ip in `seq -f %02g $nparallel`; do
 		fi
 		showprogress go
 		touch $mergedir/$uttid.txt
-		for p in `seq 1 $npartsReal`; do
+		for p in $(seq 1 $npartsReal); do
 			if [ "$oldway" = "true" ]; then
 			  part="part-$p-$uttid"
 			  str=${sims[${part,,}]}
 			  tstr=${scrips[${part,,}]}
 			else
-			  part=${actualparts[`expr $p - 1`]}
+			  part=${actualparts[$(expr $p - 1)]}
 			  # echo reading part $part
 
 			  # $part is e.g. IL6_EVAL_001_002_011245212_012494679
@@ -85,7 +85,7 @@ for ip in `seq -f %02g $nparallel`; do
 			# Read the IDs of the best topN turkers (often 2, in settings);
 			# read only THOSE turkers' transcriptions;
 			# send those transcriptions through steps/aligner into mergedir/part-$p-$uttid.txt.
-			idx=`expr $topN + 1`
+			idx=$(expr $topN + 1)
 				# Example:
 				# $str  is "UZB_154_009_002796_003727,4:1,3:0.916667,5:0.916667,2:0.770833,1:-0"
 				# $tstr is "UZB_154_009_002796_003727:2 1 # 9 24 19 28 48 61 25 42 61 48 27 1 # 24 14 42 28 27 27 20 24 32 24 28 16 18 50 # 27 48 9 48 27 20 24 7 24 28 18 42 # 27 48 9 48 27 24 7 12 28 43 48"
@@ -93,8 +93,8 @@ for ip in `seq -f %02g $nparallel`; do
 				# From $str, get the ith comma-delimited field: "4:1", "7:1", "2:0.916667", etc.
 				# From that, get the first colon-delimited field.
 				# Then $turker is 4,7,2, etc.
-			for turkerindex in `seq 2 $idx`; do
-				turker=`echo $str | cut -d',' -f$turkerindex | cut -d':' -f1`
+			for turkerindex in $(seq 2 $idx); do
+				turker=$(echo $str | cut -d',' -f$turkerindex | cut -d':' -f1)
 				if [[ -z $turker ]]; then
 				  # This utterance had only one turker, one transcription.
 				  turker=1
@@ -110,7 +110,7 @@ for ip in `seq -f %02g $nparallel`; do
 			cat $mergedir/part-$p-$uttid.txt >> $mergedir/$uttid.txt
 
 			if [[ -n $delimsymbol ]] ; then
-				( for x in `seq 1 $topN`; do
+				( for x in $(seq 1 $topN); do
 					echo -e -n "$delimsymbol\t"
 				  done 
 				  echo ) >> $mergedir/$uttid.txt

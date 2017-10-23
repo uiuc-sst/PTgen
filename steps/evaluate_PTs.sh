@@ -30,9 +30,9 @@ create-editfst.pl < $phnalphabet | fstcompile > $editfst
 # todo: Move this showprogress block into its own stage, because it's much slower than the rest of this script.
 showprogress init 50 "Evaluating PTs"
 rm -f $tmpdir/hyp.*.txt
-for ip in `seq -f %02g $nparallel`; do
+for ip in $(seq -f %02g $nparallel); do
 	(
-	[ -s $splittestids.$ip ] || { >&2 echo "`basename $0`: missing or empty file $splittestids.$ip."; }
+	[ -s $splittestids.$ip ] || { >&2 echo "$(basename $0): missing or empty file $splittestids.$ip."; }
 	oracleerror=0
 	# Read all the uttid's in $splittestids.*, e.g. Exp/myLanguage/lists/testids.*.
 	while read uttid; do
@@ -40,7 +40,7 @@ for ip in `seq -f %02g $nparallel`; do
 		# $uttid ==, e.g., uzbek_371_001, IL5_EVAL_111_007_023498070_024734810
 		latfile=$decodelatdir/$uttid.GTPLM.fst # Decoded lattice.
 		# A missing $latfile just means that the clip had no speech, e.g. only music.  Don't whine.
-#		[[ -s $latfile ]] || >&2 echo -e "`basename $0`: no GTPLM: skip $uttid." # ;;;;
+#		[[ -s $latfile ]] || >&2 echo -e "$(basename $0): no GTPLM: skip $uttid." # ;;;;
 		[[ -s $latfile ]] || continue;
 		if [[ -n $evaloracle ]]; then
 			# Make an acceptor for known-good transcription (phones).
@@ -53,9 +53,9 @@ for ip in `seq -f %02g $nparallel`; do
 				| perl -a -n -e 'chomp; if($#F <= 2) { print "$F[0]\n"; } else { print "$_\n"; }' \
 				| fstcompile | fstarcsort --sort_type=olabel > $prunefst
 			# Accumulate each phone error rate into the number oracleerror.
-			per=`fstcompose $editfst $reffst | fstcompose $prunefst - \
-				| fstshortestdistance --reverse | head -1 | cut -f2`
-			oracleerror=`echo "$oracleerror + $per" | bc`
+			per=$(fstcompose $editfst $reffst | fstcompose $prunefst - \
+				| fstshortestdistance --reverse | head -1 | cut -f2)
+			oracleerror=$(echo "$oracleerror + $per" | bc)
 			>&2 echo -e "Oracle PER (Job $ip): PER for $uttid = $per; Cumulative PER = $oracleerror"
 		fi
 		# Print a *plausible* hypothesis (fstrandgen), not just the very best one (fstshortestpath).
@@ -69,7 +69,7 @@ wait
 showprogress end
 
 > $tmpdir/hyp.txt
-for ip in `seq -f %02g $nparallel`; do
+for ip in $(seq -f %02g $nparallel); do
   cat $tmpdir/hyp.$ip.txt >> $tmpdir/hyp.txt
 done
 if [[ ! -s $tmpdir/hyp.txt ]]; then
@@ -102,10 +102,10 @@ set +e
 compute-wer --text --mode=present ark:$evalreffile ark:$hypfile
 
 if [[ -n $evaloracle ]]; then
-	oracleerror=`cat $tmpdir/oracleerror.*.txt | awk 'BEGIN {sum=0} {sum=sum+$1} END{print sum}'`
-	lines=`wc -l $evalreffile | cut -d' ' -f1`
-	words=`wc -w $evalreffile | cut -d' ' -f1`
-	per=`echo "scale=5; $oracleerror / ($words - $lines)" | bc -l`
+	oracleerror=$(cat $tmpdir/oracleerror.*.txt | awk 'BEGIN {sum=0} {sum=sum+$1} END{print sum}')
+	lines=$(wc -l $evalreffile | cut -d' ' -f1)
+	words=$(wc -w $evalreffile | cut -d' ' -f1)
+	per=$(echo "scale=5; $oracleerror / ($words - $lines)" | bc -l)
 	echo "lines = $lines, words = $words"
 	echo "Oracle error rate (prune-wt: $prunewt): $oracleerror Relative: $per"
 fi

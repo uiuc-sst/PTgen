@@ -16,7 +16,7 @@ done > $reffile
 [ -s $reffile ] || { >&2 echo "$0: made empty $reffile, so skipping all utterances. No training data. Aborting."; exit 1; }
 
 if [[ -n $mcasr ]]; then
-  >&2 echo "`basename $0`: converting IPA phones to MCASR phone-indexes."
+  >&2 echo "$(basename $0): converting IPA phones to MCASR phone-indexes."
   # Convert IPA phones to mcasr phone-indexes.
   mcasr-phone2index.rb < $reffile > $reffile.tmp
   mv -f $reffile.tmp $reffile
@@ -32,38 +32,40 @@ showprogress init 20 "Preparing training data for carmel"
 nLOTS=98
 rm -f $trainids.* $carmeltraintxt.* # Just in case old temporary files were still there.
 split --numeric-suffixes=1 -n r/$nLOTS $trainids $trainids.
-for ip in `seq -w 1 $nLOTS`; do
+for ip in $(seq -w 1 $nLOTS); do
   [ -s $trainids.$ip ] || { >&2 echo -e "\n$0: made empty split-file $trainids.$ip. Aborting."; exit 1; }
 done
 
-for ip in `seq -w 1 $nLOTS`; do
+for ip in $(seq -w 1 $nLOTS); do
   ( while read uttid; do
     if [[ ! -s $mergefstdir/$uttid.M.fst ]]; then
-      >&2 echo -e "\n`basename $0`: skipping utterance with empty $mergefstdir/$uttid.M.fst."
+      >&2 echo -e "\n$(basename $0): skipping utterance with empty $mergefstdir/$uttid.M.fst."
       continue
     fi
     # When M.fst is large, this test is faster than fstinfo M.fst | grep "# of arcs" == "0".
     # Almost as fast: if $(fstprint M.fst) == "0".
     if [[ $(< $mergefstdir/$uttid.M.fst.txt) == "0" ]]; then
       # fstrandgen below would output nothing useful.
-      >&2 echo -e "\n`basename $0`: skipping utterance with null $mergefstdir/$uttid.M.fst."
+      >&2 echo -e "\n$(basename $0): skipping utterance with null $mergefstdir/$uttid.M.fst."
       continue
     fi
 
     showprogress go
     # Grepping $reffile 98x is quadratic, thus slow.
+    # Todo: replace it with how mergetxt.sh uses makeHash.rb.
+    #
     # Yes, that regex includes a hardcoded tab.
-    refstring=`egrep "$uttid[ 	]" $reffile |
+    refstring=$(egrep "$uttid[ 	]" $reffile |
       cut -d' ' -f2- |
-      sed -e 's/^[ \t]*/"/' -e 's/[ \t]*$/"/' -e 's/[ \t]\+/" "/g'`
+      sed -e 's/^[ \t]*/"/' -e 's/[ \t]*$/"/' -e 's/[ \t]\+/" "/g')
     if [[ -z $refstring ]]; then
-      >&2 echo -e "\n`basename $0`: skipping utterance lacking a reference string, $uttid."
+      # Don't complain.  # >&2 echo -e "\n$(basename $0): skipping utterance lacking a reference string, $uttid."
       continue
     fi
 
     # todo: instead of the loop, it would be faster to fstrandgen --npath=$nrand,
     # and interleave its outputs with copies of $refstring.
-    for rn in `seq 1 $nrand`; do
+    for rn in $(seq 1 $nrand); do
       echo $refstring
       fstrandgen --npath=1 --select=log_prob $mergefstdir/$uttid.M.fst |
 	fstprint --osymbols=$engalphabet |

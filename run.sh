@@ -77,7 +77,7 @@ if [[ ! -d $DATA ]]; then
   if [ -z ${DATA_URL+x} ]; then
     echo "Missing DATA directory '$DATA', and no \$DATA_URL to get it from. Check $1."; exit 1
   fi
-  tarball=`basename $DATA_URL`
+  tarball=$(basename $DATA_URL)
   # $DATA_URL is e.g. http://www.ifp.illinois.edu/something/foo.tgz
   # $tarball is foo.tgz
   if [ -f $tarball ]; then
@@ -87,7 +87,7 @@ if [[ ! -d $DATA ]]; then
     wget --no-verbose $DATA_URL || exit 1
   fi
   # Check the name of the tarball's first file (probably a directory).  Strip the trailing slash.
-  tarDir=`tar tvf $tarball | head -1 | awk '{print $NF}' | sed -e 's_\/$__'`
+  tarDir=$(tar tvf $tarball | head -1 | awk '{print $NF}' | sed -e 's_\/$__')
   [ "$tarDir" == "$DATA" ] || { echo "Tarball $tarball contains $tarDir, not \$DATA '$DATA'."; exit 1; }
   echo "Extracting $tarball, hopefully into \$DATA '$DATA'."
   tar xzf $tarball || ( echo "Unexpected contents in $tarball.  Aborting."; exit 1 )
