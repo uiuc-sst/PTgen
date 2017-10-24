@@ -39,3 +39,7 @@ for ip in $(seq -f %02g $nparallel); do
 done
 wait
 showprogress end
+if ! find $mergefstdir -mindepth 1 | read ; then
+  >&2 echo -e "$0: created no FSTs in $mergefstdir.  Check \$mergedir $mergedir."
+  exit 1
+fi

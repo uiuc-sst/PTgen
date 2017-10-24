@@ -7,10 +7,9 @@ if [[ -n $mcasr ]]; then
 else
   create-distances.pl > $aligndist
 fi
-
-[ -s $aligndist ]   || { echo "$0: missing or empty aligndist file $aligndist"; exit 1; }
+[ -s $aligndist ]   || { echo "$0: failed to make aligndist file $aligndist"; exit 1; }
 [ -s $transcripts ] || { echo "$0: missing or empty transcripts file $transcripts."; exit 1; }
-[ -s $simfile ]     || { echo "$0: missing or empty transcripts file $simfile."; exit 1; }
+[ -s $simfile ]     || { echo "$0: missing or empty similarity-score file $simfile."; exit 1; }
 
 >&2 echo "$(basename $0): parsing $transcripts and $simfile."
 rm -f /tmp/hash_transcripts.sh
@@ -121,3 +120,7 @@ for ip in $(seq -f %02g $nparallel); do
 done
 wait
 showprogress end
+if ! find $mergedir -mindepth 1 | read ; then
+  >&2 echo "$0: created no files in $mergedir."
+  exit 1
+fi
