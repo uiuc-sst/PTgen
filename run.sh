@@ -17,10 +17,10 @@
 export DEBUG=no
 [ "$DEBUG"==yes ] || set -x
 
-SCRIPT="$(readlink --canonicalize-existing "$0")"
-SCRIPTPATH="$(dirname "$SCRIPT")"
-SRCDIR="$SCRIPTPATH/steps"
-UTILDIR="$SCRIPTPATH/util"
+SCRIPT=$(readlink --canonicalize-existing $0)
+SCRIPTPATH=$(dirname $SCRIPT)
+SRCDIR=$SCRIPTPATH/steps
+UTILDIR=$SCRIPTPATH/util
 
 export INIT_STEPS=$SRCDIR/init.sh
 . $INIT_STEPS
@@ -33,41 +33,35 @@ if [[ -s config.sh ]]; then
   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPENFSTLIB1:$OPENFSTLIB2 # for libfstscript.so and libfst.so
 fi
 
-if hash compute-wer 2>/dev/null; then
-  : # found compute-wer
-else
+if ! hash compute-wer 2>/dev/null; then
   read -p "Enter the Kaldi directory containing compute-wer: " KALDIDIR
   # Typical values:
   # foo/kaldi-trunk/src/bin
   # Append this value, without erasing any previous values.
-  echo "KALDIDIR=\"$KALDIDIR\"" >> config.sh
+  echo KALDIDIR=\"$KALDIDIR\" >> config.sh
 fi
 
-if hash carmel 2>/dev/null; then
-  :
-else
+if ! hash carmel 2>/dev/null; then
   read -p "Enter the directory containing carmel: " CARMELDIR
   # Typical values:
   # foo/bin-carmel/linux64
   # $HOME/carmel/linux64
-  echo "CARMELDIR=\"$CARMELDIR\"" >> config.sh
+  echo CARMELDIR=\"$CARMELDIR\" >> config.sh
 fi
 
-if hash fstcompile 2>/dev/null; then
-  :
-else
+if ! hash fstcompile 2>/dev/null; then
   read -p "Enter the directory containing fstcompile and other OpenFST programs (/foo/bar/.../bin/.libs): " OPENFSTDIR
   # Typical values:
   # foo/openfst-1.5.0/src/bin/.libs
-  echo "OPENFSTDIR=\"$OPENFSTDIR\"" >> config.sh
+  echo OPENFSTDIR=\"$OPENFSTDIR\" >> config.sh
   # Expect to find libfstscript.so and libfst.so relative to OPENFSTDIR.
   # foo/openfst-1.5.0/src/bin/.libs becomes
   # foo/openfst-1.5.0/src/lib/.libs and
   # foo/openfst-1.5.0/src/script/.libs
-  OPENFSTLIB1=$(echo "$OPENFSTDIR" | sed 's_bin/.libs$_lib/.libs_')
-  OPENFSTLIB2=$(echo "$OPENFSTDIR" | sed 's_bin/.libs$_script/.libs_')
-  echo "OPENFSTLIB1=\"$OPENFSTLIB1\"" >> config.sh
-  echo "OPENFSTLIB2=\"$OPENFSTLIB2\"" >> config.sh
+  OPENFSTLIB1=$(echo $OPENFSTDIR | sed 's_bin/.libs$_lib/.libs_')
+  OPENFSTLIB2=$(echo $OPENFSTDIR | sed 's_bin/.libs$_script/.libs_')
+  echo OPENFSTLIB1=\"$OPENFSTLIB1\" >> config.sh
+  echo OPENFSTLIB2=\"$OPENFSTLIB2\" >> config.sh
 fi
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPENFSTLIB1:$OPENFSTLIB2 # for libfstscript.so and libfst.so
@@ -112,7 +106,7 @@ else
   >&2 echo "Creating experiment directory $EXPLOCAL."
   mkdir -p $EXPLOCAL
 fi
-cp "$1" $EXPLOCAL/settings
+cp $1 $EXPLOCAL/settings
 
 if [[ -z $startstage ]]; then startstage=1;   fi
 if [[ -z $endstage ]];   then endstage=99999; fi
@@ -125,7 +119,7 @@ if [[ $startstage -le 8 && 8 -le $endstage ]]; then
   hash carmel 2>/dev/null || { echo >&2 "Missing program 'carmel'. Stage 8 would abort.  Please install it from www.isi.edu/licensed-sw/carmel."; exit 1; }
 fi
 if [[ $startstage -le 15 && 15 -le $endstage ]]; then
-  hash compute-wer 2>/dev/null || { echo >&2 "Missing program 'compute-wer'.  Stage 15 would abort."; exit 1; }
+  hash compute-wer 2>/dev/null || { echo >&2 "Missing program 'compute-wer'. Stage 15 would abort."; exit 1; }
 fi
 
 ## STAGE 1 ##
@@ -141,7 +135,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	# Reads the files $SCRIPTPATH/mcasr/*.txt.
 	[ ! -z $LANG_CODE ] || { >&2 echo "No variable LANG_CODE in file '$1'."; exit 1; }
 	[ -s $SCRIPTPATH/mcasr/stage1-$LANG_CODE.txt ] || { >&2 echo "Missing or empty file $SCRIPTPATH/mcasr/stage1-$LANG_CODE.txt. Check $1."; exit 1; }
-	mkdir -p "$(dirname "$transcripts")"
+	mkdir -p $(dirname $transcripts)
 	cp $SCRIPTPATH/mcasr/stage1-$LANG_CODE.txt $transcripts
 	cat $SCRIPTPATH/mcasr/stage1-sbs.txt >> $transcripts
 	echo "Stage 1 collected transcripts $SCRIPTPATH/mcasr/stage1-$LANG_CODE.txt and $SCRIPTPATH/mcasr/stage1-sbs.txt."
@@ -149,7 +143,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
     else
 	# Reads the files $engdict and $TURKERTEXT/*/batchfile, where * covers $ALL_LANGS.
 	# Uses the variable $rmprefix, if defined.
-	mkdir -p "$(dirname "$transcripts")"
+	mkdir -p $(dirname $transcripts)
 	showprogress init 1 "Preprocessing transcripts"
 	for L in "${ALL_LANGS[@]}"; do
 		if [[ -n $rmprefix ]]; then
@@ -162,22 +156,20 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	echo "Stage 1 took" $SECONDS "seconds."; SECONDS=0
     fi
 else
-	usingfile "$transcripts" "preprocessed transcripts"
+	usingfile $transcripts "preprocessed transcripts"
 fi
 set +e
 
 ## STAGE 2 ##
-# Filter data.
-#
 # For each utterance, rank each transcript by its similarity to the
 # other transcripts (Interspeech paper, section 3).
 #
-# Modifies the file $transcripts.
+# Reads the file $transcripts.
 # Creates the file $simfile, which is read by stage 4's steps/mergetxt.sh.
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo -n "Creating transcript similarity scores... "
-	mkdir -p "$(dirname "$simfile")"
+	mkdir -p $(dirname $simfile)
 	compute_turker_similarity < $transcripts > $simfile
 	>&2 echo "Done."
 	echo "Stage 2 took" $SECONDS "seconds."; SECONDS=0
@@ -221,7 +213,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo "Done."
 	echo "Stage 3 took" $SECONDS "seconds."; SECONDS=0
 else
-	usingfile "$(dirname "$splittestids")" "test & train ID lists in"
+	usingfile $(dirname $splittestids) "test & train ID lists in"
 fi
 
 ## STAGE 4 ##
@@ -238,7 +230,6 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 else
 	usingfile $mergedir "merged transcripts in"
 fi
-set +e
 
 ## STAGE 5 ##
 # Convert each merged transcript into a sausage, "a confusion network rho(lambda|T)
@@ -256,8 +247,9 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	mergefst.sh $1
 	echo "Stage 5 took" $SECONDS "seconds."; SECONDS=0
 else
-	usingfile "$mergedir" "merged transcript FSTs in"
+	usingfile $mergedir "merged transcript FSTs in"
 fi
+set +e
 
 ## STAGE 6 ##
 # Initialize the phone-2-letter model, P, aka:
@@ -288,12 +280,12 @@ fi
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo -n "Creating untrained phone-2-letter model ($Pstyle style)... "
-	mkdir -p "$(dirname "$initcarmel")"
+	mkdir -p $(dirname $initcarmel)
 	create-initcarmel.pl $carmelinitopt $phnalphabet $engalphabet $delimsymbol > $initcarmel
 	>&2 echo "Done."
 	echo "Stage 6 took" $SECONDS "seconds."; SECONDS=0
 else
-	usingfile "$initcarmel" "untrained phone-2-letter model"
+	usingfile $initcarmel "untrained phone-2-letter model"
 fi
 
 ## STAGE 7 ##
@@ -311,7 +303,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	prepare-phn2let-traindata.sh $1 > $carmeltraintxt
 	echo "Stage 7 took" $SECONDS "seconds."; SECONDS=0
 else
-	usingfile "$carmeltraintxt" "training text for phone-2-letter model"
+	usingfile $carmeltraintxt "training text for phone-2-letter model"
 fi
 
 ## STAGE 8 ##
@@ -362,7 +354,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 
 	echo "Stage 8 took" $SECONDS "seconds."; SECONDS=0
 else
-	usingfile "$initcarmel.trained" "trained phone-2-letter model"
+	usingfile ${initcarmel}.trained "trained phone-2-letter model"
 fi
 
 ## STAGE 9 ##
@@ -383,13 +375,13 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	convert-carmel-to-fst.pl < ${initcarmel}.trained \
 		| sed -e 's/e\^-\([0-9]*\)\..*/1.00e-\1/g' | convert-prob-to-neglog.pl \
 		| scale-FST-weights.pl $Pscale \
-		| fixp2let.pl "$disambigdel" "$disambigins" "$phneps" "$leteps" \
+		| fixp2let.pl $disambigdel $disambigins $phneps $leteps \
 		| tee $tmpdir/trainedp2let.fst.txt \
 		| fstcompile --isymbols=$phnalphabet --osymbols=$engalphabet > $Pfst
 	>&2 echo "Done."
 	echo "Stage 9 took" $SECONDS "seconds."; SECONDS=0
 else
-	usingfile "$Pfst" "P (phone-2-letter model) FST"
+	usingfile $Pfst "P (phone-2-letter) FST"
 fi
 
 ## STAGE 10 ##
@@ -410,18 +402,18 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 		Gscale=1
 	fi
 	>&2 echo -n "Creating G (phone-model) FST with disambiguation symbols [GSCALE=$Gscale]... "
-	mkdir -p "$(dirname "$Gfst")"
+	mkdir -p $(dirname $Gfst)
 	# Because addloop.pl adds #2 and #3 symbols via settings' disambigdel and disambigins,
 	# data/phonesets/univ.compact.txt must include #2 and #3.
 	fstprint --isymbols=$phnalphabet --osymbols=$phnalphabet $phonelm \
-		| addloop.pl "$disambigdel" "$disambigins" \
+		| addloop.pl $disambigdel $disambigins \
 		| scale-FST-weights.pl $Gscale \
 		| fstcompile --isymbols=$phnalphabet --osymbols=$phnalphabet \
 		| fstarcsort --sort_type=olabel > $Gfst
 	>&2 echo "Done."
 	echo "Stage 10 took" $SECONDS "seconds."; SECONDS=0
 else
-	usingfile "$Gfst" "G (phone language model) FST"
+	usingfile $Gfst "G (phone model) FST"
 fi
 
 ## STAGE 11 ##
@@ -437,7 +429,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 		Lscale=1
 	fi
 	>&2 echo -n "Creating L (letter statistics) FST [LSCALE=$Lscale]... "
-	mkdir -p "$(dirname "$Lfst")"
+	mkdir -p $(dirname $Lfst)
 	create-letpriorfst.pl $mergedir $trainids \
 		| scale-FST-weights.pl $Lscale \
 		| fstcompile --osymbols=$engalphabet --isymbols=$engalphabet - \
@@ -474,13 +466,13 @@ fi
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo -n "Creating TPL and GTPL FSTs... "
-	mkdir -p "$(dirname "$TPLfst")"
+	mkdir -p $(dirname $TPLfst)
 	fstcompose $Pfst $Lfst | fstcompose $Tfst - | fstarcsort --sort_type=olabel \
 		 | tee $TPLfst | fstcompose $Gfst - | fstarcsort --sort_type=olabel > $GTPLfst
 	>&2 echo "Done."
 	echo "Stage 13 took" $SECONDS "seconds."; SECONDS=0
 else
-	usingfile "$GTPLfst" "GTPL FST"
+	usingfile $GTPLfst "GTPL FST"
 fi
 
 ## STAGE 14 ##
@@ -515,7 +507,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	decode_PTs.sh $1
 	echo "Stage 14 took" $SECONDS "seconds."; SECONDS=0
 else
-	usingfile "$decodelatdir" "decoded lattices in"
+	usingfile $decodelatdir "decoded lattices in"
 fi
 set +e
 

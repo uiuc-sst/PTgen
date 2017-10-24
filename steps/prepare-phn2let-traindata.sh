@@ -1,10 +1,8 @@
 #!/bin/bash
+. $INIT_STEPS
+set -e
 
 # Emit training data for carmel ($carmeltraintxt, Exp/uzbek/carmel/training.txt).
-
-. $INIT_STEPS
-
-set -e
 
 [ -s $trainids ] || { >&2 echo "$0: missing or empty training file $trainids. Aborting."; exit 1; }
 
@@ -39,14 +37,14 @@ done
 for ip in $(seq -w 1 $nLOTS); do
   ( while read uttid; do
     if [[ ! -s $mergefstdir/$uttid.M.fst ]]; then
-      >&2 echo -e "\n$(basename $0): skipping utterance with empty $mergefstdir/$uttid.M.fst."
+      >&2 echo "$(basename $0): skipping utterance with empty $mergefstdir/$uttid.M.fst."
       continue
     fi
     # When M.fst is large, this test is faster than fstinfo M.fst | grep "# of arcs" == "0".
     # Almost as fast: if $(fstprint M.fst) == "0".
     if [[ $(< $mergefstdir/$uttid.M.fst.txt) == "0" ]]; then
-      # fstrandgen below would output nothing useful.
-      >&2 echo -e "\n$(basename $0): skipping utterance with null $mergefstdir/$uttid.M.fst."
+      # Below, fstrandgen would output nothing useful.
+      >&2 echo "$(basename $0): skipping utterance with null $mergefstdir/$uttid.M.fst."
       continue
     fi
 

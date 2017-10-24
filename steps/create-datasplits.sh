@@ -31,7 +31,7 @@ eval)
   [ ! -z ${EVAL_LANG+x}  ] || { >&2 echo -e "\n$0: no \$EVAL_LANG. Check $1. Aborting."; exit 1; } ;;
 esac
 
-mkdir -p "$(dirname "$ids_file")"
+mkdir -p $(dirname $ids_file)
 for L in ${LANG[@]}; do
 	full_lang_name=$(awk '/'$L'/ {print $2}' $langmap)
 	[ ! -z "$full_lang_name" ] || { >&2 echo -e "\n$0: no language $L in $langmap. Aborting."; exit 1; }
@@ -45,5 +45,5 @@ done > $ids_file
 # "split -n r/42 ..." makes 42 equal-size parts, without breaking lines, with round robin (shuffled) distribution.
 # "--numeric-suffixes=1" names them .01 .02 ... .42, instead of .aa .ab ... .
 # To iterate over these files, use "seq -f %02g $nparallel".
-mkdir -p "$(dirname "$splitids_file")"
+mkdir -p $(dirname $splitids_file)
 split --numeric-suffixes=1 -n r/$nparallel $ids_file $splitids_file.$i
