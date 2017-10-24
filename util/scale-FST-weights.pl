@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# A filter to scale the weights of an FST in OpenFST text format.
+# Scale the weights of an FST in OpenFST text format.
 
 die "Usage: $0 scaleValue < in.fst.txt > out.fst.txt" if $#ARGV != 0;
 $scale=$ARGV[0];

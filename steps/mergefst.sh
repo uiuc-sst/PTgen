@@ -2,7 +2,7 @@
 . $INIT_STEPS
 set -e
 
-[ -d $mergedir ] || { >&2 echo "$0: no directory $mergedir.  Aborting."; exit 1; }
+[ -d $mergedir ] || { >&2 echo "$0: no directory $mergedir. Aborting."; exit 1; }
 
 mkdir -p $mergefstdir
 showprogress init 100 "Merging transcript FSTs"
@@ -12,7 +12,7 @@ for ip in $(seq -f %02g $nparallel); do
   cat $splittrainids.$ip $splittestids.$ip $splitadaptids.$ip 2>/dev/null | shuf | while read uttid; do
     if [[ ! -s $mergedir/$uttid.txt ]] ; then
       # Don't whine.  The clip had no speech.  Probably just music.
-      : #>&2 echo -e -n "\n$(basename $0): skipping empty utterance $mergedir/$uttid.txt."
+      #>&2 echo -e -n "\n$(basename $0): skipping empty utterance $mergedir/$uttid.txt."
       continue
     fi
     showprogress go
@@ -40,6 +40,6 @@ done
 wait
 showprogress end
 if ! find $mergefstdir -mindepth 1 | read ; then
-  >&2 echo -e "$0: created no FSTs in $mergefstdir.  Check \$mergedir $mergedir."
+  >&2 echo -e "$0: created no FSTs in $mergefstdir. Check \$mergedir $mergedir."
   exit 1
 fi

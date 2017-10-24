@@ -17,8 +17,7 @@
 export DEBUG=no
 [ "$DEBUG"==yes ] || set -x
 
-SCRIPT=$(readlink --canonicalize-existing $0)
-SCRIPTPATH=$(dirname $SCRIPT)
+SCRIPTPATH=$(dirname $(readlink --canonicalize-existing $0))
 SRCDIR=$SCRIPTPATH/steps
 UTILDIR=$SCRIPTPATH/util
 
@@ -249,7 +248,6 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 else
 	usingfile $mergedir "merged transcript FSTs in"
 fi
-set +e
 
 ## STAGE 6 ##
 # Initialize the phone-2-letter model, P, aka:
@@ -274,7 +272,7 @@ set +e
 # convert the sequence of graphemes into a sequence of phones using e.g.
 # http://isle.illinois.edu/sst/data/g2ps/Uyghur/Uyghur_Arabic_orthography_dict.html .
 #
-# Uses variables $carmelinitopt and $delimsymbol.
+# Uses variables $Pstyle, $carmelinitopt and $delimsymbol.
 # Reads files $phnalphabet and $engalphabet.
 # Creates file $initcarmel, e.g. Exp/uzbek/carmel/simple.
 ((stage++))
@@ -305,6 +303,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 else
 	usingfile $carmeltraintxt "training text for phone-2-letter model"
 fi
+set +e
 
 ## STAGE 8 ##
 # EM-train P.
@@ -371,7 +370,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	if [[ -z $Pscale ]]; then
 		Pscale=1
 	fi
-	>&2 echo -n "Creating P (phone-2-letter FST) in openFST format [PSCALE=$Pscale]... "
+	>&2 echo -n "Creating P (phone-2-letter) FST [PSCALE=$Pscale]... "
 	convert-carmel-to-fst.pl < ${initcarmel}.trained \
 		| sed -e 's/e\^-\([0-9]*\)\..*/1.00e-\1/g' | convert-prob-to-neglog.pl \
 		| scale-FST-weights.pl $Pscale \
