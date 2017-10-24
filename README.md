@@ -17,11 +17,7 @@ A stage-by-stage description is found in this [Interspeech paper](http://www.isl
 
 Install [OpenFST](http://www.openfst.org/), [Carmel](http://www.isi.edu/licensed-sw/carmel), and at least the `compute-wer` executable of [Kaldi](https://github.com/kaldi-asr/kaldi).
 
-```
-git clone https://github.com/uiuc-sst/PTgen
-cd src
-make
-```
+`git clone https://github.com/uiuc-sst/PTgen && cd src && make`
 
 The first time you `make`, you'll be asked to enter the directory of OpenFST's file `fst/compat.h`.
 This is usually `/usr/local/include`.  If it isn't, then `rm config.mk; make` and
@@ -48,6 +44,15 @@ and remembers your answers in a file `config.sh`.
 
 If you encounter errors and fix them, you can save time by starting `run.sh` partway through:
 in the settings file, set `startstage` to one past your last successfully completed stage.
+
+## Redesign in progress
+
+Instead of `run.sh`:
+
+`cd test/prepare; ../../prepare.sh settings` builds `P.fst` and `L.fst` from only WS15 data.
+
+Then, `apply.sh` will read those FSTs, crowdsourced transcriptions for utterances in a new language L, and optional ground-truth transcriptions,
+to compute transcriptions in L and measure their word error rate.
 
 # How to run prebuilt tests
 
