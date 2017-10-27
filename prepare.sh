@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Build Exp/prepare/P.fst and L.fst from purely WS15 transcriptions.
+
 SCRIPTPATH=$(dirname $(readlink --canonicalize-existing $0))
 SRCDIR=$SCRIPTPATH/steps
 UTILDIR=$SCRIPTPATH/util
@@ -109,33 +111,33 @@ SECONDS=0
 stage=1
 set -e
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
-    if [[ -n $mcasr ]]; then
-	# Copies preprocessed transcripts from crowd workers.
-	# Reads the files $SCRIPTPATH/mcasr/*.txt.
-	[ ! -z $LANG_CODE ] || { >&2 echo "No variable LANG_CODE in file '$1'."; exit 1; }
-	[ -s $SCRIPTPATH/mcasr/stage1-$LANG_CODE.txt ] || { >&2 echo "Missing or empty file $SCRIPTPATH/mcasr/stage1-$LANG_CODE.txt. Check $1."; exit 1; }
-	mkdir -p $(dirname $transcripts)
-	cp $SCRIPTPATH/mcasr/stage1-$LANG_CODE.txt $transcripts
-	cat $SCRIPTPATH/mcasr/stage1-sbs.txt >> $transcripts
-	echo "Stage 1 collected transcripts $SCRIPTPATH/mcasr/stage1-$LANG_CODE.txt and $SCRIPTPATH/mcasr/stage1-sbs.txt."
-	echo "Stage 1 took" $SECONDS "seconds."; SECONDS=0
-    else
-	# Reads the files $engdict and $TURKERTEXT/*/batchfile, where * covers $ALL_LANGS.
-	# Uses the variable $rmprefix, if defined.
-	mkdir -p $(dirname $transcripts)
-	showprogress init 1 "Preprocessing transcripts"
-	for L in "${ALL_LANGS[@]}"; do
-		if [[ -n $rmprefix ]]; then
-			prefixarg="--rmprefix $rmprefix"
-		fi
-		preprocess_turker_transcripts.pl --multiletter $engdict $prefixarg < $TURKERTEXT/$L/batchfile
-		showprogress go
-	done > $transcripts
-	showprogress end
-	echo "Stage 1 took" $SECONDS "seconds."; SECONDS=0
-    fi
+  if [[ -n $mcasr ]]; then
+    # Copies preprocessed transcripts from crowd workers.
+    # Reads the files $SCRIPTPATH/mcasr/*.txt.
+    [ ! -z $LANG_CODE ] || { >&2 echo "No variable LANG_CODE in file '$1'."; exit 1; }
+    [ -s $SCRIPTPATH/mcasr/stage1-$LANG_CODE.txt ] || { >&2 echo "Missing or empty file $SCRIPTPATH/mcasr/stage1-$LANG_CODE.txt. Check $1."; exit 1; }
+    mkdir -p $(dirname $transcripts)
+    cp $SCRIPTPATH/mcasr/stage1-$LANG_CODE.txt $transcripts
+    cat $SCRIPTPATH/mcasr/stage1-sbs.txt >> $transcripts
+    echo "Stage 1 collected transcripts $SCRIPTPATH/mcasr/stage1-$LANG_CODE.txt and $SCRIPTPATH/mcasr/stage1-sbs.txt."
+    echo "Stage 1 took" $SECONDS "seconds."; SECONDS=0
+  else
+    # Reads the files $engdict and $TURKERTEXT/*/batchfile, where * covers $ALL_LANGS.
+    # Uses the variable $rmprefix, if defined.
+    mkdir -p $(dirname $transcripts)
+    showprogress init 1 "Preprocessing transcripts"
+    for L in "${ALL_LANGS[@]}"; do
+      if [[ -n $rmprefix ]]; then
+	prefixarg="--rmprefix $rmprefix"
+      fi
+      preprocess_turker_transcripts.pl --multiletter $engdict $prefixarg < $TURKERTEXT/$L/batchfile
+      showprogress go
+    done > $transcripts
+    showprogress end
+    echo "Stage 1 took" $SECONDS "seconds."; SECONDS=0
+  fi
 else
-	usingfile $transcripts "preprocessed transcripts"
+    usingfile $transcripts "preprocessed transcripts"
 fi
 
 ## STAGE 2 ##
@@ -146,13 +148,13 @@ fi
 # Creates the file $simfile, which is read by stage 4's steps/mergetxt.sh.
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
-	>&2 echo -n "Creating transcript similarity scores... "
-	mkdir -p $(dirname $simfile)
-	compute_turker_similarity < $transcripts > $simfile
-	>&2 echo "Done."
-	echo "Stage 2 took" $SECONDS "seconds."; SECONDS=0
+  >&2 echo -n "Creating transcript similarity scores... "
+  mkdir -p $(dirname $simfile)
+  compute_turker_similarity < $transcripts > $simfile
+  >&2 echo "Done."
+  echo "Stage 2 took" $SECONDS "seconds."; SECONDS=0
 else
-	usingfile $simfile "transcript similarity scores"
+  usingfile $simfile "transcript similarity scores"
 fi
 
 ## STAGE 3 ##
@@ -204,10 +206,10 @@ fi
 # (Interspeech paper, section 2.1).
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
-	mergetxt.sh $1
-	echo "Stage 4 took" $SECONDS "seconds."; SECONDS=0
+  mergetxt.sh $1
+  echo "Stage 4 took" $SECONDS "seconds."; SECONDS=0
 else
-	usingfile $mergedir "merged transcripts in"
+  usingfile $mergedir "merged transcripts in"
 fi
 
 ## STAGE 5 ##
@@ -223,10 +225,10 @@ fi
 # (IEEE TASLP paper, fig. 4, left side).
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
-	mergefst.sh $1
-	echo "Stage 5 took" $SECONDS "seconds."; SECONDS=0
+  mergefst.sh $1
+  echo "Stage 5 took" $SECONDS "seconds."; SECONDS=0
 else
-	usingfile $mergedir "merged transcript FSTs in"
+  usingfile $mergedir "merged transcript FSTs in"
 fi
 
 ## STAGE 6 ##
@@ -257,13 +259,13 @@ fi
 # Creates file $initcarmel, e.g. Exp/uzbek/carmel/simple.
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
-	>&2 echo -n "Creating untrained phone-2-letter model ($Pstyle style)... "
-	mkdir -p $(dirname $initcarmel)
-	create-initcarmel.pl $carmelinitopt $phnalphabet $engalphabet $delimsymbol > $initcarmel
-	>&2 echo "Done."
-	echo "Stage 6 took" $SECONDS "seconds."; SECONDS=0
+  >&2 echo -n "Creating untrained phone-2-letter model ($Pstyle style)... "
+  mkdir -p $(dirname $initcarmel)
+  create-initcarmel.pl $carmelinitopt $phnalphabet $engalphabet $delimsymbol > $initcarmel
+  >&2 echo "Done."
+  echo "Stage 6 took" $SECONDS "seconds."; SECONDS=0
 else
-	usingfile $initcarmel "untrained phone-2-letter model"
+  usingfile $initcarmel "untrained phone-2-letter model"
 fi
 
 ## STAGE 7 ##
@@ -277,11 +279,11 @@ fi
 # given by passing the transcription through a G2P converter or a dictionary.
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
-	>&2 echo "Creating carmel training data... "
-	prepare-phn2let-traindata.sh $1 > $carmeltraintxt
-	echo "Stage 7 took" $SECONDS "seconds."; SECONDS=0
+  >&2 echo "Creating carmel training data... "
+  prepare-phn2let-traindata.sh $1 > $carmeltraintxt
+  echo "Stage 7 took" $SECONDS "seconds."; SECONDS=0
 else
-	usingfile $carmeltraintxt "training text for phone-2-letter model"
+  usingfile $carmeltraintxt "training text for phone-2-letter model"
 fi
 set +e
 
@@ -293,48 +295,48 @@ set +e
 # Creates file $initcarmel.trained.
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
-	>&2 echo -n "Training phone-2-letter model (see $tmpdir/carmelout)..."
-	# Read a list of I/O pairs, e.g. Exp/russian/carmel/simple.
-	# This list is pairs of lines; each pair is an input sequence followed by an output sequence.
-	# Rewrite this list as an FST with new weights, e.g. Exp/russian/carmel/simple.trained.
-	#   -f 1 does Dirichlet-prior smoothing.
-	#   -M 20 limits training iterations to 20.
-	#   -HJ formats output.
-	#
-	#   "coproc" runs carmel in a parallel shell whose stdout we can grep,
-	#   to kill it when it prints something that shows that it's about to
-	#   get stuck in an infinite loop.
-	# Or:
-	#   sudo apt-get install expect;
-	#   carmel | tee carmelout | expect -c 'expect -timeout -1 "No derivations"
-	coproc { carmel -\? --train-cascade -t -f 1 -M 1 -HJ $carmeltraintxt $initcarmel 2>&1 | tee $tmpdir/carmelout; }
-	# ;;;; -M 20
-	grep -q -m1 "No derivations in transducer" <&${COPROC[0]} && \
-	  [[ $COPROC_PID ]] && kill -9 $COPROC_PID && \
-	  >&2 echo -e "\nAborted carmel before it entered an infinite loop."
-	# Another grep would be "0 states, 0 arcs".
-	# The grep obviates the need for an explicit wait statement.
-	>&2 echo " Done."
+  >&2 echo -n "Training phone-2-letter model (see $tmpdir/carmelout)..."
+  # Read a list of I/O pairs, e.g. Exp/russian/carmel/simple.
+  # This list is pairs of lines; each pair is an input sequence followed by an output sequence.
+  # Rewrite this list as an FST with new weights, e.g. Exp/russian/carmel/simple.trained.
+  #   -f 1 does Dirichlet-prior smoothing.
+  #   -M 20 limits training iterations to 20.
+  #   -HJ formats output.
+  #
+  #   "coproc" runs carmel in a parallel shell whose stdout we can grep,
+  #   to kill it when it prints something that shows that it's about to
+  #   get stuck in an infinite loop.
+  # Or:
+  #   sudo apt-get install expect;
+  #   carmel | tee carmelout | expect -c 'expect -timeout -1 "No derivations"
+  coproc { carmel -\? --train-cascade -t -f 1 -M 1 -HJ $carmeltraintxt $initcarmel 2>&1 | tee $tmpdir/carmelout; }
+  # ;;;; -M 20
+  grep -q -m1 "No derivations in transducer" <&${COPROC[0]} && \
+    [[ $COPROC_PID ]] && kill -9 $COPROC_PID && \
+    >&2 echo -e "\nAborted carmel before it entered an infinite loop."
+  # Another grep would be "0 states, 0 arcs".
+  # The grep obviates the need for an explicit wait statement.
+  >&2 echo " Done."
 
-	# Todo: sanity check for carmel's training.
-	#
-	# Read $initcarmel.trained.
-	# Split each line at whitespace into tokens.
-	# Parse the last token into a float.
-	# Sort the floats.
-	# Discard the first 10% and last 10%.
-	# Compute the standard deviation.
-	# If that's less than some threshold, warn that carmel's training was insufficient.
-	#
-	# Or, more elaborately:
-	# Collect each line's third token, the entropy per symbol.
-	# If that's close to log(number of maps, e.g. 56),
-	# then that symbol's probabilities are too uniform,
-	# i.e., that symbol was insufficiently trained.
+  # Todo: sanity check for carmel's training.
+  #
+  # Read $initcarmel.trained.
+  # Split each line at whitespace into tokens.
+  # Parse the last token into a float.
+  # Sort the floats.
+  # Discard the first 10% and last 10%.
+  # Compute the standard deviation.
+  # If that's less than some threshold, warn that carmel's training was insufficient.
+  #
+  # Or, more elaborately:
+  # Collect each line's third token, the entropy per symbol.
+  # If that's close to log(number of maps, e.g. 56),
+  # then that symbol's probabilities are too uniform,
+  # i.e., that symbol was insufficiently trained.
 
-	echo "Stage 8 took" $SECONDS "seconds."; SECONDS=0
+  echo "Stage 8 took" $SECONDS "seconds."; SECONDS=0
 else
-	usingfile ${initcarmel}.trained "trained phone-2-letter model"
+  usingfile ${initcarmel}.trained "trained phone-2-letter model"
 fi
 
 ## STAGE 9 ##
@@ -346,23 +348,23 @@ fi
 # Creates file $Pfst, mapping $phnalphabet to $engalphabet.
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
-	[ -s ${initcarmel}.trained ] || { >&2 echo "Empty ${initcarmel}.trained, so can't create $Pfst. Aborting."; exit 1; }
-	>&2 echo -n "Creating P (phone-2-letter) FST... "
-	Pscale=1
-	phneps='<eps>'
-	leteps='-'
-	disambigdel='#2'
-	disambigins='#3'
-	convert-carmel-to-fst.pl < ${initcarmel}.trained \
-		| sed -e 's/e\^-\([0-9]*\)\..*/1.00e-\1/g' | convert-prob-to-neglog.pl \
-		| scale-FST-weights.pl $Pscale \
-		| fixp2let.pl $disambigdel $disambigins $phneps $leteps \
-		| tee $tmpdir/trainedp2let.fst.txt \
-		| fstcompile --isymbols=$phnalphabet --osymbols=$engalphabet > $Pfst
-	>&2 echo "Done."
-	echo "Stage 9 took" $SECONDS "seconds."; SECONDS=0
+  [ -s ${initcarmel}.trained ] || { >&2 echo "Empty ${initcarmel}.trained, so can't create $Pfst. Aborting."; exit 1; }
+  >&2 echo -n "Creating P (phone-2-letter) FST... "
+  Pscale=1
+  phneps='<eps>'
+  leteps='-'
+  disambigdel='#2'
+  disambigins='#3'
+  convert-carmel-to-fst.pl < ${initcarmel}.trained \
+    | sed -e 's/e\^-\([0-9]*\)\..*/1.00e-\1/g' | convert-prob-to-neglog.pl \
+    | scale-FST-weights.pl $Pscale \
+    | fixp2let.pl $disambigdel $disambigins $phneps $leteps \
+    | tee $tmpdir/trainedp2let.fst.txt \
+    | fstcompile --isymbols=$phnalphabet --osymbols=$engalphabet > $Pfst
+  >&2 echo "Done."
+  echo "Stage 9 took" $SECONDS "seconds."; SECONDS=0
 else
-	usingfile $Pfst "P (phone-2-letter) FST"
+  usingfile $Pfst "P (phone-2-letter) FST"
 fi
 
 ## STAGE 10 ##
@@ -376,19 +378,19 @@ fi
 # Creates file $Lfst, over the symbols $engalphabet.
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
-	>&2 echo -n "Creating L (letter statistics) FST... "
-	Lscale=1
-	mkdir -p $(dirname $Lfst)
-	create-letpriorfst.pl $mergedir $trainids \
-		| scale-FST-weights.pl $Lscale \
-		| fstcompile --osymbols=$engalphabet --isymbols=$engalphabet - \
-		| fstarcsort --sort_type=ilabel - > $Lfst
-	>&2 echo "Done."
-	echo "Stage 11 took" $SECONDS "seconds."; SECONDS=0
+  >&2 echo -n "Creating L (letter statistics) FST... "
+  Lscale=1
+  mkdir -p $(dirname $Lfst)
+  create-letpriorfst.pl $mergedir $trainids \
+    | scale-FST-weights.pl $Lscale \
+    | fstcompile --osymbols=$engalphabet --isymbols=$engalphabet - \
+    | fstarcsort --sort_type=ilabel - > $Lfst
+  >&2 echo "Done."
+  echo "Stage 11 took" $SECONDS "seconds."; SECONDS=0
 else
-	usingfile $Lfst "L (letter statistics) FST"
+  usingfile $Lfst "L (letter statistics) FST"
 fi
 
 if [[ -z $debug ]]; then
-	rm -rf $tmpdir
+  rm -rf $tmpdir
 fi
