@@ -11,7 +11,7 @@ export INIT_STEPS=$SRCDIR/init.sh
 
 # config.sh is in the local directory, which might differ from that of run.sh.
 # If there's no config.sh, that's still okay if binaries are already in $PATH.
-if [[ -s config.sh ]]; then
+if [ -s config.sh ]; then
   . config.sh
   export PATH=$PATH:$OPENFSTDIR:$CARMELDIR:$KALDIDIR
   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPENFSTLIB1:$OPENFSTLIB2 # for libfstscript.so and libfst.so
@@ -51,7 +51,7 @@ fi
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPENFSTLIB1:$OPENFSTLIB2 # for libfstscript.so and libfst.so
 export PATH=$PATH:$SRCDIR:$UTILDIR:$OPENFSTDIR:$CARMELDIR:$KALDIDIR
 
-if [[ ! -d $DATA ]]; then
+if [ ! -d $DATA ]; then
   if [ -z ${DATA_URL+x} ]; then
     echo "Missing DATA directory '$DATA', and no \$DATA_URL to get it from. Check $1."; exit 1
   fi
@@ -68,7 +68,7 @@ if [[ ! -d $DATA ]]; then
   tarDir=$(tar tvf $tarball | head -1 | awk '{print $NF}' | sed -e 's_\/$__')
   [ "$tarDir" == "$DATA" ] || { echo "Tarball $tarball contains $tarDir, not \$DATA '$DATA'."; exit 1; }
   echo "Extracting $tarball, hopefully into \$DATA '$DATA'."
-  tar xzf $tarball || ( echo "Unexpected contents in $tarball.  Aborting."; exit 1 )
+  tar xzf $tarball || { echo "Unexpected contents in $tarball.  Aborting."; exit 1; }
   [ -d $DATA ] || { echo "Still missing DATA directory '$DATA'. Check $DATA_URL and $1."; exit 1; }
   echo "Installed \$DATA '$DATA'."
 fi
@@ -84,7 +84,7 @@ fi
 
 mktmpdir
 
-if [[ -d $EXPLOCAL ]]; then
+if [ -d $EXPLOCAL ]; then
   >&2 echo "Using experiment directory $EXPLOCAL."
 else
   >&2 echo "Creating experiment directory $EXPLOCAL."
@@ -92,8 +92,8 @@ else
 fi
 cp $1 $EXPLOCAL/settings
 
-if [[ -z $startstage ]]; then startstage=1;   fi
-if [[ -z $endstage ]];   then endstage=99999; fi
+[ ! -z $startstage ] || startstage=1
+[ ! -z $endstage ] || endstage=99999
 echo "Running stages $startstage through $endstage."
 
 if [[ $startstage -le 2 && 2 -le $endstage ]]; then
@@ -127,9 +127,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
     mkdir -p $(dirname $transcripts)
     showprogress init 1 "Preprocessing transcripts"
     for L in "${ALL_LANGS[@]}"; do
-      if [[ -n $rmprefix ]]; then
-	prefixarg="--rmprefix $rmprefix"
-      fi
+      [[ -z $rmprefix ]] || prefixarg="--rmprefix $rmprefix"
       preprocess_turker_transcripts.pl --multiletter $engdict $prefixarg < $TURKERTEXT/$L/batchfile
       showprogress go
     done > $transcripts
@@ -391,6 +389,6 @@ else
   usingfile $Lfst "L (letter statistics) FST"
 fi
 
-if [[ -z $debug ]]; then
+if [ -z $debug ]; then
   rm -rf $tmpdir
 fi
