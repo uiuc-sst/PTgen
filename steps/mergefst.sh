@@ -5,7 +5,7 @@ set -e
 [ -d $mergedir ] || { >&2 echo "$0: no directory $mergedir. Aborting."; exit 1; }
 
 mkdir -p $mergefstdir
-showprogress init 100 "Merging transcript FSTs"
+showprogress init 200 "Merging transcript FSTs"
 for ip in $(seq -f %02g $nparallel); do
   (
   # 2>/dev/null hides complaints of missing $splittestids and $splitadaptids, for prepare.rb.
@@ -16,6 +16,8 @@ for ip in $(seq -f %02g $nparallel); do
       continue
     fi
     showprogress go
+    # If $engalphabet (data/let2phn/englets.vocab) contains mcasr symbols while $mcasr is false,
+    # or vice versa, then fstcompile will fail: Symbol "1" is not mapped to any integer arc ilabel.
     convert-aligner-to-fst.pl $alignertofstopt < $mergedir/$uttid.txt |
       convert-prob-to-neglog.pl | tee $mergefstdir/$uttid.M.fst.txt |
       fstcompile --isymbols=$engalphabet --osymbols=$engalphabet |
