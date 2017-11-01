@@ -1,0 +1,39 @@
+# Run this as ../../apply.sh settings (not with ../../run.sh).
+
+applyPrepared=1
+mcasr=1
+
+# Languages.
+LANG_NAME=mugwump			# Used *only* by init.sh to set $EXPLOCAL. Arbitrary.
+INCIDENT_LANG=IL5 # tigrinya
+TESTTYPE=eval
+
+# Input test DATA and output EXPeriment results.
+DATA=data
+DATA_URL=http://isle.illinois.edu/mc/PTgenTest/data-apply.tgz
+EXP=$HOME/Tmp/Exp
+
+# Transcriptions.
+TURKERTEXT=$DATA/batchfiles				# Read by stage 1.
+LISTDIR=$DATA/lists					# Read by stage 3.  Filled by stage 1.
+
+# Alphabets.
+engdict=$DATA/let2phn/eng_dict.txt		# Read by stage 1.
+engalphabet=$DATA/let2phn/englets.vocab		# Read by stage 14.
+
+# Parameters.
+rmprefix="http://"      # Used by stage 1, to create file IDs.
+nparts=4		# Used by stage 4.
+topN=2			# Used by stage 4.
+gapsymbol='_'		# Used by stage 4, via $aligneropt.
+alignswitchpenalty=1	# Used by stage 5, via $alignertofstopt.
+delimsymbol='%'		# Used by stage 4.
+Pstyle=simple		# Used by init.sh.  One of simple, letctxt or phnletctxt.
+
+# Command-line options for aligner.
+aligneropt="--dist $aligndist --empty $gapsymbol"	# Used by stage 4.
+alignertofstopt="--switchpenalty $alignswitchpenalty"	# Used by stage 5.
+
+# Which stages to run, inclusive.  1 to 15.
+startstage=1
+endstage=15
