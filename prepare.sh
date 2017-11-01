@@ -307,8 +307,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
   # Or:
   #   sudo apt-get install expect;
   #   carmel | tee carmelout | expect -c 'expect -timeout -1 "No derivations"
-  coproc { carmel -\? --train-cascade -t -f 1 -M 1 -HJ $carmeltraintxt $initcarmel 2>&1 | tee $tmpdir/carmelout; }
-  # ;;;; -M 20
+  coproc { carmel -\? --train-cascade -t -f 1 -M 20 -HJ $carmeltraintxt $initcarmel 2>&1 | tee $tmpdir/carmelout; }
   grep -q -m1 "No derivations in transducer" <&${COPROC[0]} && \
     [[ $COPROC_PID ]] && kill -9 $COPROC_PID && \
     >&2 echo -e "\nAborted carmel before it entered an infinite loop."
@@ -377,7 +376,7 @@ fi
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
   >&2 echo -n "Creating L (letter statistics) FST... "
-  Lscale=1
+  [ ! -z $Lscale ] || Lscale=1
   mkdir -p $(dirname $Lfst)
   create-letpriorfst.pl $mergedir $trainids \
     | scale-FST-weights.pl $Lscale \
