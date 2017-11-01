@@ -96,6 +96,7 @@ fi
 [ ! -z $phnalphabet ] || { echo "No variable phnalphabet in file '$1'."; exit 1; }
 [ -s $phnalphabet ] || { echo "Missing or empty phnalphabet file $phnalphabet. Check $1."; exit 1; }
 [ -s $phonelm ] || { echo "Missing or empty phonelm file $phonelm. Check $1."; exit 1; }
+[ -z $applyPrepared ] || { echo "Run apply.sh instead of run.sh, because variable \$applyPrepared is set."; exit 1; }
 
 mktmpdir
 
@@ -201,7 +202,7 @@ set -e
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	case $TESTTYPE in
 	dev | eval)  ;;
-	*)           >&2 echo "\$TESTTYPE $TESTTYPE must be either 'dev' or 'eval'.  Check $1."; exit 1 ;;
+	*) >&2 echo "The variable \$TESTTYPE must be either 'dev' or 'eval', not '$TESTTYPE'.  Check $1."; exit 1 ;;
 	esac
 	>&2 echo -n "Splitting training/test data into parallel jobs... "
 	datatype='train'   create-datasplits.sh $1
@@ -422,10 +423,8 @@ fi
 # Creates file $Lfst, over the symbols $engalphabet.
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
-	if [[ -z $Lscale ]]; then
-		Lscale=1
-	fi
-	>&2 echo -n "Creating L (letter statistics) FST [LSCALE=$Lscale]... "
+	[ ! -z $Lscale ] || Lscale=1
+	>&2 echo -n "Creating L (letter statistics) FST... "
 	mkdir -p $(dirname $Lfst)
 	create-letpriorfst.pl $mergedir $trainids \
 		| scale-FST-weights.pl $Lscale \
@@ -496,10 +495,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 		>&2 echo "Neither makeTPLM nor makeGTPLM is set.  Check $1."
 		exit 1
 	fi
-	if [[ -z $Mscale ]]; then
-		Mscale=1
-	fi
-	>&2 echo -n "Decoding lattices $msgtext [MSCALE=$Mscale]"
+	>&2 echo -n "Decoding lattices $msgtext"
 	mkdir -p $decodelatdir
 	decode_PTs.sh $1
 	echo "Stage 14 took" $SECONDS "seconds."; SECONDS=0

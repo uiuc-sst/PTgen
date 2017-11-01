@@ -1,9 +1,11 @@
 #!/bin/bash
 . $INIT_STEPS
 
-[ -s $langmap ] || { >&2 echo -e "\n$0: missing or empty langmap file $langmap. Check $1."; exit 1; }
+if [ -z $applyPrepared ]; then
+  [ -s $langmap ] || { >&2 echo -e "\n$0: missing or empty langmap file $langmap. Check $1."; exit 1; }
+fi
 
-# Needs $datatype from run.sh's stage 3.
+# Needs $datatype from stage 3.
 # (It would be nice to pass this in as $2 instead of as an explicit variable,
 # but steps/init.sh insists on only one argument, the settings_file.)
 
@@ -19,19 +21,24 @@ eval)  LANG=( "${EVAL_LANG[@]}"  ); dtype="test";  ids_file=$testids;  splitids_
 *)     >&2 echo -e "\n$0: Data split type $datatype should be [train|dev|adapt|eval].  Aborting."; exit 1 ;;
 esac
 
+# Omit +x from ${FOO+x}, because FOO missing and FOO=="" are equally invalid.
 case $datatype in
-train)       [ ! -z ${TRAIN_LANG+x} ] || { >&2 echo -e "\n$0: no \$TRAIN_LANG. Check $1. Aborting."; exit 1; } ;;
-adapt | dev) [ ! -z ${DEV_LANG+x}   ] || { >&2 echo -e "\n$0: no \$DEV_LANG. Check $1. Aborting."; exit 1; } ;;
-eval)        [ ! -z ${EVAL_LANG+x}  ] || { >&2 echo -e "\n$0: no \$EVAL_LANG. Check $1. Aborting."; exit 1; } ;;
+train)       [ ! -z $TRAIN_LANG ] || { >&2 echo -e "\n$0: no \$TRAIN_LANG. Check $1. Aborting."; exit 1; } ;;
+adapt | dev) [ ! -z $DEV_LANG   ] || { >&2 echo -e "\n$0: no \$DEV_LANG. Check $1. Aborting."; exit 1; } ;;
+eval)        [ ! -z $EVAL_LANG  ] || { >&2 echo -e "\n$0: no \$EVAL_LANG. Check $1. Aborting."; exit 1; } ;;
 esac
 
 mkdir -p $(dirname $ids_file)
 for L in ${LANG[@]}; do
-	full_lang_name=$(awk '/'$L'/ {print $2}' $langmap)
-	[ ! -z $full_lang_name ] || { >&2 echo -e "\n$0: no language $L in $langmap. Aborting."; exit 1; }
-	[ -d $LISTDIR/$full_lang_name ] || { >&2 echo -e "\n$0: missing directory $LISTDIR/$full_lang_name. Aborting.\nSee https://github.com/uiuc-sst/PTgen/blob/master/datasplit.md."; exit 1; }
-	[ -s $LISTDIR/$full_lang_name/$dtype ] || { >&2 echo -e "\n$0: missing or empty file $LISTDIR/$full_lang_name/$dtype. Aborting.\nSee https://github.com/uiuc-sst/PTgen/blob/master/datasplit.md."; exit 1; }
-	sed -e 's:.wav::' -e 's:.mp3::' $LISTDIR/$full_lang_name/$dtype
+  if [[ -z $applyPrepared ]]; then
+    full_lang_name=$(awk '/'$L'/ {print $2}' $langmap)
+    [ ! -z $full_lang_name ] || { >&2 echo -e "\n$0: no language $L in $langmap. Aborting."; exit 1; }
+  else
+    full_lang_name=$L
+  fi
+  [ -d $LISTDIR/$full_lang_name ] || { >&2 echo -e "\n$0: missing directory $LISTDIR/$full_lang_name. Aborting.\nSee https://github.com/uiuc-sst/PTgen/blob/master/datasplit.md."; exit 1; }
+  [ -s $LISTDIR/$full_lang_name/$dtype ] || { >&2 echo -e "\n$0: missing or empty file $LISTDIR/$full_lang_name/$dtype. Aborting.\nSee https://github.com/uiuc-sst/PTgen/blob/master/datasplit.md."; exit 1; }
+  sed -e 's:.wav::' -e 's:.mp3::' $LISTDIR/$full_lang_name/$dtype
 done > $ids_file
 
 [ -s $ids_file ] || { >&2 echo -e "\n$0: generated empty ids_file $ids_file. Aborting."; exit 1; }

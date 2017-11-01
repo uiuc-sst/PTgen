@@ -11,6 +11,7 @@ fi
 [ -s $transcripts ] || { echo "$0: missing or empty transcripts file $transcripts."; exit 1; }
 [ -s $simfile ]     || { echo "$0: missing or empty similarity-score file $simfile."; exit 1; }
 
+# >&2 echo "$(basename $0): reading $splittrainids $splittestids $splitadaptids .*"
 >&2 echo "$(basename $0): parsing $transcripts and $simfile."
 rm -f /tmp/hash_transcripts.sh
 makeHash.rb scrips < $transcripts > /tmp/hash_transcripts.sh
@@ -28,7 +29,7 @@ mkdir -p $mergedir
 # Parallelizing more than $nparallel doesn't exploit more cores,
 # because the files foo.$ip were split over only $nparallel parts
 # by stage 3's create-datasplits.sh.  So just balance the load with shuf.
-showprogress init 200 "Merging transcripts"
+showprogress init 125 "Merging transcripts"
 for ip in $(seq -f %02g $nparallel); do
 	(
 	# 2>/dev/null hides complaints of missing $splittestids and $splitadaptids, for prepare.rb.

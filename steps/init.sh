@@ -31,11 +31,12 @@ splittestids=$EXPLOCAL/lists/testids		# Made by stage 3,  read by 5, 14 and 15.
 initcarmel=$EXPLOCAL/carmel/$Pstyle		# Made by stage 6,  read by 8. ($initcarmel.trained is made by 8, read by 9.)
 carmeltraintxt=$EXPLOCAL/carmel/training.txt	# Made by stage 7,  read by 8.
 Pfst=$EXPLOCAL/P.fst				# Made by stage 9,  read by 13.
-Gfst=$EXPLOCAL/$LANG_NAME.G.fst			# Made by stage 10, read by 13.
+Gfst=$EXPLOCAL/$LANG_NAME.G.fst			# Made by stage 10, read by 13.  Only run.sh.
 Lfst=$EXPLOCAL/L.fst				# Made by stage 11, read by 13.
 Tfst=$EXPLOCAL/T.fst				# Made by stage 12, read by 13.
-TPLfst=$EXPLOCAL/TPL.fst			# Made by stage 13, read by 14.
-GTPLfst=$EXPLOCAL/GTPL.fst			# Made by stage 13, read by 14.
+PLfst=$EXPLOCAL/PL.fst				# Made by stage 13, read by 14.  Only apply.sh.
+TPLfst=$EXPLOCAL/TPL.fst			# Made by stage 13, read by 14.  Only run.sh.
+GTPLfst=$EXPLOCAL/GTPL.fst			# Made by stage 13, read by 14.  Only run.sh.
 decodelatdir=$EXPLOCAL/decode			# Made by stage 14, read by 15.
 hypfile=$EXPLOCAL/hypotheses.txt		# Made by stage 15, read by human.
 evaloutput=$EXPLOCAL/eval.txt			# Made by stage 15, read by human.
@@ -59,9 +60,9 @@ usingfile() {
 }
 
 # Print a row of dots.
-# showprogress init x "Creating widgets":	print first line, and set frequency of dots.
-# showprogress go:				possibly print another dot.
-# showprogress end:				print "Done."
+# showprogress init x "Creating widgets":	Print first line, and set frequency of dots. For fewer dots, increase x.
+# showprogress go:				Possibly print another dot.
+# showprogress end:				Print "Done."
 #
 # To show an error message more noticeably at the start of a line, instead of
 # mid-line after the most recent dot, use echo -e "\nError message."
@@ -75,7 +76,7 @@ showprogress() {
       ;;
     go)
       if [[ $((__progress_counter__ % __progress_stepsize__)) -eq 0 ]] ; then
-	      >&2 echo -n "."
+	>&2 echo -n "."
       fi
       ((__progress_counter__++))
       ;;

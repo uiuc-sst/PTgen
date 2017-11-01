@@ -2,12 +2,14 @@
 
 . $INIT_STEPS
 
-if [[ -z $makeGTPLM && -z $decode_for_adapt ]]; then
-  >&2 echo "$0: evaluation mode lacks flag makeGTPLM=1.  Aborting."
-  exit 1
+if [ -z $applyPrepared ]; then
+  if [[ -z $makeGTPLM && -z $decode_for_adapt ]]; then
+    >&2 echo "$0: evaluation mode lacks flag makeGTPLM=1. Aborting."
+    exit 1
+  fi
 fi
 
-mkdir -p $decodelatdir
+[ ! -z $Mscale ] || Mscale=1
 
 if [[ -n $decode_for_adapt ]]; then
   splitids=$splitadaptids
@@ -15,11 +17,15 @@ else
   splitids=$splittestids
 fi
 
-showprogress init 30 "" # Long description is in caller, ../run.sh.
+showprogress init 50 "" # Long description is in caller.
+mkdir -p $decodelatdir
+for ip in $(seq -f %02g $nparallel); do
+  [ -s $splitids.$ip ] || { >&2 echo "$0: no file $splitids.$ip. Aborting."; exit 1; }
+done
 for ip in $(seq -f %02g $nparallel); do
   (
   while read uttid; do
-    if [[ ! -s $mergefstdir/$uttid.M.fst.txt ]]; then
+    if [ ! -s $mergefstdir/$uttid.M.fst.txt ]; then
       # Stage 5 mergefst.sh didn't make that M.fst.txt, because mergedir/$uttid.txt was empty.
       # No big deal, just a clip with no speech, e.g. only music.  Don't whine.
 #     >&2 echo -e "$(basename $0): no M.fst.txt, so omitting $uttid."
@@ -27,27 +33,29 @@ for ip in $(seq -f %02g $nparallel); do
     fi
     showprogress go
 
-    scale-FST-weights.pl $Mscale < $mergefstdir/$uttid.M.fst.txt \
-      | fstcompile --isymbols=$engalphabet --osymbols=$engalphabet \
-      > $mergefstdir/$uttid.M.fst
+    scale-FST-weights.pl $Mscale < $mergefstdir/$uttid.M.fst.txt |
+      fstcompile --isymbols=$engalphabet --osymbols=$engalphabet \
+	> $mergefstdir/$uttid.M.fst
 
-    if [[ -n $makeGTPLM ]]; then
-      fstcompose $GTPLfst $mergefstdir/$uttid.M.fst | fstproject --project_output=false - > $decodelatdir/$uttid.GTPLM.fst
-#     if [ $(fstinfo $decodelatdir/$uttid.GTPLM.fst |grep "# of states" | awk 'NF>1{print $NF}') = "0" ]; then
-#	>&2 echo -e "$(basename $0): made empty $decodelatdir/$uttid.GTPLM.fst."
-#	echo "details for $GTPLfst $mergefstdir/$uttid.M.fst composed:"
-#	fstinfo $GTPLfst | head -6 | tail -2
-#	fstinfo $mergefstdir/$uttid.M.fst | head -6 | tail -2
-#	fstcompose $GTPLfst $mergefstdir/$uttid.M.fst | fstinfo | head -6 | tail -2
-#     fi
-    fi
-
-    if [[ -n $makeTPLM ]]; then
-      fstcompose $TPLfst $mergefstdir/$uttid.M.fst | fstproject --project_output=false - \
-	> $decodelatdir/$uttid.TPLM.fst
-#     if [ $(fstinfo $decodelatdir/$uttid.TPLM.fst |grep "# of states" | awk 'NF>1{print $NF}') = "0" ]; then
-#	>&2 echo -e "$(basename $0): made empty $decodelatdir/$uttid.TPLM.fst."
-#     fi
+    if [ ! -z $applyPrepared ]; then
+      fstcompose $PLfst $mergefstdir/$uttid.M.fst | fstproject --project_output=false - \
+	> $decodelatdir/$uttid.PLM.fst
+    else
+      if [[ -n $makeTPLM ]]; then
+	fstcompose $TPLfst $mergefstdir/$uttid.M.fst | fstproject --project_output=false - \
+	  > $decodelatdir/$uttid.TPLM.fst
+      fi
+      if [[ -n $makeGTPLM ]]; then
+	fstcompose $GTPLfst $mergefstdir/$uttid.M.fst | fstproject --project_output=false - \
+	  > $decodelatdir/$uttid.GTPLM.fst
+#       if [ $(fstinfo $decodelatdir/$uttid.GTPLM.fst |grep "# of states" | awk 'NF>1{print $NF}') = "0" ]; then
+#  	>&2 echo -e "$(basename $0): made empty $decodelatdir/$uttid.GTPLM.fst."
+#  	echo "details for $GTPLfst $mergefstdir/$uttid.M.fst composed:"
+#  	fstinfo $GTPLfst | head -6 | tail -2
+#  	fstinfo $mergefstdir/$uttid.M.fst | head -6 | tail -2
+#  	fstcompose $GTPLfst $mergefstdir/$uttid.M.fst | fstinfo | head -6 | tail -2
+#       fi
+      fi
     fi
   done < $splitids.$ip
   ) &
