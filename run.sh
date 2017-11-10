@@ -289,8 +289,8 @@ fi
 # Create training data to learn the phone-2-letter mappings defined in P.
 #
 # Reads files $TRANSDIR/$TRAIN_LANG[*]/ref_train.
-# Concatenates them into temporary file $reffile (Exp/prepare/ref_train_text).
-# Creates file $carmeltraintxt (Exp/prepare/carmel/training.txt).
+# Concatenates them into temporary file $reffile (Exp/mandarin/ref_train_text).
+# Creates file $carmeltraintxt (Exp/mandarin/carmel/training.txt).
 #
 # In each ref_train file, each line is an identifier followed by a sequence of phonemes,
 # given by passing the transcription through a G2P converter or a dictionary.
@@ -307,9 +307,9 @@ set +e
 ## STAGE 8 ##
 # EM-train P.
 #
-# Reads files $carmeltraintxt (Exp/prepare/training.txt) and $initcarmel (Exp/prepare/carmel/simple).
+# Reads files $carmeltraintxt (Exp/mandarin/training.txt) and $initcarmel (Exp/mandarin/carmel/simple).
 # Creates logfile $tmpdir/carmelout.
-# Creates file $initcarmel.trained (Exp/prepare/carmel/simple.trained).
+# Creates file $initcarmel.trained (Exp/mandarin/carmel/simple.trained).
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo -n "Training phone-2-letter model (see $tmpdir/carmelout)..."
@@ -361,8 +361,14 @@ fi
 # Reads file $initcarmel.trained.
 # Uses variables $disambigdel, $disambigins, $phneps, and $leteps.
 # May use variable $Pscale, to scale P's weights.
-# Creates logfile $tmpdir/trainedp2let.fst.txt.
-# Creates file $Pfst, mapping $phnalphabet to $engalphabet.
+# Creates the FST file $Pfst, mapping $phnalphabet to $engalphabet,
+# and the corresponding text file $tmpdir/trainedp2let.fst.txt.
+#
+# This FST has 2 states (0 and 1), and about 6000 arcs:
+# - from state 0 to state 0, mapping each phone to each letter, with various weights;
+# - one arc from 0 to 1 for special phone "#2", emitting eps;
+# - from 1 to 0 mapping phone "#3" to each letter, with various weights;
+# - from 1 to 0 mapping all other phones to eps.
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	[ -s ${initcarmel}.trained ] || { >&2 echo "Empty ${initcarmel}.trained, so can't create $Pfst. Aborting."; exit 1; }
@@ -415,7 +421,7 @@ else
 fi
 
 ## STAGE 11 ##
-# Create a prior over letters and represent as an FST, L.
+# Create a prior over letters (explained in create-letpriorfst.pl).
 #
 # Reads files in directory $mergedir.
 # Reads files $trainids and $engalphabet.

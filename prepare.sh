@@ -341,8 +341,15 @@ fi
 #
 # Reads file $initcarmel.trained.
 # Uses variables $disambigdel, $disambigins, $phneps, and $leteps.
-# Creates logfile $tmpdir/trainedp2let.fst.txt.
-# Creates file $Pfst, mapping $phnalphabet to $engalphabet.
+# Creates the FST file $Pfst, mapping $phnalphabet to $engalphabet,
+# and the corresponding text file $tmpdir/trainedp2let.fst.txt.
+#
+# This FST has 2 states (0 and 1), and about 6000 arcs:
+# - from state 0 to state 0, mapping each phone to each letter, with various weights;
+# - one arc from 0 to 1 for special phone "#2", emitting eps;
+# - from 1 to 0 mapping phone "#3" to each letter, with various weights;
+# - from 1 to 0 mapping all other phones to eps.
+
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
   [ -s ${initcarmel}.trained ] || { >&2 echo "Empty ${initcarmel}.trained, so can't create $Pfst. Aborting."; exit 1; }
@@ -368,7 +375,7 @@ fi
 # Omitted.
 
 ## STAGE 11 ##
-# Create a prior over letters and represent as an FST, L.
+# Create a prior over letters (explained in create-letpriorfst.pl).
 #
 # Reads files in directory $mergedir.
 # Reads files $trainids and $engalphabet.
