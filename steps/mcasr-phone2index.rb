@@ -6,18 +6,10 @@
 
 # Convert each phone to its index in phones.txt.
 # As a string, not an int, for easier join()ing.
-Phones = Hash[*File.read("../../mcasr/phones.txt").split(/\s+/)]
+Phones = Hash[File.read("../../mcasr/phones.txt").split(/\s+/)]
 # Brittle: ../../mcasr assumes an invocation: cd PTgen/test/something; ../../run.sh settings.
 
 raw = ARGF.readlines.map {|l| l.split}
-
-# Report phones in the input that lie outside mcasr/phones.txt.
-if false
-  unmapped = []
-  raw.each {|l| l[1..-1].each {|ph| unmapped << ph if !Phones[ph] }}
-  unmapped.uniq.sort.each {|ph| puts ph}
-  exit 0
-end
 
 # Restrict the set of phones, just like mcasr/phonelm/make-bigram-LM.rb.
 $restrict = Hash[ 
@@ -63,11 +55,18 @@ raw.each {|l|
   l[1..-1].each {|phIn|
     phOut = Phones[phIn]
     if !phOut
-      phOut = $restrict[phIn].split.map {|p| Phones[p]} .join(" ")
-      # STDERR.puts "#{phIn} -> #{$restrict[phIn]} -> #{phOut}"
+      phNew = $restrict[phIn]
+      if !phNew
+	STDERR.puts "#$0: internal error mapping phone '#{phIn}'. Aborting."
+	STDERR.puts "Add these phones, missing from mcasr/phones.txt, to #$0's \$restrict:\n\
+	  #{raw.map {|l| l[1..-1].select {|ph| !Phones[ph] && !$restrict[ph]}} .flatten.uniq.sort.join(' ')}"
+	exit 1
+      end
+      phOut = phNew.split.map {|p| Phones[p]} .join(" ")
+      # STDERR.puts "#{phIn} -> #{phNew} -> #{phOut}"
     end
     if !phOut
-      STDERR.puts "#$0: skipping unmapped phone #{phIn}"
+      STDERR.puts "#$0: skipping unmapped phone '#{phIn}'."
       next
     end
     m += phOut + " " # phOut may itself have spaces, e.g. "ɛ ə"
