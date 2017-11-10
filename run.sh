@@ -289,8 +289,8 @@ fi
 # Create training data to learn the phone-2-letter mappings defined in P.
 #
 # Reads files $TRANSDIR/$TRAIN_LANG[*]/ref_train.
-# Concatenates them into temporary file $reffile, e.g. Exp/uzbek/ref_train_text.
-# Creates file $carmeltraintxt, e.g. Exp/uzbek/carmel/training.txt.
+# Concatenates them into temporary file $reffile (Exp/prepare/ref_train_text).
+# Creates file $carmeltraintxt (Exp/prepare/carmel/training.txt).
 #
 # In each ref_train file, each line is an identifier followed by a sequence of phonemes,
 # given by passing the transcription through a G2P converter or a dictionary.
@@ -307,9 +307,9 @@ set +e
 ## STAGE 8 ##
 # EM-train P.
 #
-# Reads files $carmeltraintxt and $initcarmel.
+# Reads files $carmeltraintxt (Exp/prepare/training.txt) and $initcarmel (Exp/prepare/carmel/simple).
 # Creates logfile $tmpdir/carmelout.
-# Creates file $initcarmel.trained.
+# Creates file $initcarmel.trained (Exp/prepare/carmel/simple.trained).
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	>&2 echo -n "Training phone-2-letter model (see $tmpdir/carmelout)..."
@@ -329,7 +329,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	coproc { carmel -\? --train-cascade -t -f 1 -M 20 -HJ $carmeltraintxt $initcarmel 2>&1 | tee $tmpdir/carmelout; }
 	grep -q -m1 "No derivations in transducer" <&${COPROC[0]} && \
 	  [[ $COPROC_PID ]] && kill -9 $COPROC_PID && \
-	  >&2 echo -e "\nAborted carmel before it entered an infinite loop."
+	  >&2 echo -e "\nAborted carmel before it entered an infinite loop..  In settings file, are \$engalphabet and \$phnalphabet compatible with \$mcasr?"
 	# Another grep would be "0 states, 0 arcs".
 	# The grep obviates the need for an explicit wait statement.
 	>&2 echo " Done."
