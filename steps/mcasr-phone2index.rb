@@ -6,7 +6,12 @@
 
 # Convert each phone to its index in phones.txt.
 # As a string, not an int, for easier join()ing.
-Phones = Hash[File.read("../../mcasr/phones.txt").split(/\s+/)]
+Filename = "../../mcasr/phones.txt"
+Phones = Hash[*File.read(Filename).split(/\s+/)]
+if Phones.empty?
+  STDERR.puts "$0 failed to read list of phones #{Filename}. Aborting."
+  exit 1
+end
 # Brittle: ../../mcasr assumes an invocation: cd PTgen/test/something; ../../run.sh settings.
 
 raw = ARGF.readlines.map {|l| l.split}
@@ -48,7 +53,7 @@ $restrict = Hash[
   "ʕ", " " # A space, not the empty string, to distinguish it from an unmapped phone.
 ]
 
-# Because some phones in $restrict map to more than one phone, we can't just extend Phones[].
+# Because $restrict may map a phone to MORE than one phone, we can't just extend Phones[].
 # Instead, convert each line (an array) back to a string, for actual string substitution.
 raw.each {|l|
   m = l[0] + " "
