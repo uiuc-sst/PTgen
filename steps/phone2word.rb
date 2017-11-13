@@ -24,13 +24,12 @@ if !File.file? Prondict
   exit 1
 end
 
-Vocab = nil
+$vocab = nil
 if ARGV.size == 2
-  if File.file? Vocab
-    Vocab = ARGV[1]
-  else
-    STDERR.puts "#$0: no such MT in-vocab list #{Vocab}.  Proceeding without vocab."
-    # Vocab is words recognized by ISI's machine translation.  One word per line.
+  $vocab = ARGV[1]
+  if !File.file? $vocab
+    STDERR.puts "#$0: no such MT in-vocab list #$vocab.  Proceeding without vocab."
+    # $vocab is words recognized by ISI's machine translation.  One word per line.
   end
 end
 
@@ -121,9 +120,7 @@ begin
   	"ʷa","a", "[section]","eps", "[clause]","eps", "[phrase]","eps", "[semicolon]","eps", "[colon]","eps", "[preface_colon]","eps", "[question]","eps", "[paragraph]","eps",
   	]
   pd.map! {|w,p| [w, p.split(" ").map {|ph| r=Restrict[ph]; r ? r : ph}]}
-  $phones = {};
-  $phonesRev = {};
-  File.readlines($phoneFile).map(&:split) .each {|p,i| $phones[p]=i; $phonesRev[i]=p}
+  Phones = Hash[*File.read($phoneFile).split(/\s+/)]
 
   if true
     # Soft match, like https://en.wikipedia.org/wiki/Soundex.
@@ -157,7 +154,7 @@ begin
 
   # Convert each pronunciation's entries from a phone to the phone's index in the symbol table.
   # Convert each phone, then join the array back into a string, for the trie.
-  pd.map! {|w,pron| [w, pron.map {|ph| soft($phones[ph])}                                      .join(" ") .gsub(/\s+/, ' ') .strip] }
+  pd.map! {|w,pron| [w, pron.map {|ph| soft(Phones[ph])} .join(" ") .gsub(/\s+/, ' ') .strip] }
   # Remove consecutive duplicate phones, once more:
   pd.map! {|w,pron| [w, pron.split(" ").chunk{|x|x}.map(&:first) .join(" ")]}
 
@@ -167,11 +164,11 @@ end
 
 # Read in-vocab words.  Discard invalid UTF-8.  .toset, so .include? takes O(1) not O(n).
 require 'set'
-if !Vocab
+if !$vocab
   $wordsVocab = Set.new
 else
   STDERR.puts "#$0: preferring words that are in-vocab for MT."
-  $wordsVocab = File.readlines(Vocab) .map(&:chomp) .map {|l| l.chars.select{|i| i.valid_encoding?}.join } .to_set
+  $wordsVocab = File.readlines($vocab) .map(&:chomp) .map {|l| l.chars.select{|i| i.valid_encoding?}.join } .to_set
   # If a set of homonyms includes both in-vocab and oov words, keep only the in-vocab ones.
 end
 hNew = Hash.new
@@ -209,14 +206,74 @@ $scrips.each {|uttid,phones|
     puts
     next
   end
-  phones = phones.split(" ")
+  phones = phones.split ' '
   prefix = ""
   prefixPrev = ""
   i = 0
   iStart = 0
+=begin
+  debug = phones.map{|ph| soft(Phones[ph])}.join(' ') .gsub(/\s+/, ' ') .strip == "101 105" # Tigrinya example.
+  if debug
+    STDERR.puts "Try: #{phones.join(' ')}"
+    STDERR.puts "Try: #{phones.map{|ph| soft(Phones[ph])}.join(' ') .gsub(/\s+/, ' ') .strip}"
+  end
+=end
   while i < phones.size
+    foo = phones[i]
+    bar = Phones[foo]
+    if !bar
+      # Remap unusual phones from Tigrinya MCASR transcriptions.
+      # todo: improve this remapping, and reimplement it like Restrict[] above.
+      case foo
+	when 'aɪ' then foo = 'a'
+	when 'bː' then foo = 'b'
+	when 'dː' then foo = 'd'
+	when 'ɛə' then foo = 'ɛ'
+	when 'eː' then foo = 'e'
+	when 'eɪ' then foo = 'e'
+	when 'fː' then foo = 'f'
+	when 'hː' then foo = 'h'
+	when 'jː' then foo = 'j'
+	when 'kː' then foo = 'k'
+	when 'kʰ' then foo = 'k'
+	when 'lː' then foo = 'l'
+	when 'mː' then foo = 'm'
+	when 'nː' then foo = 'n'
+	when 'œ' then foo = 'æ'
+	when 'ɔɪ' then foo = 'i'
+	when 'pʰ' then foo = 'p'
+	when 'q' then foo = 'k'
+	when 'rː' then foo = 'r'
+	when 'sː' then foo = 's'
+	when 'ʕ' then foo = 'ʔ'
+	when 'ʃː' then foo = 'ʃ'
+	when 'ɒ' then foo = 'a'
+	when 'ɦ' then foo = 'h'
+	when 'ɫ' then foo = 'l'
+	when 'ɫː' then foo = 'l'
+	when 'ɟʝ' then foo = 'l'
+	when 'ɻ' then foo = 'r'
+	when 'ɑɻ' then foo = 'r'
+	when 'ts' then foo = 's'
+	when 'tʃʰ' then foo = 'ʃ'
+	when 'tː' then foo = 't'
+	when 'tʰ' then foo = 'θ'
+	when 'zː' then foo = 'z'
+      end
+      bar = Phones[foo]
+      if !bar
+	STDERR.puts "#$0: missing Phones[#{foo}]. Replacing with 'a'."
+	bar = Phones['a']
+      end
+    end
+    zip = soft(bar)
+    STDERR.puts "#$0: failed to soft(#{bar}). Crash imminent." if !zip
     prefixPrev = prefix.rstrip
-    prefix += soft(phones[i]) + " "
+    prefix += zip + " "
+=begin
+    STDERR.puts "\t\t\t\t\tFound #{foo} --> #{zip}." if debug
+    STDERR.puts "Trying '#{prefix.rstrip}': trie? #{trie.has_children?(prefix.rstrip)}." if debug
+=end
     if trie.has_children?(prefix.rstrip)
 =begin
       # HACK to choose more words with just 2 to 4 phones (for TIR):
@@ -247,15 +304,16 @@ $scrips.each {|uttid,phones|
       i += 1
       next
     end
+#   STDERR.puts "prev-trying '#{prefixPrev}', trie? #{trie.has_key?(prefixPrev) ? 'waar.' : 'vals.'}"
     if trie.has_key? prefixPrev
       i = iStart = i+1
       words = h[prefixPrev]
-#     puts "\nPick one of: #{words.join(' ')}";
+#     STDERR.puts "\nPick one of: #{words.join(' ')}"
       word = words[rand(words.size)] # Choose a homonym at random.
       print word + " "
     else
       # Word search failed.  Skip this phone.  Resume searching, one phone past the previous attempt.
-#     puts "\nSKIPPED " + phones[iStart] + " " + $phonesRev[phones[iStart]]
+#     STDERR.puts "Skipped #{phones[iStart]}."
       iStart = i = iStart+1
     end
     prefix = ""
