@@ -22,7 +22,16 @@ $langForJon = $sourceLanguage.downcase
 `rm -rf #$jonmaydir; mkdir #$jonmaydir`
 $stdin.each_line {|l|
   uttid,scrip = l.split "\t"
-  indexID = uttid[8..-1].gsub /[_a-zA-Z]/, ""
+  if !uttid
+    STDERR.puts "#$0: expected uttid, tab, transcription in input line '#{l}'."
+    next
+  end
+  begin
+    indexID = uttid[8..-1].gsub /[_a-zA-Z]/, ""
+  rescue
+    STDERR.puts "#$0: expected uttid, tab, transcription in input line '#{l}'."
+    next
+  end
   name = "#{$sourceLanguage}_#{$genre}_#{$provenance}_#{$date}_#{indexID}"
   File.open("#$jonmaydir/#{name}.txt", "w") {|f| f.puts scrip}
 }
