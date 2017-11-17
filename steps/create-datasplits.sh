@@ -45,6 +45,7 @@ done > $ids_file
 
 # "split -n r/42 ..." makes 42 equal-size parts, without breaking lines, with round robin (shuffled) distribution.
 # "--numeric-suffixes=1" names them .01 .02 ... .42, instead of .aa .ab ... .
+# If $ids_file has fewer than 42 lines, then 42 files are still created.  The extra ones will be empty.
 # To iterate over these files, use "seq -f %02g $nparallel".
 mkdir -p $(dirname $splitids_file)
 split --numeric-suffixes=1 -n r/$nparallel $ids_file $splitids_file.$i

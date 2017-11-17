@@ -20,9 +20,9 @@ fi
 showprogress init 50 "" # Long description is in caller.
 mkdir -p $decodelatdir
 for ip in $(seq -f %02g $nparallel); do
-  [ -s $splitids.$ip ] || { >&2 echo "$0: no file $splitids.$ip. Aborting."; exit 1; }
-done
-for ip in $(seq -f %02g $nparallel); do
+  [ -s $splitids.$ip ] || continue
+  # If $splitids.$ip is empty, that may just mean that the pre-split file $splitids
+  # had fewer than $nparallel lines.  Don't complain.
   (
   while read uttid; do
     if [ ! -s $mergefstdir/$uttid.M.fst.txt ]; then
