@@ -4,6 +4,8 @@
 ALL_LANGS=(AR CA DT HG MD SW UR)	# Used by stage 1.
 TRAIN_LANG=$ALL_LANGS			# Used by stage 3 and 7.
 LANG_NAME=prepare			# Used *only* by init.sh to set $EXPLOCAL. Arbitrary.
+LANG_CODE=sbs7
+mcasr=1
 
 # Input test DATA and output EXPeriment results.
 DATA=data
@@ -18,8 +20,8 @@ TRANSDIR=$DATA/nativetranscripts			# Read by stage 7.
 
 # Alphabets.
 engdict=$DATA/let2phn/eng_dict.txt		# Read by stage 1.
-engalphabet=$DATA/let2phn/englets.vocab		# Read by stage 6 and 11.
-phnalphabet=$DATA/phonesets/univ.compact.txt	# Read by stage 6.
+engalphabet=$DATA/let2phn/englets.vocab		# Read by stage 5, 6 and 11.	Must be compatible with $mcasr.
+phnalphabet=$DATA/phonesets/univ.compact.txt	# Read by stage 6.		Must be compatible with $mcasr.
 
 # Parameters.
 rmprefix="http://"      # Used by stage 1, to create file IDs.
@@ -39,3 +41,4 @@ carmelinitopt="--$Pstyle" 				# Used by stage 6.
 # Which stages to run, inclusive.  1 to 11.
 startstage=1
 endstage=11
+debug=1
