@@ -5,11 +5,9 @@
 
 scriptname=$(basename "$0")
 
-nparallel=$(nproc | sed "s/$/-1/" | bc)	# One fewer than the number of CPU cores.
-
 # Read the settings file.
-[ $# -eq 1 ] || { echo "Usage: $scriptname settings_file"; exit 1; }
-[ -f $1 ] || { echo "$scriptname: missing settings file '$1'." && exit 1; }
+[ $# -ne 1 ] && echo "Usage: $scriptname settings_file" && exit 1
+[ ! -f $1 ]  && echo "$scriptname: missing settings file '$1'." && exit 1
 . $1
 
 export EXPLOCAL=$EXP/$LANG_NAME
@@ -55,7 +53,7 @@ mktmpdir() {
 
 # Verify that a previously created file exists, and report that.
 usingfile() {
-  [[ -e $1 ]] || { >&2 echo "$scriptname: no file \"$1\" for $2. Aborting."; exit 1; }
+  [[ ! -e $1 ]] && >&2 echo "$scriptname: no file \"$1\" for $2. Aborting." && exit 1
   >&2 echo "Reusing $2 $1."
 }
 
@@ -75,9 +73,7 @@ showprogress() {
       >&2 echo -n "$3..."
       ;;
     go)
-      if [[ $((__progress_counter__ % __progress_stepsize__)) -eq 0 ]] ; then
-	>&2 echo -n "."
-      fi
+      [[ $((__progress_counter__ % __progress_stepsize__)) -eq 0 ]] && >&2 echo -n "."
       ((__progress_counter__++))
       ;;
     end)
@@ -85,3 +81,5 @@ showprogress() {
       ;;
   esac
 }
+
+nparallel=$(nproc | sed "s/$/-1/" | bc)	# One fewer than the number of CPU cores.

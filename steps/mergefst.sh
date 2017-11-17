@@ -2,7 +2,7 @@
 . $INIT_STEPS
 set -e
 
-[ -d $mergedir ] || { >&2 echo "$0: no directory $mergedir. Aborting."; exit 1; }
+[ ! -d $mergedir ] && >&2 echo "$0: no directory $mergedir. Aborting." && exit 1
 
 mkdir -p $mergefstdir
 showprogress init 200 "Merging transcript FSTs"
@@ -10,11 +10,8 @@ for ip in $(seq -f %02g $nparallel); do
   (
   # 2>/dev/null hides complaints of missing $splittestids and $splitadaptids, for prepare.rb.
   cat $splittrainids.$ip $splittestids.$ip $splitadaptids.$ip 2>/dev/null | shuf | while read uttid; do
-    if [[ ! -s $mergedir/$uttid.txt ]] ; then
-      # Don't whine.  The clip had no speech.  Probably just music.
-      #>&2 echo -e -n "\n$(basename $0): skipping empty utterance $mergedir/$uttid.txt."
-      continue
-    fi
+    # If an utterance lacks speech (only music), skip it without complaining.
+    [[ ! -s $mergedir/$uttid.txt ]] && continue
     showprogress go
     # If $engalphabet (data/let2phn/englets.vocab) contains mcasr symbols while $mcasr is false,
     # or vice versa, then fstcompile will fail: Symbol "1" is not mapped to any integer arc ilabel.
