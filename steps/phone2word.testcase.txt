@@ -1,0 +1,141 @@
+Inspect turker scrips.
+At what stage do they diverge so far from Shukhrat's?
+Is front-to-back matching plausible?
+Or more expensively, from longest to shortest word, find where it occurs "soft"ly (modulo some missing or extra phonemes);
+  mark that as matched;  continue until no more words match.
+Even fancier: iterate towards a seq of words with Shukhrat's statistics: distrn of word lengths, seq of word lengths,... .
+
+Shukhrat data/nativetranscripts/applyUzb/eval_text:
+    restitch-clips-uzb.rb
+    /r/lorelei/PTgen/test/2016-08-24/batchfiles-raw/Batch_*_batch_results.csv
+    www.isle.illinois.edu/uzbek/splitUZB/Uzbpart-*/UZB_001_002.wav
+    Files made 2016 Aug 23.  Transcribed the next 4 days.
+    First example, damazyadashambaclut, =
+    www.isle.illinois.edu/uzbek/splitUZB/Uzbpart-7/UZB_001_002.wav, 1.02 seconds.
+    ifp-serv-03.ifp.illinois.edu: /workspace/speech_web/uzbek/splitUZB/Uzbpart-*/UZB_001_002.wav 60x ~1 second.
+Uzbpart-1..5 [music]
+ 6 in-
+ 7 -doneziyada shanba kun-
+ 8 -i halokatga uchragan
+ 9 kema yo'lovchilarining
+10 200 nafari
+11 qutqarildi yana
+12 400 kishi hamon
+13 qidirilmoqda
+14 belarus rasmi-
+15 -y moskva bilan
+16 gaz narxiga ke-
+17 -lishdi
+18 avstrya ichki ishlar va-
+19 -ziri yurak huruji-
+20 -dan vafot et-
+21 -di shuningdek
+22 dasturimizda
+23-28 [noisy; not Uzbek?]
+?? o'tayotga
+29 yil sarhisobi ma-
+30 -arkaziy osiyo
+31 siyosiy maydonidagi
+32 o'zgarishlar
+33-38 [noisy]
+39 o'zbekistonda-
+40 -a matbuotning zai-
+41 -fligiga turli mytax-
+42 -assislar turlicha
+43 sabab ko'rsatmoqda
+44 malik mansur la-
+45 vhasi bilan tanishasiz
+46 tavsilotlar
+47 amerika ovozi
+48 to'lqinlarida
+49-50 [music]
+51 siz amerika ovo
+52 -zi radiosini tinglayapsi-
+53 z endi esa
+54 bugun dunyoda ro'y be-
+55 -rgan so'nggi vo-
+56 -qealar bilan tanishing
+57-60 [music]
+
+mcasr/s5c/scrips-uzb/001_002.txt
+Estimated clip number from starting time in samples.  Divided by 43800.
+To convert these "44814" numbers to msec for uttid names, divide by 43.8
+To convert uttid names' msec to these numbers, multiply by 43.8
+ 4  0 44814 [music]
+ 5  134442 179256 [music] # [news report sound effect]
+ 6  224070 268884 [music] # in
+ 7  268884 313698 damazyadashambaclut # danays yadeshambikenam # daneh zidishamba kyu # dunneedahdahshohmbraykuh # gumshedambuckla
+??  537768 582582 i'm kudda ah munda # umkadalumgundon # umkadarelmota # un caderelle mon dam # un kudderelmo pla
+14  582582 627396 baaledouchela # belaoosh # belarus arasi # belarus arazi # ber ra rush ar rah joo
+17  717025 761839 elesdan ah # elishda [ah] # ishta ah # parishna [um] # were rest lab
+??  851467 896281 did dum to shu tu me # gedan vafotje # gedunvaforte # giddan va fortil # yadone voiafwoltiep
+21  896281 941095 pta shineneg # repas. fini de g # shinadeg # shinideg # sunnifveg
+--  985909 1030723 [music] meneansee # benshee # mainyalfi # we have it # whenthereseer
+--  1075537 1120351 esyonelmmeshan # ichorimipan # if your name is van # isturxci # it stood and its gone # its sure and its fun # itspureinmatide # itstu lmeyacar # itsuamichicar # itsyoremetzkar
+--  1165165 1209979 carseta # darasinsa # darcytart # dinastinsa # go yays she sous
+29  1254793 1299607 erasober # ilrhah sobem # ilsa sobor ne # ilsarsova ma # mirsaks sobaman
+31  1344422 1389236 sciosimadonedite # seeyo see my donnoveck # she yoh sen neh migh die # shee aw see maw daw be ite # yosheemydonadye
+32  1389236 1434050 death with gun ash na # eshtuzmerdiah # geh oogarishlah # jesvorargaslah # yeah ordashka # yes uzgarshla # yesewwsgedeshla # yet o gos h la # yetlushirngda # yetutgarishna
+33  1434050 1478864 [huh] # [music] # of # sahhp # tahp
+--  1613306 1658120 [low to boeboe house] # ba shak kulalum # prostazsueboneadam, # varkarsvodanum # vascashavoulada
+40  1747748 1792562 ahmad's boat esheng # amadbooten zaey # amat bord unzide # manborstzn # zaman botee zy
+43  1882190 1927004 fed up with his sahoonta # kabakcrokdomi # saba mkhte morta # travel for a long time # tsebabochtehmochtad
+44  1927004 1971818 maleekmanthrow # malichmansula # manikiman sula # maninichimansula
+56  1971818 2016633 ahcrossablanatchoshfuh # on possible atamtion # oufasblatanisha # ucusa blantanasha # upcasablodtalishom
+57  2554401 2599215 [music]
+
+grep UZB_001_002 ~/l/PTgen/mcasr/stage1-UZB.txt | /usr/local/bin/disassemble.rb
+ 6  ɪ n 
+ 7  d ə m ei z ɑɪ ə d æ ʃ æ m b æ k l ʌ t # d ə n ei z j ɑ d ɛ ʃ æ m b ɑɪ k n ə m # d ə n ɛ z ɪ d ɪ ʃ æ m b ə ɕ y o # d ʌ n i d ɑ d ɑ ʃ oʊ m b ɹ ei k u # g j ə m ʃ d ə m b ʌ k l ə
+??  k ʌ d ə ɑ m ʌ n d ə   # ə m k ə d l ə m g n d n   # ə m k ə d ɑ ɹ ɛ m oʊ t ə   # ʌ n k æ d ə ɹ ɛ l m n   d ə m   # ʌ n k ʌ d ə ɹ ɛ m oʊ p l ə
+14  b ɑ l d aʊ tʃ ɛ l ə   #   b ɚ ɹ ə ɹ ʌ ʃ ɑ ɹ ɹ ə dʒ u #   b ɛ l ei u ʃ   #   b ɛ l ɑ ɹ ə s   ɑ ɹ ei z i #   b ɛ l ɑ ɹ ə s   ɑ ɹ æ s i
+17  p ɑ ɹ ɪ ʃ n ə     # w ɚ ɹ ɛ s t   l ə b # ɛ l z d n   ɑ # ɛ l ɪ ʃ d ə     # ɪ ʃ t ə   ɑ
+??  d ɪ d d ə m   t oʊ ʃ u t u m # dʒ d n   v æ f ɑ t dʒ   # dʒ d ʌ n v æ f ɔ ɹ t # g ɪ d n   v ə f ɔ ɹ ʃ l # j ɑ d oʊ n   v oʊ j ə f w oʊ l t i ɛ p
+21  f ɑɪ n i d g   #   s ʌ n ɪ v ə g   #   ʃ i n ɑɪ d ɪ g   #   ʃ i n ɛ d ɪ g   # p t ə   ʃ i n n ɛ g
+--  m ə n i n s i #   b ɛ n ʃ i #   m ei n j ɑ f i #   w h æ v ɪ t #   w ɛ n θ ə ɹ ɛ s i ɚ
+--  ɛ s ɑɪ ə n l m ɛ ʃ n # ɪ f j ə ɹ n ə m ɪ s   v æ n # ɪ k ɑ ɹ ɪ m ɪ p æ n # ɪ s t ɝ k s i # ɪ t   s t ʊ d æ n d ɪ t s g oʊ n # ɪ t s   s ɝ ɹ æ n d ɪ t s f ʌ n # ɪ t s p ʊ ɹ ei n m ei t ɪ d # ɪ t s t u l m ɑɪ ə k ɑ ɹ # ɪ t s w ɑ m ɪ k ɪ k ɑ ɹ # ɪ t s ɑɪ ə ɹ ɛ m ɛ t s k ɑ ɹ
+--  d i n æ s t ɪ n s ə   #   d ɑ ɹ s ɑɪ t ɑ ɹ t #   d ɑ ɹ æ s ɪ n s ə   #   g oʊ j ei z   ʃ   s ə s #   k ɑ ɹ s ɛ t ə
+29  m ɪ s ei k s   s oʊ b æ m n # ɛ ɹ æ s oʊ b ɚ   # ɪ l s ɑ ɹ s oʊ v ə m ə # ɪ l s ə   s oʊ b ɚ n # ɪ l ɹ h ɑ   s oʊ b ɛ m
+31  j oʊ ʃ i m ɑɪ d oʊ n ɛ d ɑɪ #   ʃ i ɑ s i m ɑ d ɑ b ɪ t   #   ʃ j oʊ s ɛ n n ɛ   m ɑɪ d i #   ʃ ə s ɪ m æ d oʊ n d ɪ t # s i ɑɪ oʊ s i m i d n oʊ v ɛ k
+32  dʒ ɛ   ʊ g ɑ ɹ ɪ ʃ l ə   #   dʒ ɛ s v ə ɹ æ g æ s l ə   #   j ɑ   ɔ ɹ d æ ʃ k ə   #   j ɛ s   j u z g ɑ ɹ ʃ l ə   #   j ɛ t   oʊ g oʊ ʃ l ə   #   j ɛ t ʌ t g ɑ ɹ ɪ ʃ n ə   #   ɛ ʃ t u z m ə ɹ d i ə   # d ɛ ð   w ɪ θ g n æ ʃ n ə   # j ɛ s u f s g d ɛ ʃ l ə   # j ɛ t l ə ʃ ɝ n g d ə
+33  s ɑ p   #   t ɑ p   #   ɑ f
+--  b ə   ʃ ei k   k ʌ l l ə m   # v æ s k æ ʃ ei v oʊ l ei d ə   # v ɑ ɹ k ɚ z v oʊ d ə n ə m
+40  m n b ɑ ɹ s t s n #   b oʊ t   ɛ ʃ ɛ ŋ # z ə m n b oʊ t i z i # æ m æ d b ʊ t n z ei # æ m æ t b ɑ ɹ d ʌ n z ɪ d
+43  f t ə p w ɪ θ   h ɑɪ z s ə h u n t ə # k ə b ei k k ɹ oʊ k d ɑ m i   # s ə b ə   m k t m ɔ ɹ t ə # t s b æ b oʊ ʃ t ɛ m oʊ ʃ t ei d # t ɹ ei v l f ɔ ɹ   ə   l ɑ ŋ t ɪ m
+44  m l i k m n θ ɹ oʊ #   m l ɪ k m n s ʌ l ə #   m ə n i n ɪ k ɪ m n s ʌ l ə #   m ə n ɑɪ k ɪ m n s ʌ l ə
+56  aʊ f æ s b l ei t n ɪ ʃ ə   # n p ɑ s ɪ b l ə t æ m ʃ n   # ɑ k ɹ ɑ s ə b l ei n æ tʃ ɑ ʃ f ʊ   # ə p k æ s ə b l oʊ d t l ɪ ʃ ə m   # ʌ k ə s ə b l æ n t ə n æ ʃ ə
+
+Clip 17's scrips-uzb/001_002.txt matches mcasr/stage1-UZB.txt.  Has enough vowels.
+Which clips lack vowels?  Singlestep trace through one of those.
+Vowels weren't lost in ANY clip in mcasr/stage1-UZB.txt.
+Look downstream of mcasr/stage1-UZB.txt.
+
+33  1434050 1478864 [huh] # [music] # of # sahhp # tahp
+stage1-UZB.txt: s ɑ p   #   t ɑ p   #   ɑ f
+UZB_001_002_032518_033534       f aʊ zː zː f θ			Suspiciously long.
+fstrandgen applyUzb/decode/UZB_001_002_032518_033534.PLM.fst < applyUzb/lists/testids.16
+That fst is 17Kb, 14 states, 1000 arcs.  How, from such sparse input?
+
+Even the first fst, for "in", has 8 states, 500 arcs.
+fstdraw decode/UZB_001_002_000000_001016.PLM.fst | dot -Tpng -Gdpi=900 | convert - -rotate 90 ~/l/eval/huh.png
+
+mergedir/UZB_001_002_000000_001016.txt is only SILences.
+mergefstdir/UZB_001_002_000000_001016.M.fst is just a chain 1=SIL, 2=SIL, 3=%, done.
+decode/UZB_001_002_000000_001016.PLM.fst why is it so big?!  All those backwards pointers.
+Built by stage 14 decode_PTs.sh,
+fstcompose $PLfst $mergefstdir/$uttid.M.fst | fstproject --project_output=false - > $decodelatdir/$uttid.PLM.fst
+
+Inspect a less trivial example.  Clip 33.
+mergedir/UZB_001_002_032518_033534.txt
+s t
+ɑ ɑ
+p p
+mergefstdir/UZB_001_002_032518_033534.M.fst.txt
+fstdraw --isymbols=$HOME/l/PTgen/test/apply-uzb/data/let2phn/englets.vocab --osymbols=$HOME/l/PTgen/test/apply-uzb/data/let2phn/englets.vocab mergefstdir/UZB_001_002_032518_033534.M.fst | dot -Tpng -Gdpi=900  | convert - -rotate 90 ~/l/eval/huh.png
+
+fstdraw --isymbols=$HOME/l/PTgen/test/apply-uzb/data/phonesets/univ.compact.txt --osymbols=$HOME/l/PTgen/test/apply-uzb/data/let2phn/englets.vocab decode/UZB_001_002_032518_033534.PLM.fst | dot -Tpng -Gdpi=1200 | convert - -rotate 90 ~/l/eval/huh3.png
+fstdraw --isymbols=$HOME/l/PTgen/test/apply-uzb/data/phonesets/univ.compact.txt --osymbols=$HOME/l/PTgen/test/apply-uzb/data/phonesets/univ.compact.txt decode/UZB_001_002_032518_033534.PLM.fst | dot -Tpng -Gdpi=1200 | convert - -rotate 90 ~/l/eval/huh3.png
+	# This one's symtab is test/mcasr-uzb/data/phonesets/univ.compact.txt because it has 83's?
+
+fstdraw --isymbols=$HOME/l/PTgen/test/apply-uzb/data/phonesets/univ.compact.txt --osymbols=$HOME/l/PTgen/test/apply-uzb/data/let2phn/englets.vocab PL.fst | dot -Tpng -Gdpi=1200 | convert - -rotate 90 ~/l/eval/PL.png
+*PLM.fst is an FSA (not FST) on letters (englets.vocab).

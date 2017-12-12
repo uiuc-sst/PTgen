@@ -5,7 +5,7 @@
 # Very fast, but unlikely to be optimal.
 
 if ARGV.size > 2
-  STDERR.puts "Usage: #$0 pronlex.txt [mtvocab.txt] < hypotheses-as-phones.txt > hypotheses-as-words.txt"
+  STDERR.puts "Usage: #$0 prondict.txt [mtvocab.txt] < hypotheses-as-phones.txt > hypotheses-as-words.txt"
   # STDIN must be sorted, for prepending SIL to noncontiguous clips.
   # todo: check that it's sorted.
   exit 1
@@ -20,7 +20,7 @@ end
 # Word, tab (or space), space-delimited phones.
 Prondict = ARGV[0]
 if !File.file? Prondict
-  STDERR.puts "#$0: missing pronlex #{Prondict}."
+  STDERR.puts "#$0: missing prondict #{Prondict}."
   exit 1
 end
 
@@ -33,33 +33,41 @@ if ARGV.size == 2
   end
 end
 
-# OK to read all of $stdin into RAM, because it's not even a few megabytes.
+# Read all of $stdin into RAM, because it's not even a few megabytes.
 Lines = $stdin.readlines.map {|l| l.split /\s/}
 
 if Lines[0][0].size < 20
   # Don't restitch.  Build $scrips directly from each l.  l[0] == "uzbek_019_006"
   $scrips = Lines.map {|l| [l[0], l[1..-1].join(' ')]}
 else
-  # First, restitch clips' transcriptions into transcriptions of full utterances.
-  # Each line is uttid, tab, space-delimited phone-numbers.
+  # First, concatenate clips' phone-transcriptions into phone-transcriptions of full utterances.
+  # Each line is uttid, tab, space-delimited phones from $phnalphabet aka $DATA/phonesets/univ.compact.txt.
+  # (These transcriptions were made by steps/evaluate_PTs.sh calling # fstprint --osymbols=$phnalphabet.)
+  # (But test/mcasr-uzb/data/phonesets/univ.compact.txt was phone-indices, while test/apply-uzb/...univ.compact.txt is IPA??)
   $scrips = Hash.new {|h,k| h[k] = []} # Map each uttid to an array of transcriptions.
   $endtimePrev = -1
   $uttidPrev = uttid = "bogus"
   Lines.each {|l|
     s = l[1..-1].join(" ")				# иисусу хоста иаа
     next if s.empty?
-    if true						# todo: find the penultimate _ and split there.
+    if false						# todo: find the penultimate _ and split there.
       $uttidPrev = uttid
-      uttid = l[0][0..15]					# IL5_EVAL_019_012
+      uttid = l[0][0..15]				# IL5_EVAL_019_012
       starttime = l[0][17..-1].sub(/_.*/, '').to_i	# 101824705
       $endtimePrev = l[0][27..-1].to_i
-    else
-      uttid = l[0][0..10]					# RUS_134_004
+    elsif false
+      uttid = l[0][0..10]				# RUS_134_004
       starttime = l[0][12..-1].sub(/_.*/, '').to_i	# 101824705
+    else
+      # PTgen/test/apply-uzb
+      uttid = l[0][0..10]				# UZB_001_001
+      starttime = l[0][12..-1].sub(/_.*/, '').to_i	# 003320_004427 -> 003320
+      $endtimePrev = l[0][12..-1].sub(/[^_]*_/, '').to_i # 004427
     end
 
     # Prepend SIL if this clip wasn't immediately after the previous one.
-    s = "1 " + s if $endtimePrev >= 0 && $endtimePrev+1 < starttime
+#   s = "1 " + s if $endtimePrev >= 0 && $endtimePrev+1 < starttime	# for mcasr?
+    s = "SIL " + s if $endtimePrev >= 0 && $endtimePrev+1 < starttime	# for non-mcasr?
 
     $scrips[uttid] << [starttime, s]
     $endtimePrev = -1 if uttid != $uttidPrev
@@ -79,22 +87,32 @@ trie = Trie.new
 h =  Hash.new {|h,k| h[k] = []} # A hash mapping each pronunciation to an array of homonym words.
 i = 0
 
-STDERR.puts "#{File.basename $0}: reading pronlex #{Prondict}..."
+STDERR.puts "#{File.basename $0}: reading prondict #{Prondict}..."
 begin
   pd = File.readlines(Prondict) .map {|l| l.chomp.strip }
   # If the prondict's lines are [word SPACE spacedelimited-phones], change them to [word TAB spacedelimited-phones].
   pd.map! {|l| l =~ /\t/ ? l : l.sub(" ", "\t")}
   pd.map! {|l| l.split("\t") }
+  if true
+    require 'set'
+    Shukhrat = Set.new( File.readlines("/home/camilleg/l/PTgen/test/apply-uzb/shukhrat-words-cleaned.txt") \
+      .map {|l| l.chomp})
+    pd.select! {|w,p| Shukhrat.include? w }
+    STDERR.puts "#{File.basename $0} (#{pd.size}): keeping only Shukhrat's #{Shukhrat.size} words."
+  end
+  STDERR.puts "#{File.basename $0} (#{pd.size}): culling 4-in-a-rows..."
   # Cull words with 4 or more in a row of the same letter or letter-pair ("hahahahaaaaaaa").
   # https://regex101.com/r/pJ3hJ9/1
   pd.select! {|w,p| w !~ /(.)\1{3,}/ && w !~ /(..)\1{3,}/ }
 
+  STDERR.puts "#{File.basename $0} (#{pd.size}): shrinking 3-in-a-rows..."
   # Compress tripled-or-more letters "aaa" to doubled letters "aa".
   # (Tripled letters are in *some* valid words,
   # https://linguistics.stackexchange.com/q/9713/17197,
   # but they are much rarer than what shows up in Prondict (e.g. Oromo),
   # so optimize for the common case.)
   pd.map! {|w,p| [w.gsub(/(.)\1{2,}/, '\1\1'), p]}
+  STDERR.puts "#{File.basename $0} (#{pd.size}): sorting..."
   pd.sort!
   if false
     # Report any duplicated word with different pronunciations.  Rare, in practice.
@@ -112,8 +130,10 @@ begin
     pd.select! {|w,p| w !~ /[0-9]/ && w !~ /[a-z]{3,}/ }
   end
 
+  STDERR.puts "#{File.basename $0} (#{pd.size}): de-duplicating phones..."
   pd.map! {|w,p| [w, p.split(" ") .chunk {|x| x} .map(&:first) .join(" ")]} # Remove consecutive duplicate phones.
 
+  STDERR.puts "#{File.basename $0} (#{pd.size}): restricting phones..."
   # Like mcasr/phonelm/make-bigram-LM.rb and mcasr/stage1.rb.
   pd.select! {|w,p| p !~ / ABORT$/}
   Restrict = Hash[ "d̪","d", "q","k", "t̪","t", "ɒ","a", "ɨː","iː", "ɸ","f", "ʁ","r", "χ","h",
@@ -152,14 +172,18 @@ begin
     def soft(ph) ph end
   end
 
+  STDERR.puts "#{File.basename $0} (#{pd.size}): soft match and indexifying..."
   # Convert each pronunciation's entries from a phone to the phone's index in the symbol table.
   # Convert each phone, then join the array back into a string, for the trie.
   pd.map! {|w,pron| [w, pron.map {|ph| soft(Phones[ph])} .join(" ") .gsub(/\s+/, ' ') .strip] }
-  # Remove consecutive duplicate phones, once more:
+  STDERR.puts "#{File.basename $0}: re-deduplicating phones..."
   pd.map! {|w,pron| [w, pron.split(" ").chunk{|x|x}.map(&:first) .join(" ")]}
 
+  STDERR.puts "#{File.basename $0} (#{pd.size}): stuffing trie..."
   pd.each {|w,p| trie.add p; i += 1 }
+  STDERR.puts "#{File.basename $0}: collecting homonyms..."
   pd.each {|w,p| h[p] << w }
+  STDERR.puts "#{File.basename $0}: loaded #{i} pronunciations from prondict."
 end
 
 # Read in-vocab words.  Discard invalid UTF-8.  .toset, so .include? takes O(1) not O(n).
@@ -175,29 +199,26 @@ hNew = Hash.new
 h.each {|pron,words|
   has_oov = false
   has_v = false
-  $both = false
   words.each {|w|
     oov = !$wordsVocab.include?(w)
     has_oov |=  oov
     has_v   |= !oov
-    $both = has_v && has_oov
-    break if $both
+    if has_v && has_oov
+      #prev = words.size
+      # Set .include? is much faster than words &= $wordsVocab.
+      words.select! {|w| $wordsVocab.include? w}
+      #STDERR.puts "Reduced #{prev} in-v and oov words to #{words.size} in-v words, e.g. #{words[0]}."
+      break
+    end
   }
-  if $both
-    #tmp = words.size
-    # Set .include? is much faster than words &= $wordsVocab.
-    words.select! {|w| $wordsVocab.include? w}
-    #STDERR.puts "Reduced #{tmp} words to #{words.size}, e.g. #{words[0]}."
-  end
   hNew[pron] = words
 }
 h = hNew
-
-# debug: File.open("/tmp/prondict-reconstituted.txt", "w") {|f| h.each {|pron,words| f.puts "#{pron}\t\t#{words.join(' ')}"} }
-
-STDERR.puts "#{File.basename $0}: loaded #{i} pronunciations from pronlex.  Converting utterance transcriptions from phones to words..."
 # Now trie has all the pronunciations, and h has all the homonyms.
 
+File.open("/tmp/prondict-reconstituted-uzb.txt", "w") {|f| h.each {|pron,words| f.puts "#{pron}\t\t#{words.join(' ')}"} }
+
+STDERR.puts "#{File.basename $0}: Converting utterance transcriptions from phones to words..."
 # Output the restitched and phone2word'ed transcriptions.
 $scrips.each {|uttid,phones|
   print uttid + "\t"
@@ -206,7 +227,9 @@ $scrips.each {|uttid,phones|
     puts
     next
   end
+  STDERR.puts "\nWordify #{phones}"
   phones = phones.split ' '
+  STDERR.puts "\nWordify #{phones.map{|ph| soft(Phones[ph])}.join(' ') .gsub(/\s+/, ' ') .strip}"
   prefix = ""
   prefixPrev = ""
   i = 0
@@ -270,13 +293,10 @@ $scrips.each {|uttid,phones|
     STDERR.puts "#$0: failed to soft(#{bar}). Crash imminent." if !zip
     prefixPrev = prefix.rstrip
     prefix += zip + " "
-=begin
-    STDERR.puts "\t\t\t\t\tFound #{foo} --> #{zip}." if debug
-    STDERR.puts "Trying '#{prefix.rstrip}': trie? #{trie.has_children?(prefix.rstrip)}." if debug
-=end
+    STDERR.puts "\t\t\tFound #{foo} = #{zip}."
     if trie.has_children?(prefix.rstrip)
 =begin
-      # HACK to choose more words with just 2 to 4 phones (for TIR):
+      # HACK to choose more words with just 2 to 4 phones (for Tigrinya):
       rrr = prefix.rstrip
       words = h[rrr]
       n = rrr.split(" ").size
@@ -303,17 +323,42 @@ $scrips.each {|uttid,phones|
       # Extend prefix.
       i += 1
       next
+    else
+      STDERR.puts "Reached #{prefix.rstrip}."
     end
-#   STDERR.puts "prev-trying '#{prefixPrev}', trie? #{trie.has_key?(prefixPrev) ? 'waar.' : 'vals.'}"
+    #STDERR.puts "prev-trying '#{prefixPrev}', trie? #{trie.has_key?(prefixPrev) ? 'waar.' : 'vals.'}"
     if trie.has_key? prefixPrev
       i = iStart = i+1
       words = h[prefixPrev]
-#     STDERR.puts "\nPick one of: #{words.join(' ')}"
+      STDERR.puts "\t\t\t\t\t\tPick: #{words.join(' ')}."
       word = words[rand(words.size)] # Choose a homonym at random.
-      print word + " "
+      # Todo: instead of uniformly random, follow how frequent those words actually are in some (which?) text.
+      #print word + " "
+      print "   " + word + "   "
     else
-      # Word search failed.  Skip this phone.  Resume searching, one phone past the previous attempt.
-#     STDERR.puts "Skipped #{phones[iStart]}."
+
+      #   elsif trie.has_key?(prefixPrev with its last element stripped), use h[THAT],
+      #   elsif... until prefixPrev is empty.
+      #   ;;;; Change this chain of if's into a loop.
+      c = prefixPrev.split(' ').size
+      if c > 1
+	prefixAgain = prefixPrev.split(' ')[0..-2].join(' ')
+	STDERR.puts "Re-reached #{prefixPrev}."
+	if trie.has_key? prefixAgain
+	  i = iStart = i+1 -2 # -2 == length of prefixAgain.  Backtrack the proper amount.
+	  words = h[prefixAgain]
+	  STDERR.puts "\t\t\t\t\tPick: #{words.join(' ')}. ***"
+	  word = words[rand(words.size)]
+	  print "   " + word + "   "
+	  prefix = ""
+	  next
+	end
+      end
+
+      # Trie has no word starting with prefixPrev.  Skip this phone.
+      # Resume searching, one phone past that skipped phone.
+      STDERR.puts "Skipped #{phones[iStart]}."
+      print "#{phones[iStart]}_ " # debug
       iStart = i = iStart+1
     end
     prefix = ""
