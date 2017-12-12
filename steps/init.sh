@@ -82,4 +82,4 @@ showprogress() {
   esac
 }
 
-nparallel=$(nproc | sed "s/$/-1/" | bc)	# One fewer than the number of CPU cores.
+nparallel=$[$(nproc)-1]	# One fewer than the number of CPU cores.
