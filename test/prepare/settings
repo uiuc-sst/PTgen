@@ -6,6 +6,7 @@ TRAIN_LANG=$ALL_LANGS			# Used by stage 3 and 7.
 LANG_NAME=prepare			# Used *only* by init.sh to set $EXPLOCAL. Arbitrary.
 LANG_CODE=sbs7
 mcasr=1
+# todo: run the whole prepare.sh with, and then without, mcasr=1, yielding TWO [PL].fst's.  Using two different $engalphabet's; so two settings files?
 
 # Input test DATA and output EXPeriment results.
 DATA=data
@@ -21,12 +22,12 @@ TRANSDIR=$DATA/nativetranscripts			# Read by stage 7.
 # Alphabets.
 engdict=$DATA/let2phn/eng_dict.txt		# Read by stage 1.
 engalphabet=$DATA/let2phn/englets.vocab		# Read by stage 5, 6 and 11.	Must be compatible with $mcasr.
-phnalphabet=$DATA/phonesets/univ.compact.txt	# Read by stage 6.		Must be compatible with $mcasr.
+phnalphabet=$DATA/phonesets/univ.compact.txt	# Read by stage 6 and 9.
 
 # Parameters.
 rmprefix="http://"      # Used by stage 1, to create file IDs.
 nparts=4		# Used by stage 4.
-topN=2			# Used by stage 4.
+topN=5			# Used by stage 4.
 gapsymbol='_'		# Used by stage 4, via $aligneropt.
 alignswitchpenalty=1	# Used by stage 5, via $alignertofstopt.
 delimsymbol='%'		# Used by stage 4 and 6.

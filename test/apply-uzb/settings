@@ -24,8 +24,8 @@ evalreffile=$DATA/nativetranscripts/$LANG_NAME/${TESTTYPE}_text       # Read by 
 
 # Alphabets.
 engdict=$DATA/let2phn/eng_dict.txt		# Read by stage 1.
-engalphabet=$DATA/let2phn/englets.vocab		# Read by stage 14.
-phnalphabet=$DATA/phonesets/univ.compact.txt	# Read by stage 15.  Must be compatible with $mcasr.
+engalphabet=$DATA/let2phn/englets.vocab		# Read by stage 14.  Must be compatible with $mcasr.
+phnalphabet=$DATA/phonesets/univ.compact.txt	# Read by stage 15.
 pronlex=$DATA/langmodels/$LANG_NAME/pronlex.txt	# Read by stage 15.
 
 # Parameters.
@@ -43,6 +43,6 @@ aligneropt="--dist $aligndist --empty $gapsymbol"	# Used by stage 4.
 alignertofstopt="--switchpenalty $alignswitchpenalty"	# Used by stage 5.
 
 # Which stages to run, inclusive.  1 to 15.
-startstage=15
+startstage=1
 endstage=15
 debug=1
