@@ -8,13 +8,19 @@ mkdir -p $mergefstdir
 showprogress init 200 "Merging transcript FSTs"
 for ip in $(seq -f %02g $nparallel); do
   (
-  # 2>/dev/null hides complaints of missing $splittestids and $splitadaptids, for prepare.rb.
+  # 2>/dev/null hides complaints of missing $splittestids and $splitadaptids, for prepare.rb and apply.rb.
   cat $splittrainids.$ip $splittestids.$ip $splitadaptids.$ip 2>/dev/null | shuf | while read uttid; do
     # If an utterance lacks speech (only music), skip it without complaining.
     [[ ! -s $mergedir/$uttid.txt ]] && continue
     showprogress go
     # If $engalphabet (data/let2phn/englets.vocab) contains mcasr symbols while $mcasr is false,
     # or vice versa, then fstcompile will fail: Symbol "1" is not mapped to any integer arc ilabel.
+
+    # When mcasr==1,
+    # $mergedir/$uttid.txt is made by mergetxt.sh from symbols in Exp/transcripts.txt, == mcasr/stage1-UZB.txt,
+    # made by PTgen/mcasr/stage1.rb from uzb-clips.txt from MCASR,
+    # using the phones in PTgen/mcasr/phones.txt.
+
     convert-aligner-to-fst.pl $alignertofstopt < $mergedir/$uttid.txt |
       convert-prob-to-neglog.pl | tee $mergefstdir/$uttid.M.fst.txt |
       fstcompile --isymbols=$engalphabet --osymbols=$engalphabet |
