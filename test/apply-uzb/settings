@@ -14,7 +14,7 @@ DATE_USC=20171110 # yyyymmdd.  Used by stage 15's hyp2jonmay.rb.
 
 # Input test DATA and output EXPeriment results.
 DATA=data
-DATA_URL=http://isle.illinois.edu/mc/PTgenTest/missing.tgz
+DATA_URL=http://isle.illinois.edu/mc/PTgenTest/data-apply-uzb.tgz
 EXP=$HOME/Tmp/Exp
 
 # Transcriptions.
