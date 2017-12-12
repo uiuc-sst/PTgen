@@ -79,10 +79,11 @@ fi
 [ -d $TURKERTEXT ] || { echo "Missing TURKERTEXT directory $TURKERTEXT. Check $1."; exit 1; }
 [ -s $engdict ] || { echo "Missing or empty engdict file $engdict. Check $1."; exit 1; }
 [ -s $engalphabet ] || { echo "Missing or empty engalphabet file $engalphabet. Check $1."; exit 1; }
-#;;;; [ ! -z $phnalphabet ] || { echo "No variable phnalphabet in file '$1'."; exit 1; }
-#;;;; [ -s $phnalphabet ] || { echo "Missing or empty phnalphabet file $phnalphabet. Check $1."; exit 1; }
+[ ! -z $phnalphabet ] || { echo "No variable phnalphabet in file '$1'."; exit 1; }
+[ -s $phnalphabet ] || { echo "Missing or empty phnalphabet file $phnalphabet. Check $1."; exit 1; }
 [ -s $phonelm ] || { echo "Missing or empty phonelm file $phonelm. Check $1."; exit 1; }
 [ ! -z $applyPrepared ] || { echo "Run run.sh instead of apply.sh, because variable \$applyPrepared is missing."; exit 1; }
+# phnalphabet is used by stage 15's create-editfst.pl.
 
 mktmpdir
 
@@ -112,12 +113,12 @@ set -e
 [ -s $EXPLOCAL/../prepare/L.fst ] || { echo "Missing or empty L.fst file $EXPLOCAL/../prepare/L.fst."; exit 1; }
 ln -fs $EXPLOCAL/../prepare/P.fst $Pfst
 ln -fs $EXPLOCAL/../prepare/L.fst $Lfst
-if [[ $(fstinfo $Pfst |grep "# of states" | awk '{print $NF}') -lt 9 ]]; then
-   >&2 echo "P.fst has suspiciously few states.  Rerun prepare.sh?"
+if [[ $(fstinfo $Pfst |grep "# of states" | awk '{print $NF}') -ne 2 ]]; then
+   >&2 echo "P.fst is corrupt. Rerun prepare.sh?"
    # All the Exp/decode/*.PLM.fst will likely get 0 states.
 fi
-if [[ $(fstinfo $Lfst |grep "# of states" | awk '{print $NF}') -lt 9 ]]; then
-   >&2 echo "L.fst has suspiciously few states.  Rerun prepare.sh?"
+if [[ $(fstinfo $Lfst |grep "# of states" | awk '{print $NF}') -ne 1 ]]; then
+   >&2 echo "L.fst is corrupt. Rerun prepare.sh?"
    # All the Exp/decode/*.PLM.fst will likely get 0 states.
 fi
 # todo: wget P.fst and L.fst from a sister to $DATA_URL.
@@ -139,14 +140,23 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
     mkdir -p $(dirname $transcripts)
     ln -fs $SCRIPTPATH/mcasr/stage1-$INCIDENT_LANG.txt $transcripts
     echo "Stage 1 using transcripts $SCRIPTPATH/mcasr/stage1-$INCIDENT_LANG.txt."
-    # Collect the uttids, and split them into 90% train and 10% eval sets.
-    rm -f $LISTDIR/IL5/{train,adapt,test,eval}*
-    sed 's/:.*//' $transcripts | sort -u | shuf > /tmp/ids
-    numLines=$(wc -l < /tmp/ids)
-    numTrain=$(printf %.0f `echo "$numLines*.9" | bc`)
-    head -n $numTrain /tmp/ids > $LISTDIR/IL5/train
-    tail -n +$(($numTrain + 1)) /tmp/ids > $LISTDIR/IL5/test # ;;;; Or to .../eval?
-    rm /tmp/ids
+    rm -f $LISTDIR/$LANG_CODE/{train,adapt,test,eval}*
+    if false; then
+      # Collect the uttids, and split them into 90% train and 10% eval sets.
+      sed 's/:.*//' $transcripts | sort -u | shuf > /tmp/ids
+      numLines=$(wc -l < /tmp/ids)
+      numTrain=$(printf %.0f `echo "$numLines*.9" | bc`)
+      mkdir -p $LISTDIR/$LANG_CODE
+      head -n $numTrain /tmp/ids > $LISTDIR/$LANG_CODE/train
+      tail -n +$(($numTrain + 1)) /tmp/ids > $LISTDIR/$LANG_CODE/test # Or to .../eval?
+      rm /tmp/ids
+    else
+      # Use all uttids for both train and "eval" (100%/100% split.)
+      # Evaluation for WER uses something different, a set of native transcriptions.
+      sed 's/:.*//' $transcripts | sort -u | shuf > $LISTDIR/$LANG_CODE/train
+      cp $LISTDIR/$LANG_CODE/train $LISTDIR/$LANG_CODE/test
+    fi
+
     echo "Stage 1 took" $SECONDS "seconds."; SECONDS=0
 
   else
@@ -232,23 +242,14 @@ else
   usingfile $mergedir "merged transcript FSTs in"
 fi
 
-## STAGE 6-9 ##
-# Omitted.
+## STAGE 6-12 ##
+# Deprecated or omitted.
 ((stage++))
 ((stage++))
 ((stage++))
 ((stage++))
-
-## STAGE 10 ##
-# Deprecated ($Gfst).
 ((stage++))
-
-## STAGE 11 ##
-# Omitted.
 ((stage++))
-
-## STAGE 12 ##
-# Deprecated ($Tfst).
 ((stage++))
 
 ## STAGE 13 ##
@@ -260,6 +261,119 @@ fi
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
   >&2 echo -n "Creating PL FST... "
   mkdir -p $(dirname $TPLfst)
+  if true ; then
+    >&2 echo "Experiment: replacing apply.sh's Lfst with an identity transducer."
+    # Delete the symlink, so we don't overwrite its source in Exp/prepare.
+    rm -f $Lfst
+    # Make one arc for each symbol in $engalphabet aka data/let2phn/englets.vocab 0..73,
+    # each arc with the same (omitted) probability.
+    (for i in {0..73}; do echo 0 0 $i $i; done; echo 0) | tee $Lfst.txt | fstcompile > $Lfst
+    # fstdraw --isymbols=../../test/apply-uzb/data/let2phn/englets.vocab --osymbols=../../test/apply-uzb/data/let2phn/englets.vocab L.fst | dot -Tpng -Gdpi=600 | convert - -rotate 90 ~/l/eval/L.png
+  fi
+  if true ; then
+    >&2 echo "Experiment: replacing apply.sh's Pfst with a handcoded one."
+    rm -f $Pfst
+    # Pfst (and PLfst) maps phones to letters, from $phnalphabet to $engalphabet.
+    # Here, map each phone in $phnalphabet aka data/phonesets/univ.compact.txt 0..88
+    # to a similar phone-index in $engalphabet aka data/let2phn/englets.vocab 0..73.
+    # To find the phone from a $engalphabet phone-index, view /r/lorelei/PTgen/mcasr/phones.txt.
+    # So, for each entry in univ.compact.txt, map its IPA to a similar IPA in phones.txt.  e.g.:
+    #    56 = ð in univ; find ð in phones.txt = 38.
+    #    Then englets.vocab increments that to 39.  Thus, the line "56 39."
+    cat << EOF | sed 's/^/0 0 /' > $Pfst.txt
+0 0
+1 2
+2 3
+3 5
+4 5
+5 6
+6 7
+7 8
+8 8
+9 9
+10 10
+11 11
+12 10
+13 13
+14 12
+15 14
+16 14
+17 16
+18 16
+19 16
+20 18
+21 19
+22 19
+23 20
+24 20
+25 20
+26 21
+27 21
+28 22
+29 22
+30 23
+31 23
+32 24
+33 25
+34 26
+35 26
+36 20
+37 27
+38 27
+39 28
+40 28
+41 29
+42 30
+43 30
+44 30
+45 29
+46 29
+47 31
+48 32
+49 33
+50 34
+51 35
+52 36
+53 37
+54 37
+55 38
+56 39
+57 41
+58 49
+59 43
+60 43
+61 43
+62 45
+63 46
+64 47
+65 49
+66 51
+67 51
+68 53
+69 53
+70 54
+71 55
+72 55
+73 57
+74 56
+75 60
+76 62
+77 65
+78 65
+79 67
+80 68
+81 69
+82 70
+83 70
+84 71
+EOF
+    # Add insertion arcs (88 is phone "#3" in univ.compact.txt),
+    # like prepare.sh stage 9's steps/fixp2let.pl.
+    for i in {1..73}; do echo 0 0 88 $i >> $Pfst.txt; done
+    # Declare the final (and only) state.
+    echo 0 >> $Pfst.txt
+    fstcompile $Pfst.txt > $Pfst
+  fi
   fstcompose $Pfst $Lfst | fstarcsort --sort_type=olabel > $PLfst
   >&2 echo "Done."
   echo "Stage 13 took" $SECONDS "seconds."; SECONDS=0
@@ -268,14 +382,14 @@ else
 fi
 
 ## STAGE 14 ##
-# Decode.  Create a lattice for each merged utterance FST (M).
+# Decode.  Create a lattice over the phones in $phnalphabat (an FSA),
+# for each merged utterance FST (M).
 #
 # Reads the files $splittestids.xxx or $splitadaptids.xxx.
 # Reads the files $mergefstdir/*.M.fst.txt.
 # Creates and then reads the files $mergefstdir/*.M.fst.
 # Reads the file $PLfst.
 # Creates $decodelatdir and $decodelatdir/*.PLM.fst.
-# Each PLM.fst is over $phnalphabet, a lattice over phones.
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
   >&2 echo -n "Decoding lattices PLM"
