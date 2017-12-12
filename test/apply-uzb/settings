@@ -4,6 +4,7 @@
 applyPrepared=1
 mcasr=1
 evaloracle=1		# Used by stage 15.
+evalWER=1		# Used by stage 15.  Measure WER instead of PER.
 
 # Languages.
 LANG_NAME=applyUzb	# Used by init.sh to set $EXPLOCAL, and by $pronlex.
