@@ -6,7 +6,6 @@ TRAIN_LANG=$ALL_LANGS			# Used by stage 3 and 7.
 LANG_NAME=prepare			# Used *only* by init.sh to set $EXPLOCAL. Arbitrary.
 LANG_CODE=sbs7
 mcasr=1
-# todo: run the whole prepare.sh with, and then without, mcasr=1, yielding TWO [PL].fst's.  Using two different $engalphabet's; so two settings files?
 
 # Input test DATA and output EXPeriment results.
 DATA=data
