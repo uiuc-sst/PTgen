@@ -37,17 +37,16 @@ for ip in $(seq -f %02g $nparallel); do
       fstcompile --isymbols=$engalphabet --osymbols=$engalphabet \
 	> $mergefstdir/$uttid.M.fst
 
+    # Compose and then project onto the input alphabet $phnalphabet,
+    # yielding an FSA rather than an FST.
     if [ ! -z $applyPrepared ]; then
-      fstcompose $PLfst $mergefstdir/$uttid.M.fst | fstproject --project_output=false - \
-	> $decodelatdir/$uttid.PLM.fst
+      fstcompose $PLfst $mergefstdir/$uttid.M.fst | fstproject --project_output=false - | fstrmepsilon > $decodelatdir/$uttid.PLM.fst
     else
       if [[ -n $makeTPLM ]]; then
-	fstcompose $TPLfst $mergefstdir/$uttid.M.fst | fstproject --project_output=false - \
-	  > $decodelatdir/$uttid.TPLM.fst
+	fstcompose $TPLfst $mergefstdir/$uttid.M.fst | fstproject --project_output=false - | fstrmepsilon > $decodelatdir/$uttid.TPLM.fst
       fi
       if [[ -n $makeGTPLM ]]; then
-	fstcompose $GTPLfst $mergefstdir/$uttid.M.fst | fstproject --project_output=false - \
-	  > $decodelatdir/$uttid.GTPLM.fst
+	fstcompose $GTPLfst $mergefstdir/$uttid.M.fst | fstproject --project_output=false - | fstrmepsilon > $decodelatdir/$uttid.GTPLM.fst
 #       if [ $(fstinfo $decodelatdir/$uttid.GTPLM.fst |grep "# of states" | awk 'NF>1{print $NF}') = "0" ]; then
 #  	>&2 echo -e "$(basename $0): made empty $decodelatdir/$uttid.GTPLM.fst."
 #  	echo "details for $GTPLfst $mergefstdir/$uttid.M.fst composed:"
@@ -63,7 +62,7 @@ done
 wait
 showprogress end
 
-if [ $(find $decodelatdir -maxdepth 0 -type d -empty 2>/dev/null) ]; then
+if ! find $decodelatdir -mindepth 1 | read ; then
   # $decodelatdir is empty.  Made no TPLMs or GTPLMs.
   >&2 echo "$0: no uttid in $splitids.* had speech.  Are the uttids in data/lists/*/eval missing from $transcripts?"
   # Todo: check much earlier that data/lists/*/*'s uttids are in $transcripts.
