@@ -373,15 +373,15 @@ fi
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 	[ -s ${initcarmel}.trained ] || { >&2 echo "Empty ${initcarmel}.trained, so can't create $Pfst. Aborting."; exit 1; }
 	if [[ -z $Pscale ]]; then
-		Pscale=1
+	  Pscale=1
 	fi
 	>&2 echo -n "Creating P (phone-2-letter) FST [PSCALE=$Pscale]... "
-	convert-carmel-to-fst.pl < ${initcarmel}.trained \
-		| sed -e 's/e\^-\([0-9]*\)\..*/1.00e-\1/g' | convert-prob-to-neglog.pl \
-		| scale-FST-weights.pl $Pscale \
-		| fixp2let.pl $disambigdel $disambigins $phneps $leteps \
-		| tee $tmpdir/trainedp2let.fst.txt \
-		| fstcompile --isymbols=$phnalphabet --osymbols=$engalphabet > $Pfst
+	convert-carmel-to-fst.pl < ${initcarmel}.trained |
+	  sed -e 's/e\^-\([0-9]*\)\..*/1.00e-\1/g' | convert-prob-to-neglog.pl |
+	  scale-FST-weights.pl $Pscale |
+	  fixp2let.pl $disambigdel $disambigins $phneps $leteps |
+	  tee $tmpdir/trainedp2let.fst.txt |
+	  fstcompile --isymbols=$phnalphabet --osymbols=$engalphabet > $Pfst
 	>&2 echo "Done."
 	echo "Stage 9 took" $SECONDS "seconds."; SECONDS=0
 else

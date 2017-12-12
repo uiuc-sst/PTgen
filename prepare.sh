@@ -340,7 +340,6 @@ fi
 # Convert P to OpenFst format.
 #
 # Reads file $initcarmel.trained.
-# Uses variables $disambigdel, $disambigins, $phneps, and $leteps.
 # Creates the FST file $Pfst, mapping $phnalphabet to $engalphabet,
 # and the corresponding text file $tmpdir/trainedp2let.fst.txt.
 #
@@ -350,21 +349,17 @@ fi
 # - from 1 to 0 mapping phone "#3" to each letter, with various weights;
 # - from 1 to 0 mapping all other phones to eps.
 
+set -e
 ((stage++))
 if [[ $startstage -le $stage && $stage -le $endstage ]]; then
   [ -s ${initcarmel}.trained ] || { >&2 echo "Empty ${initcarmel}.trained, so can't create $Pfst. Aborting."; exit 1; }
   >&2 echo -n "Creating P (phone-2-letter) FST... "
-  Pscale=1
-  phneps='<eps>'
-  leteps='-'
-  disambigdel='#2'
-  disambigins='#3'
-  convert-carmel-to-fst.pl < ${initcarmel}.trained \
-    | sed -e 's/e\^-\([0-9]*\)\..*/1.00e-\1/g' | convert-prob-to-neglog.pl \
-    | scale-FST-weights.pl $Pscale \
-    | fixp2let.pl $disambigdel $disambigins $phneps $leteps \
-    | tee $tmpdir/trainedp2let.fst.txt \
-    | fstcompile --isymbols=$phnalphabet --osymbols=$engalphabet > $Pfst
+  convert-carmel-to-fst.pl < ${initcarmel}.trained |
+    sed -e 's/e\^-\([0-9]*\)\..*/1.00e-\1/g' | convert-prob-to-neglog.pl |
+    scale-FST-weights.pl 1 |
+    fixp2let.pl '#2' '#3' '<eps>' '-' |
+    tee $tmpdir/trainedp2let.fst.txt |
+    fstcompile --isymbols=$phnalphabet --osymbols=$engalphabet > $Pfst
   >&2 echo "Done."
   echo "Stage 9 took" $SECONDS "seconds."; SECONDS=0
 else
@@ -394,6 +389,7 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
 else
   usingfile $Lfst "L (letter statistics) FST"
 fi
+set +e
 
 if [ -z $debug ]; then
   rm -rf $tmpdir
