@@ -17,6 +17,12 @@ else
   splitids=$splittestids
 fi
 
+# Pipeline for making *PLM.fst's.
+fstSimplify()
+{
+  fstproject --project_output=false - | fstrmepsilon
+}
+
 showprogress init 50 "" # Long description is in caller.
 mkdir -p $decodelatdir
 for ip in $(seq -f %02g $nparallel); do
@@ -40,13 +46,13 @@ for ip in $(seq -f %02g $nparallel); do
     # Compose and then project onto the input alphabet $phnalphabet,
     # yielding an FSA rather than an FST.
     if [ ! -z $applyPrepared ]; then
-      fstcompose $PLfst $mergefstdir/$uttid.M.fst | fstproject --project_output=false - | fstrmepsilon > $decodelatdir/$uttid.PLM.fst
+      fstcompose $PLfst $mergefstdir/$uttid.M.fst | fstSimplify > $decodelatdir/$uttid.PLM.fst
     else
       if [[ -n $makeTPLM ]]; then
-	fstcompose $TPLfst $mergefstdir/$uttid.M.fst | fstproject --project_output=false - | fstrmepsilon > $decodelatdir/$uttid.TPLM.fst
+	fstcompose $TPLfst $mergefstdir/$uttid.M.fst | fstSimplify > $decodelatdir/$uttid.TPLM.fst
       fi
       if [[ -n $makeGTPLM ]]; then
-	fstcompose $GTPLfst $mergefstdir/$uttid.M.fst | fstproject --project_output=false - | fstrmepsilon > $decodelatdir/$uttid.GTPLM.fst
+	fstcompose $GTPLfst $mergefstdir/$uttid.M.fst | fstSimplify > $decodelatdir/$uttid.GTPLM.fst
 #       if [ $(fstinfo $decodelatdir/$uttid.GTPLM.fst |grep "# of states" | awk 'NF>1{print $NF}') = "0" ]; then
 #  	>&2 echo -e "$(basename $0): made empty $decodelatdir/$uttid.GTPLM.fst."
 #  	echo "details for $GTPLfst $mergefstdir/$uttid.M.fst composed:"
