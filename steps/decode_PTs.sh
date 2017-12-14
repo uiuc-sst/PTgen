@@ -23,7 +23,7 @@ fi
 fstSimplify()
 {
   fstproject --project_output=false - | fstrmepsilon |
-    fstprint | fstOmit3s.rb "/home/camilleg/l/PTgen/test/apply-uzb/data/phonesets/univ.compact.txt" | fstcompile
+    fstprint | fstOmit3s.rb $phnalphabet | fstcompile
 }
 
 showprogress init 50 "" # Long description is in caller.
