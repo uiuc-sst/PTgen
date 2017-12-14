@@ -18,9 +18,12 @@ else
 fi
 
 # Pipeline for making *PLM.fst's.
+# Faster would be for fstOmit3s.rb to read binary-format FSTs,
+# instead of fstprint/fstcompile, but this isn't a bottleneck.
 fstSimplify()
 {
-  fstproject --project_output=false - | fstrmepsilon
+  fstproject --project_output=false - | fstrmepsilon |
+    fstprint | fstOmit3s.rb "/home/camilleg/l/PTgen/test/apply-uzb/data/phonesets/univ.compact.txt" | fstcompile
 }
 
 showprogress init 50 "" # Long description is in caller.
