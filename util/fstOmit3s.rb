@@ -16,12 +16,8 @@ if ARGV.size != 1
   exit 1
 end
 
-$phones = []
 $lookup = Hash.new
-File.read(ARGV[0]).split(/\s+/).each_slice(2).to_a .map {|phone,i| [i.to_i, phone]} .each {|i,phone|
-  $phones[i] = phone
-  $lookup[phone] = i
-}
+File.read(ARGV[0]).split(/\s+/).each_slice(2) {|phone,i| $lookup[phone] = i.to_i }
 Three = $lookup["#3"] # Likely 88.
 
 # Fewer vowels than consonants.
@@ -51,30 +47,15 @@ lines.each {|l|
 }
 pairs.each {|states,symsFull|
   # states	["6", "7"]
-  # syms	["88", "88"], ["65", "65"], ["58", "58"]
+  # symsFull	["88", "88"], ["65", "65"], ["58", "58"]; maybe with weights too
   syms = symsFull.map {|a| a[0].to_i}
   skip3 = false
-  if !syms.include? Three
-    # Three-free, so echo all arcs.
-  else
+  if syms.include? Three
     syms -= [Three]
-    if syms.empty?
-      # Empty, so echo all arcs.
-    else
-      # Non-#3 phones.
-      numVowels = (syms & Nonconsonants).size
-      # numConsonants = syms.size-numVowels
-      # puts "#{numVowels} vowels and #{numConsonants} consonants in #{syms.map{|i| $phones[i]}}."
-      if numVowels == 0
-	#puts "Suppress #3 because all-consonant #{syms.map{|i| $phones[i]}}."
-	skip3 = true
-      else
-	#puts "Vowels in #{syms.map{|i| $phones[i]}}, so echo all arcs."
-      end
-    end
+    # Skip the #3 arc if syms had only consonants (but wasn't empty).
+    skip3 = !syms.empty? && (syms & Nonconsonants).empty?
   end
   symsFull.each {|a|
-#   puts "dude #{a} #{a[0].to_i}" if skip3
     next if skip3 && a[0].to_i == Three
     puts "#{states[0]}\t#{states[1]}\t#{a.join(' ')}"
   }
