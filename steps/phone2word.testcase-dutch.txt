@@ -1,0 +1,83 @@
+rizzo.ifp.uiuc.edu:
+ /ws/rz-cl-2/hasegawa/amitdas/corpus/ws15-pt-data/data/audio/
+  data/batchfiles/DT/batchfile has URLs www.ifp.illinois.edu/~pjyothi/mfiles/ws15/dutch/part-1/dutch_140917_361300-3.mp3, vanished from webserver.
+ /ws/rz-cl-2/hasegawa/amitdas/corpus/ws15-pt-data/data/transcripts/matched/
+  Corrected by Camille from SBS transcribers, from dutch_140917_361300-*.wav:
+  dutch_140917_361300-2.txt
+  dutch_140917_361300-3.txt
+  dutch_140917_361300-4.txt
+  dutch_140917_361300-5.txt
+    vele misdrijven, en die deze week zijn verzoek tot euthanasie zag ingewilligd. Het is
+    voor het eerst dat een euthanasieverzoek van een Belgische gevangene is goedgekeurd. Van den Bleke meent
+    dat hij een gevaar is voor de samenleving. Ook vindt hij dat hij in de Belgische cel nooit de jui-
+
+From those, groundtruth scrips of each clip:
+
+part-1-2 vele misdrijven
+part-2-2 en die deze week zijn verzoek
+part-3-2 tot euthanasie zag in-
+part-4-2 -ngewilligd het is
+part-1-3 voor het eerst dat een euthanasiever-
+part-2-3 -zoek van een belgische gevangene
+part-3-3 is goedgekeurd
+part-4-3 van den bleke meent
+part-1-4 dat hij een gevaar is voor de
+part-2-4 samenleving
+part-3-4 ook vindt hij dat hij in de bel-
+part-4-4 -gische cel nooit de jui-
+
+grep dutch_140917_361300 ~/l/PTgen/mcasr/stage1-sbs.txt | disassemble.rb 
+13 oʊ ɹ m ɪ s d ɹ ɑɪ v ɚ # w ɛ l m ɪ s d ɹ ɑɪ v ɚ # v ɚ l æ m ɪ s t i ɑɪ f ʊ ɹ # f oʊ ɹ m s k l ɛ v ɚ # f l æ n m ɪ s t d ɹ ɪ v ɚ # m ɪ s d ɹ ɑɪ v ɚ # f ɛ m ɛ s t ɹ i z ɚ # b ɑ m ɪ s d ɹ ɑɪ v ɚ # v n m ɪ s d ɹ i v ə # t l ɛ m ɪ s d ɹ ɑɪ v ɚ
+1 ɛ n d i d ɑɪ z i z v ʌ ʃ u k # ɛ d ɪ d ɹ ɪ s v ɪ s ei n m ɪ ʃ u k # æ n d i z d ɑɪ z v ə ɹ i ɪ k s ɪ t ɪ f l ʃ u k # ɛ n d ɑɪ z v h ɑɪ z ɪ g s ɪ ŋ f æ ʒ ʊ g # ɪ n d i v ei s u w ɑɪ z ɛ v æ n ʃ u k # ɪ n d ɪ d ɛ z w ɛ g z ei n f ə ɹ dʒ ʊ k # æ n d ei d ei s w ei k s ɪ m f ɑ ʒ ʊ k # æ n d i d ɑɪ z v ɑɪ g æ n d f oʊ ɹ ʃ u k # ɛ n d ɑɪ d ɑɪ z v ɑɪ z ei n ʃ æ f ɑ ʃ u # ɪ n d ei d ɑɪ z m ɑɪ k t ei m f oʊ ɹ d ei z u k
+1 h ɑ g t u t ei g ʒ ɪ n s h ei n ei n # d ei t l t ə n æ s i s ei k ɪ m # t oʊ t ɔ t n z ei ʒ ɑɪ z h ei n # ɛ t oʊ l t d n ə n æ dʒ ɪ z ei n # s t u k ɑɪ t ɪ t n æ ʃ ɑɪ z ei n # ɪ t g oʊ z ɑ t ə n ei z ɪ g z ei dʒ ɪ ŋ k # s t u f oʊ f ɛ n ə z ɑɪ z u k n ə # θ u l θ ei n æ s i ʃ ei n # t oʊ t ɔ t n ə dʒ i dʒ ɛ n t # t oʊ l d n d ei p i t s ə
+9 ei v ɪ l æ θ h æ t ɪ k # h æ v ɛ l æ s æ t ɪ ʃ # h æ v ɪ l æ θ ei v ɪ k # ɪ t s v ɪ l æ s θ ei t ɪ ʃ # j u ɪ l æ t # n u v ɪ l i t # ɛ v ə ɹ i l æ s t ei t j u # ɪ v ɪ l ə θ ei t i ʃ # n ɛ v i l u t ei v ɪ ʃ # d ei v ɪ l ɪ θ ei t ɪ ʃ
+13 oʊ ɹ d ɛ ɹ u t æ f ɹ oʊ z i n # f oʊ ɹ ɪ t ɪ ʃ ɑ ɹ ə n oʊ t ə m oʊ z i t # f j u t i ɚ ʃ ʌ l t ə n l t ə n ɑ k z i # f oʊ ɹ t i ɚ ʃ ei t n d ɔ t ɪ n d æ s i # f ɔ ɹ i z d oʊ n n s i # h i ɹ ɪ s oʊ n æ t z i # f oʊ ɹ t ə ɹ ɛ tʃ ei p ɑ ɹ f i # p oʊ ɹ t ə ɹ s t ɪ t s ə n l t æ m æ t s i # f oʊ ɹ ɛ z ɪ k ʃ t n d ɛ m t ɹ v ə dʒ ɛ n # f oʊ ɹ oʊ s æ s t i ə m æ s t æ s i
+64 u k f ɹ æ m ɪ b ɛ l z ʃ ɪ f ʊ ŋ # ʃ ʌ ʊ k f ɑɪ n ə b ɛ l p ɪ s ɛ f ɑɪ n n # ʃ u k f ɹ æ m d ə b ɛ l h ɛ ʃ oʊ l d æ s w ʌ ŋ g ə # ʃ u k f æ n ei v i b ɛ l h ɛ s ʌ g æ f æ ŋ n # ʃ u k ɪ f l n v ɑɪ l k u s u d ɪ f ɑɪ n u # ʃ ʊ g f ə ɹ d ei m b ɛ l h ʌ ʃ ʌ ŋ g æ f æ ŋ n # dʒ ʊ k f ɹ æ m d ə b ɛ l h ɛ ɹ æ f ei n ə # ʃ u k f ɹ æ m d ə b ɛ l h ɑɪ z f ɚ ɹ m ɛ n t # ʃ u k f ɑ n n b ɛ l h ɑɪ z i v ʌ f j u n ʌ n # ʃ u k f ɹ ə m ə b ɛ l t ʃ u t æ m i h ei
+22 ə w ɛ s u t ei g æ t # n ei t j ɛ θ oʊ l θ ə ɹ dʒ ə ɹ d # n æ s ɪ ʃ u t u b ɚ ɹ d # l ei ʃ oʊ t æ g d # n h ɑɪ z u t u d k s ɑ ɹ ɪ d # d ei t ɪ ʃ ei t ɪ dʒ ə ɹ t # n ɛ ʃ oʊ t ɪ k ʊ ɹ ɛ t # n ei ʃ ei d h j u θ k ɪ θ # n ɑɪ ʃ ɑ t ɛ g ɹ d # d ei t ɪ ʃ oʊ l i g ɑ ɹ d
+1 f ɔ ɹ m ɛ n b l ei k h æ m ei n # f ɹ æ m d ə b l ɑɪ k ɝ ɹ m ɑɪ d # f oʊ l ə m b l ei k ə m i # f ʌ n d ɛ m b l ɪ k b l ɪ m # f n l ei k i # f ɹ n n b l ɛ b l # f ɹ æ m d ə b l æ ŋ k æ t m ei t # f ɑ m d ə b l ei k ə m i # f ɔ d ɛ m b l ɑɪ k m i # f l æ n b l ɑɪ k æ n d m i
+27 t ɪ l t æ ŋ k f ɔ ɹ f ɑ ɹ ɑɪ ə s # s t ɪ l t ei n i f oʊ ɹ f ɑɪ ə ɹ ɪ s # s t ɪ l t æ ŋ f ʊ f ɑɪ ə ɹ ɑɪ ʃ f l ɛ t # s t ɪ l t ei n d f oʊ ɹ f ɑɪ ə ɹ j u z ə f ɪ t # s ɪ ʃ n ɛ h æ f l ɪ l ɛ ʃ # p ei n f oʊ ɹ f ɑɪ ə ɹ ɪ t s # s t ɹ ei t ɑɪ n æ s f ɚ ɹ ɪ n # s t l t ei tʃ æ f ɑ ɹ ɪ ʃ w ɪ l i # s t i l t ɹ ei n d æ f i ɪ s t # æ s t ɪ ɹ p æ m æ s i
+27 æ m ɪ l ei v ɪ ŋ # s æ m ə ɹ l i v ɪ ŋ # s æ m l ei w ɪ n # s ɑ m ʌ l i v ɪ ŋ # s æ m oʊ l ei v ɪ ŋ # s æ m l ɑɪ v ɛ n # ʃ æ m l ei v i # s æ m l i v ɪ ŋ # s æ m l ɛ v ɪ n # s æ m l ɑɪ v i n
+1 oʊ f ei h ei d l d i b ɛ l # æ l f æ n d h ɑɪ d l ɛ t ei i m d ə b ɛ f # oʊ f i θ ɑɪ d l t ɑɪ ɪ n d b ɛ l t # ɑ f ɪ t ɪ d l t ɪ d ɛ v oʊ # oʊ f ei n d ɪ t n t ɛ ɹ ɪ v l t # oʊ f ɪ n t ei t l θ ɪ ŋ d ə b ɛ l t # ɑ f ɛ n t ei g ɛ n t ə b ɛ l # oʊ k i n h ei d b ɛ θ b ɛ θ # ɔ f ɛ n t ɑɪ n g l d ɪ v l # oʊ k h æ n d h æ f b ɛ l
+42 tʃ ɛ l n ɑ θ d i # ɑ k s oʊ s ɛ l n æ t d i ə # ɑ k s ə s ɛ l n ɔi d z d i oʊ # ɑ k s æ s ɛ f n i n ɔi z n h ɑɪ ɪ f # oʊ s ɛ l n oʊ dʒ # oʊ k s ɛ s ɛ l d i ɑɪ t n # ɑ k s d æ s t ɑɪ l n ɔi z d ɑ ɹ t # ɑ k s d ə s ɛ l n ɔi t s d i oʊ # æ k ʌ s ɛ l n ɑ ɹ t d i ei ɪ t # ɑ k s ə s ɛ l n ɔi z d ɑɪ ɚ
+
+~/l/PTgen/Exp/dutch/transcripts.txt (built by mcasr; how related to ~/l/PTgen/mcasr/stage1-sbs.txt?):
+f o a r m i s d r Y v e r#w e l l m i s d r Y v e r#v e r l a m i s t i e i f u r h#f o a r m s k l e v e r#f a l a n m i s t d r i v e r#m i s d r Y v e r#f e h m e s t r i e s e r#b a l m i s d r Y v e r#v e n m i s d r y v a#t e l e m i s d r Y v e r
+e n d E d Y z i e s v u h S u k#e d d i d r i s v i s Y n m i S u k#a n d d E z d e y z v e r E e x c i t e f u l S u k#e n d d Y z v h e y z i g s i n g f a Z U g#i n d E v Y s u w w i z e v a n S u k e#i n d i d e z w e g s Y n f e r j U k#a n d d a d Y s w a k s i m f a j U k#a n d d E d e y z v e y g a n d f o a r S u k#e h n d e i d e i z v e i g s Y n S a f o S u#i n d a d e y z m e y k t Y m f o a r d a z u k
+h o G t o u t a e h Z i n s Z a e h n e i n#d a t a l t a n a s E s a k i m#t o t O t a n z a Z i Z a i n#e h t o l t d a n n a h n a d z i z z a e y n#s t u k e i t i t n a S i z a i h n#i t g o z O t i n a z i g z a g i n g k#s t u f o w f e n a z i z u k e n a#T U e l T a n a s E S a i n#t o a t O t a n n a j E j a e n t#t o l d a n d a p E t s a
+d a v i l l a T h a t i C#h a v e l l a s a t t i S#h a v i l a t h a v i C e#i t s v i l l a s t h a t i S#e w i l a t#n u v i l l e e t t e#e v e r E l a s t a t y u w#i v i l l a h t h a t E S#n e v E l u t a v i S#d a v i l l i t h a t i S
+f o a r d e h r o u t a f r o z i n e#f o a r i t i S o r a n o a t o m o s E t#f u t E r S u l t e n e l t a n a h z E#f o a r t E r S a t a n d O t i n d a s E#f o r e s e d o n e n s i#h E r i s o h n a t z E#f o a r t e r e t C a p a r f E#p o a r t e r s t e t s a n a l t a m a t s i#f o a r e s i c S t e n d e m t r Y o h v a j e n#f o a r o s a s t i a m a s t a s i
+S u k f r a m m y b e l z S i f u h n g u h#S U o k f i n a b e l p E s s e f i n a n#S u k f r a m d a b e l h e S o u l d a s w u n g a#S u k f a n n a v b e l l h e s u g a f a n g e n#S u k e f u l o n v e y l k u w s u d e f i n u h#S U g f e r d Y m b e l h u S u n g a f a n g e n#j U k f r a m d a b e l h e r a f Y n a h#S u k f r a m d a b e l h i z f i r m e n t#S u k f a n a n b e l h i e s E v u f u n u n#S u k f r o m a b e l t S u g t a m m y h Y
+n O e s o u t Y g a t#n a t y e t h o l t h e r g e r d#n a s i s h u w t u w b i r d#l a i s h o t a g u d#n e h i z u t u d c s a r e d#d a t i s h a t a g e r t#n a e s h o t i k U r e t#n a i s h a d h u T k e T#n e i s s h O t t e h g u r d#d a t i s h o l E g a r d
+f o r m e n b l a k e h a m Y n#f r a m d a b l e y k e r m e y d#f o l u m b l Y k a m e y#f u n d e m b l y k e b l i m e#f o n l e j k i#f r o n n e n b l e h b l e#f r a m d a b l a n g k a t m e y t#f o m d a b l Y k a m e y#f a u d e m b l e i G k e h m e y#f a l a n b l e y k a n d m e y
+s t i l t a n g k f o r f a r y a s e#s t i l t Y n E f o a r f Y e r i s#s t i l t a n g f u h f Y e r y e S f u l e t#s t i l t Y n e d f o a r f Y e r y u w s o f i t#s i t i n e h h a f l i l e S#p e y n f o a r f Y e r i t s#s t r a t e i n a s f i r y n#s t e l t Y C a f a r i S w i l i#s t E l t r e y n d a f E i s t#a s t i r p a m a s i
+s a m i l a v i n g#s a m e r l E v i n g#s a m l e j w i n#s a h m u h l e y v E n g#s a m o h l Y v i n g#s a m a l e i h v e h n#S a m a l Y v E#s a m a l e y v i n g#s a m a l e v i n#s a m l Y v E n
+o h f e Y h Y d a l d e y b e l#a l f a n d h i d l e t Y i m d a b e l f#a u f f E t h e i d l t y i n d e b e l t#o f i t i d a l t i d e h v o#o w f Y n d h i t e n t Y r i v e l t#o a f i n t Y t a l T i n g d a b e l t#o f e n t Y g a e n t a b e l#o k E n h Y d b e T b e T#a u f e n t Y e n g a l d e v e l#o k h a n d h a f b e l
+o c c e l l n o T d i#o x s o s e l n a t d E a#o x a s e l n o i d s d i o#o k s a s e l f n e n o i s e n h i e f#o h s e l n o j#o k s e s e l d e e y t n e#o x d a s t e y l n o y z d a a r t#o x d u s e l n o i t s d e o h#a C u s s e l n o r t d E e y e t#o x a s e l n o y z d i r
+
+Non-mcasr transcripts.txt (in many dirs):
+f o r m i s d r i v e r#w e l l m i s s d r i v e r#v e r l a m i s t i e i f u r h#f o r m s c l e v e r#f a l l e n m i s t d r i v e r#m i s s d r i v e r#f e h m e s t r i e s e r#b a l m i s d r i v e r#v e n m i s d r y v a#t e l e m i s d r i v e r
+e n d E d i e z i e s v u h S U k#e d d i d r i s v i s i g n m i S U k#a n d T e s e d Y s v e r y e x c i t e f u l S U k#e n d e d Y z v h e y z i g s i n g f a Z U g#i n d y v Y s U w i z e v a n S u k e#i n d i d e z w e g s e i n f u r j U k#a n d T e d i c e w a x i m f a j U k#a n d T E d Y s v a g u e a n d f o r S U k#e h n d e i d e i z v e i g s e i n S a f o S u#i n T e d Y s m a k e t i m e f o r T e z U k
+h o G t o u t a e h Z i n s Z a e h n e i n#d o t a l t a n a s i e s o k i m#t o t e o u t t e n z a Z i Z a i n#e h t o l t d a n n a h n a d z i z z a e y n#s t u k e i t i t n a S i z a i h n#i t g o e s o u t i n a z i g z a g i n k#s t u f o w f e n a z i z u k e n a#T U e l T a n a s E S a i n#t a u t a u t e n n a j E j a e n t#t o l d a n d a p i z z a
+T e v i l l a T h a t i C#h a v e l l a s a t t i S#h a v i l a t h a v i C e#i t s v i l l a s t h a t i S#e w i l a t#n u v i l l e h e t t e#e v e r y l a s t a t y o u#i v i l l a h t h a t E S#n e v E l u t a v i S#T e v i l l i t h a t i S
+f o r d e h r o u t a f r o z i n e#f o r i t i S o r a n a u t o m o s e a t#f U t e a r S u l t e n e l t a n a h z E#f o r t e a r S o t a n d o u t i n T e s e a#f o r e s e d o n e n s i#h e r e i s o h n u t z E#f o r t e r e t C a p a r f E#p o r t Y r s t e t s o n a l t a m a t s i#f o r e s i c S t e n d e m t r i o h v a j e n n#f o r o s a s t i a m a s t a s i
+S U k f r o m m y b e l l s S i f u h n g u h#S U o k f i n a b e l l p i e c e s e f i n a n#S U k f r o m T e b e l l h e S o u l d a s w u n g a#S U k f u n n a v b e l l h e s u g a f u n g e n#S u k e f u l l o n v e i l c U s u d e f i n u h#S U g f u r d i m e b e l l h u S u n g a f a n g e n#j U k f r o m T e b e l l h e r e f i n e a h#S U k f r o m T e b e l l h i s f i r m e n t#S u k f u n a n b e l l h i e s i e v u f u n u n#S U k f r o m a b e l t S u g t o m m y h i G
+n o w e s o u t Y g u t#n o t y e t h o l t h e r g e r d#n a s i s h u t u b e a r d#l a i s h o t a g U d#n e h i s u t u d c s a r e d#T a t i s h o t a g e r t#n a h e s h o t i k U r e t#n a h i s h u d h u T k e T#n e i s s h o u t t e h g u r d#T a t i s h o l y g u a r d
+f o r m e n b l a k e h a m Y n#f r o m T e b l a k e r m Y d#f o l u m b l Y k a m a e#f u n d e m b l y k e b l i m e#f o n e l e j k i#f r o n n e n b l e h b l e#f r o m T e b l a n k e t m a t e#f o m d a b l Y k a m Y#f a u d e m b l e i G k e h m Y#f a l l e n b l a k e a n d m Y
+s t i l l t a n k f o r f a r y a s e#s t i l l t i n y f o r f i r e i s#s t i l l t a n g f u h f i r e y e S f u l e t#s t i l l t Y n e d f o r f i r e u s e o f i t#s i t i n e h h a f l i l e S#p Y n f o r f i r e i t s#s t r a t e i n a s f i r y n#s t e l t Y C a f a r i S w i l i#s t e i l t r Y n d a f i e s t#a s t i r p a m a s i
+s a m i l a v i n g#s a m e r l e a v i n g#s a m l e j w i n#s a h m u h l Y v E n g#s a m o h l Y v i n g#s a m a l e i h v e h n#S a m a l Y v E#s a m a l Y v i n g#s a m a l e v i n#s a m l Y v E n
+o h f e Y h e i d e l d e y b e l#a l f u n d h i d l e t i e i m d a b e l f#a u f f E t h e i d l t y i n d e b e l t#o f i t i d a l t i d e h v o#o w f i n d h i t e n t Y r i v e l t#o f f i n t i t l e T i n g T e b e l t#o f e n t Y g a e n t a b e l l#o k E n h Y d b e T b e T#a u f e n t Y e n g e l d e v e l#o a k h a n d h a l f b e l l
+o c c e l l n o T d i#o x s o s e l l n o t d i a#o x a s e l l n o i d s d i o#o k s a s e l f n e n o i s e n h i e f#o h s e l n o j#o k s e s e l l d e e i G t n e#o x T e s t a l e n o i s e T e a r t#o x d u s e l l n o i t s d e o h#a C u s s e l l n o r t d E e y e t#o x a s e l l n o i s e d e a r
+
+Scrips from original batchfile, from ~/l/mcasr/s5c/scrips-ws15/dutch_140917_361300-0[345].txt:
+foot ear shulten el tanahzee # for esicsht en dem tri oh va jenn # for it ish or an auto mo seat # for os asti amastasi # ford ehr outa frozine # foresedonen si # fort ear shot and out in the sea # fort eretch aparfee # here is oh nut [uh] zee. # port air stetson alta matsi
+jook from the bell he refine ah # shoog fur dime bell hu shunga fangen # shook fro ma belt shug tom my high # shook from my bells shifuhnguh # shook from the bell he shoulda swunga # shook from the bell his firment # shook fun na vbell he suga fung en # shoook fi na bell piece se finan # shuk fun an bell hie sie vu funun # shuke full on veil coo sudefinuh
+la is hota good # nah es hoti kooret # nah is hud huthketh # nas is hutu beard # ne his utudcsared # ne iss hout teh gurd # not yet holt her gerd # now es outay gut # that is holy guard # that is hot a gert
+[inhale] fom da blayka may # fallen blake and may # fau dem bleigh keh may # folum blayka mae # fone lejki # formenblake hamain # from the blaker maid # from the blanket mate # fron nen bl eh ble # fundembly ke blime
+astir pam asi # pain for fire it's. # si tineh ha flilesh # steil train da fiest. # steltay chafarish wili # still tained for fire use of it # still tang fuh fire yesh fulet # still tank forfaryase # still tiny for fire is # stratein asfiryn
+sah muh lay veeng # sam lejwin # sam oh layving # sama lay ving # sama leih vehn # sama levin # samer leaving # samilaving # samlaiveen # shamalayvee
+alf und hidle tie im da belf # auf feet heidl tyin de belt # aufen tai engel de vel # oak hand half bell # ofen taiga enta bell # off in title thing the belt # ofitidal tideh vo # ohfeay heidel dey bel # okeen hai d beth beth # ow find hiten tair ivelt
+achus sell nort dee eyet # occellnoth d.i. # ocksa self ne noisenhief # oh selnoj # ok se sell de eight ne # ox a sell noise dear. # ox du sell noits de oh # ox so sell not dia # ox the stale noise the art # oxa sell noids dio
+as kosta ambohamas # descen trap un deva tondem # doesn't hat ohna buhana # esot khat on bahonla # hat uno [buh] hut oh. # is as a trout on the baham. # osso sat obahono # ozut frat on de behundit # there's a trout on the bahama. # tosa kraut aposen
+eenkaffa funada deep sheefon # ein fau faw hafa na die sie hawn # ifra chofon inadi psycol # in from fohavin a deep sea # in ver vonner dach na h van diefer # infala family deep sea fo # ing fa fafong in a deep sea hone # ing fau ha faun na na ingfoo # ing fo fu fah nuh dee chree fum # inwa wanama
+alf shif a problam ihavea # auh ish her purblay meh heveh # avush uh pooblaim ahava # gosh but blame a heaven # o hisha probley henna # ofa shupa problema heva # office blame heather # officer problema havea # ogis su problem if heavan # roh probleme heaven
+falls from the blade # falls onthablake # fo lo son ne ble # focus on the blaze # fohe blej # for so blake # forhus no vem blaich # four holds from the blake # four hunts from ze blade # fowals from the blakes
