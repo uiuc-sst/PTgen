@@ -136,8 +136,8 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
     # Copies preprocessed transcripts from crowd workers.
     # Reads one of the files $SCRIPTPATH/mcasr/*.txt.
     [ ! -z $INCIDENT_LANG ] || { >&2 echo "No variable INCIDENT_LANG in file '$1'."; exit 1; }
-    [ -s $SCRIPTPATH/mcasr/stage1-$INCIDENT_LANG.txt ] || { >&2 echo "Missing or empty file $SCRIPTPATH/mcasr/stage1-$INCIDENT_LANG.txt. Check $1."; exit 1; }
-    mkdir -p $(dirname $transcripts)
+    [ -s $SCRIPTPATH/mcasr/stage1-$INCIDENT_LANG.txt ] || { >&2 echo "Missing or empty MCASR-output file $SCRIPTPATH/mcasr/stage1-$INCIDENT_LANG.txt. Check $1."; exit 1; }
+    mkdir -p $(dirname $transcripts) $LISTDIR/$LANG_CODE
     ln -fs $SCRIPTPATH/mcasr/stage1-$INCIDENT_LANG.txt $transcripts
     echo "Stage 1 using transcripts $SCRIPTPATH/mcasr/stage1-$INCIDENT_LANG.txt."
     rm -f $LISTDIR/$LANG_CODE/{train,adapt,test,eval}*
@@ -154,6 +154,8 @@ if [[ $startstage -le $stage && $stage -le $endstage ]]; then
       # Use all uttids for both train and "eval" (100%/100% split.)
       # Evaluation for WER uses something different, a set of native transcriptions.
       sed 's/:.*//' $transcripts | sort -u | shuf > $LISTDIR/$LANG_CODE/train
+#     sed 's/:.*//' $transcripts | sort -u | grep -e UZB_001_002 > $LISTDIR/$LANG_CODE/train		# apply-uzb testcase
+#     sed 's/:.*//' $transcripts | sort -u | grep -e "dutch_140917_361300-0[2345]" > $LISTDIR/$LANG_CODE/train	# apply-dut testcase
       cp $LISTDIR/$LANG_CODE/train $LISTDIR/$LANG_CODE/test
     fi
 
