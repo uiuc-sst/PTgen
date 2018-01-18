@@ -10,17 +10,21 @@ rizzo.ifp.uiuc.edu:
     vele misdrijven, en die deze week zijn verzoek tot euthanasie zag ingewilligd. Het is
     voor het eerst dat een euthanasieverzoek van een Belgische gevangene is goedgekeurd. Van den Bleke meent
     dat hij een gevaar is voor de samenleving. Ook vindt hij dat hij in de Belgische cel nooit de jui-
+  Corrected by excerpts from https://nos.nl/artikel/698623-euthanasie-voor-moordenaar-belgie.html:
+    ... [seksu-]ele misdrijven ... Het is
+    voor het eerst dat een euthanasieverzoek van een Belgische gevangene is goedgekeurd.  Van Den Bleeken meent
+    dat hij een gevaar is voor de samenleving. Ook vindt hij dat hij in de Belgische cel nooit de goe-[de]
 
 From those, groundtruth scrips of each clip:
 
-part-1-2 vele misdrijven
+part-1-2 -ele misdrijven
 part-2-2 en die deze week zijn verzoek
 part-3-2 tot euthanasie zag in-
 part-4-2 -ngewilligd het is
 part-1-3 voor het eerst dat een euthanasiever-
 part-2-3 -zoek van een belgische gevangene
 part-3-3 is goedgekeurd
-part-4-3 van den bleke meent
+part-4-3 van den bleeke meent
 part-1-4 dat hij een gevaar is voor de
 part-2-4 samenleving
 part-3-4 ook vindt hij dat hij in de bel-
