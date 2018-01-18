@@ -10,17 +10,19 @@ rizzo.ifp.uiuc.edu:
     vele misdrijven, en die deze week zijn verzoek tot euthanasie zag ingewilligd. Het is
     voor het eerst dat een euthanasieverzoek van een Belgische gevangene is goedgekeurd. Van den Bleke meent
     dat hij een gevaar is voor de samenleving. Ook vindt hij dat hij in de Belgische cel nooit de jui-
+    als het gaat om de behandeling van gevangenen die psychologische problemen hebben. Volgens Van den Bleke
   Corrected by excerpts from https://nos.nl/artikel/698623-euthanasie-voor-moordenaar-belgie.html:
-    ... [seksu-]ele misdrijven ... Het is
-    voor het eerst dat een euthanasieverzoek van een Belgische gevangene is goedgekeurd.  Van Den Bleeken meent
-    dat hij een gevaar is voor de samenleving. Ook vindt hij dat hij in de Belgische cel nooit de goe-[de]
+    ... [seksu-]ele misdrijven, en die deze week zijn verzoek tot euthanasie zag ingewilligd. Het is
+    voor het eerst dat een euthanasieverzoek van een Belgische gevangene is goedgekeurd. Van den Bleeken meent
+    dat hij een gevaar is voor de samenleving. Ook vindt hij dat hij in de Belgische cel nooit de jui-
+    als het gaat om de behandeling van gevangenen die psychologische problemen hebben. Volgens Van den Bleek-
 
 From those, groundtruth scrips of each clip:
 
-part-1-2 -ele misdrijven
+part-1-2 vele misdrijven
 part-2-2 en die deze week zijn verzoek
 part-3-2 tot euthanasie zag in-
-part-4-2 -ngewilligd het is
+part-4-2 -gewilligd het is
 part-1-3 voor het eerst dat een euthanasiever-
 part-2-3 -zoek van een belgische gevangene
 part-3-3 is goedgekeurd
@@ -29,6 +31,7 @@ part-1-4 dat hij een gevaar is voor de
 part-2-4 samenleving
 part-3-4 ook vindt hij dat hij in de bel-
 part-4-4 -gische cel nooit de jui-
+als het gaat om de behandeling van gevangenen die psychologische problemen hebben volgens van den bleek
 
 grep dutch_140917_361300 ~/l/PTgen/mcasr/stage1-sbs.txt | disassemble.rb 
 13 oʊ ɹ m ɪ s d ɹ ɑɪ v ɚ # w ɛ l m ɪ s d ɹ ɑɪ v ɚ # v ɚ l æ m ɪ s t i ɑɪ f ʊ ɹ # f oʊ ɹ m s k l ɛ v ɚ # f l æ n m ɪ s t d ɹ ɪ v ɚ # m ɪ s d ɹ ɑɪ v ɚ # f ɛ m ɛ s t ɹ i z ɚ # b ɑ m ɪ s d ɹ ɑɪ v ɚ # v n m ɪ s d ɹ i v ə # t l ɛ m ɪ s d ɹ ɑɪ v ɚ
@@ -72,16 +75,20 @@ s a m i l a v i n g#s a m e r l e a v i n g#s a m l e j w i n#s a h m u h l Y v 
 o h f e Y h e i d e l d e y b e l#a l f u n d h i d l e t i e i m d a b e l f#a u f f E t h e i d l t y i n d e b e l t#o f i t i d a l t i d e h v o#o w f i n d h i t e n t Y r i v e l t#o f f i n t i t l e T i n g T e b e l t#o f e n t Y g a e n t a b e l l#o k E n h Y d b e T b e T#a u f e n t Y e n g e l d e v e l#o a k h a n d h a l f b e l l
 o c c e l l n o T d i#o x s o s e l l n o t d i a#o x a s e l l n o i d s d i o#o k s a s e l f n e n o i s e n h i e f#o h s e l n o j#o k s e s e l l d e e i G t n e#o x T e s t a l e n o i s e T e a r t#o x d u s e l l n o i t s d e o h#a C u s s e l l n o r t d E e y e t#o x a s e l l n o i s e d e a r
 
-Scrips from original batchfile, from ~/l/mcasr/s5c/scrips-ws15/dutch_140917_361300-0[345].txt:
-foot ear shulten el tanahzee # for esicsht en dem tri oh va jenn # for it ish or an auto mo seat # for os asti amastasi # ford ehr outa frozine # foresedonen si # fort ear shot and out in the sea # fort eretch aparfee # here is oh nut [uh] zee. # port air stetson alta matsi
+Transcripts from original batchfile, from ~/l/mcasr/s5c/scrips-ws15/dutch_140917_361300-0[2345].txt:
+balmis driver # fallen mistdriver # feh mestrieser # for mis driver # for ms clever # miss driver # telemis driver # venmis dryva # verla misti eifurh # we'll miss driver
+and the dice wax i'm fajook # and thee days vague and for shook # and these days very exciteful shook # ed di dri svi sign mi shook # ehn dei deiz veig sein sha foshu # ende daiz vhey zig sing fa zhoog # endee die zies vuh shook # in di dez wegs ein fur jook # in the days make time for the zook # indy vay soo wize van shuke
+dot alt an a sie sock im # eh tolt dannah nad zizza eyn # hoght outa ehzhinszha ehnein # it goes out in a zig zag ink # stuf owfena zizuk ena # stuk eit it na shiza ihn # taut auten na jeeja ent # thoo eltha naseesha in # told and a pizza # tote outten za zhizha in
+every last at you # ewilat # ha vel las at tish # havilat haviche # its villast hatish # ivill aht hat eesh # ne vee lut avish # nu vil leh et te # the vill it hat ish # the villath hatich
+foot ear shulten el tanahzee # for esicsht en dem tri oh va jenn # for it ish or an auto mo seat # for os asti amastasi # ford ehr outa frozine # foresedonen si # fort ear shot and out in the sea # fort eretch aparfee # here is oh nut [uh] zee # port air stetson alta matsi
 jook from the bell he refine ah # shoog fur dime bell hu shunga fangen # shook fro ma belt shug tom my high # shook from my bells shifuhnguh # shook from the bell he shoulda swunga # shook from the bell his firment # shook fun na vbell he suga fung en # shoook fi na bell piece se finan # shuk fun an bell hie sie vu funun # shuke full on veil coo sudefinuh
 la is hota good # nah es hoti kooret # nah is hud huthketh # nas is hutu beard # ne his utudcsared # ne iss hout teh gurd # not yet holt her gerd # now es outay gut # that is holy guard # that is hot a gert
 [inhale] fom da blayka may # fallen blake and may # fau dem bleigh keh may # folum blayka mae # fone lejki # formenblake hamain # from the blaker maid # from the blanket mate # fron nen bl eh ble # fundembly ke blime
-astir pam asi # pain for fire it's. # si tineh ha flilesh # steil train da fiest. # steltay chafarish wili # still tained for fire use of it # still tang fuh fire yesh fulet # still tank forfaryase # still tiny for fire is # stratein asfiryn
+astir pam asi # pain for fire it's # si tineh ha flilesh # steil train da fiest # steltay chafarish wili # still tained for fire use of it # still tang fuh fire yesh fulet # still tank forfaryase # still tiny for fire is # stratein asfiryn
 sah muh lay veeng # sam lejwin # sam oh layving # sama lay ving # sama leih vehn # sama levin # samer leaving # samilaving # samlaiveen # shamalayvee
 alf und hidle tie im da belf # auf feet heidl tyin de belt # aufen tai engel de vel # oak hand half bell # ofen taiga enta bell # off in title thing the belt # ofitidal tideh vo # ohfeay heidel dey bel # okeen hai d beth beth # ow find hiten tair ivelt
-achus sell nort dee eyet # occellnoth d.i. # ocksa self ne noisenhief # oh selnoj # ok se sell de eight ne # ox a sell noise dear. # ox du sell noits de oh # ox so sell not dia # ox the stale noise the art # oxa sell noids dio
-as kosta ambohamas # descen trap un deva tondem # doesn't hat ohna buhana # esot khat on bahonla # hat uno [buh] hut oh. # is as a trout on the baham. # osso sat obahono # ozut frat on de behundit # there's a trout on the bahama. # tosa kraut aposen
+achus sell nort dee eyet # occellnoth d.i. # ocksa self ne noisenhief # oh selnoj # ok se sell de eight ne # ox a sell noise dear # ox du sell noits de oh # ox so sell not dia # ox the stale noise the art # oxa sell noids dio
+as kosta ambohamas # descen trap un deva tondem # doesn't hat ohna buhana # esot khat on bahonla # hat uno [buh] hut oh # is as a trout on the baham # osso sat obahono # ozut frat on de behundit # there's a trout on the bahama # tosa kraut aposen
 eenkaffa funada deep sheefon # ein fau faw hafa na die sie hawn # ifra chofon inadi psycol # in from fohavin a deep sea # in ver vonner dach na h van diefer # infala family deep sea fo # ing fa fafong in a deep sea hone # ing fau ha faun na na ingfoo # ing fo fu fah nuh dee chree fum # inwa wanama
 alf shif a problam ihavea # auh ish her purblay meh heveh # avush uh pooblaim ahava # gosh but blame a heaven # o hisha probley henna # ofa shupa problema heva # office blame heather # officer problema havea # ogis su problem if heavan # roh probleme heaven
 falls from the blade # falls onthablake # fo lo son ne ble # focus on the blaze # fohe blej # for so blake # forhus no vem blaich # four holds from the blake # four hunts from ze blade # fowals from the blakes
