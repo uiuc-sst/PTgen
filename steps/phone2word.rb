@@ -48,22 +48,13 @@ else
   $endtimePrev = -1
   $uttidPrev = uttid = "bogus"
   Lines.each {|l|
-    s = l[1..-1].join(" ")				# иисусу хоста иаа
+    s = l[1..-1].join(' ')			# иисусу хоста иаа
     next if s.empty?
-    if false						# todo: find the penultimate _ and split there.
-      $uttidPrev = uttid
-      uttid = l[0][0..15]				# IL5_EVAL_019_012
-      starttime = l[0][17..-1].sub(/_.*/, '').to_i	# 101824705
-      $endtimePrev = l[0][27..-1].to_i
-    elsif false
-      uttid = l[0][0..10]				# RUS_134_004
-      starttime = l[0][12..-1].sub(/_.*/, '').to_i	# 101824705
-    else
-      # PTgen/test/apply-uzb
-      uttid = l[0][0..10]				# UZB_001_001
-      starttime = l[0][12..-1].sub(/_.*/, '').to_i	# 003320_004427 -> 003320
-      $endtimePrev = l[0][12..-1].sub(/[^_]*_/, '').to_i # 004427
-    end
+    q = l[0].split('_')
+    uttid = q[0..-3].join('_')			# dutch_140917_361300-02
+    starttime = q[-2].to_i			# 3027500
+    $endtimePrev = q[-1].to_i			# 4541250
+    # STDERR.puts uttid, starttime, $endtimePrev
 
     # Prepend SIL if this clip wasn't immediately after the previous one.
 #   s = "1 " + s if $endtimePrev >= 0 && $endtimePrev+1 < starttime	# for mcasr?
