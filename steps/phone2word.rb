@@ -93,13 +93,14 @@ begin
   # If the prondict's lines are [word SPACE spacedelimited-phones], change them to [word TAB spacedelimited-phones].
   pd.map! {|l| l =~ /\t/ ? l : l.sub(" ", "\t")}
   pd.map! {|l| l.split("\t") }
-  if true
+  if false
     require 'set'
     Shukhrat = Set.new( File.readlines("/home/camilleg/l/PTgen/test/apply-uzb/shukhrat-words-cleaned.txt") \
       .map {|l| l.chomp})
     pd.select! {|w,p| Shukhrat.include? w }
     STDERR.puts "#{File.basename $0} (#{pd.size}): keeping only Shukhrat's #{Shukhrat.size} words."
   end
+  STDERR.puts "#{File.basename $0} warning: prondict has only #{pd.size} words." if pd.size < 10
   STDERR.puts "#{File.basename $0} (#{pd.size}): culling 4-in-a-rows..."
   # Cull words with 4 or more in a row of the same letter or letter-pair ("hahahahaaaaaaa").
   # https://regex101.com/r/pJ3hJ9/1
@@ -140,6 +141,7 @@ begin
   	"ʷa","a", "[section]","eps", "[clause]","eps", "[phrase]","eps", "[semicolon]","eps", "[colon]","eps", "[preface_colon]","eps", "[question]","eps", "[paragraph]","eps",
   	]
   pd.map! {|w,p| [w, p.split(" ").map {|ph| r=Restrict[ph]; r ? r : ph}]}
+  STDERR.puts "#{File.basename $0} warning: prondict has only #{pd.size} words." if pd.size < 10
   Phones = Hash[*File.read($phoneFile).split(/\s+/)]
 
   if true
@@ -178,6 +180,7 @@ begin
   pd.map! {|w,pron| [w, pron.map {|ph| soft(Phones[ph])} .join(" ") .gsub(/\s+/, ' ') .strip] }
   STDERR.puts "#{File.basename $0}: re-deduplicating phones..."
   pd.map! {|w,pron| [w, pron.split(" ").chunk{|x|x}.map(&:first) .join(" ")]}
+  STDERR.puts "#{File.basename $0} warning: prondict has only #{pd.size} words." if pd.size < 10
 
   STDERR.puts "#{File.basename $0} (#{pd.size}): stuffing trie..."
   pd.each {|w,p| trie.add p; i += 1 }
