@@ -92,3 +92,45 @@ as kosta ambohamas # descen trap un deva tondem # doesn't hat ohna buhana # esot
 eenkaffa funada deep sheefon # ein fau faw hafa na die sie hawn # ifra chofon inadi psycol # in from fohavin a deep sea # in ver vonner dach na h van diefer # infala family deep sea fo # ing fa fafong in a deep sea hone # ing fau ha faun na na ingfoo # ing fo fu fah nuh dee chree fum # inwa wanama
 alf shif a problam ihavea # auh ish her purblay meh heveh # avush uh pooblaim ahava # gosh but blame a heaven # o hisha probley henna # ofa shupa problema heva # office blame heather # officer problema havea # ogis su problem if heavan # roh probleme heaven
 falls from the blade # falls onthablake # fo lo son ne ble # focus on the blaze # fohe blej # for so blake # forhus no vem blaich # four holds from the blake # four hunts from ze blade # fowals from the blakes
+
+Typical results of stage 15 phone2word.rb:
+Ground truth		phone2word's input		turker transcription
+
+vele			tː ɒ lː ɛə			telemis driver
+misdrijven		m ɪ sː tː dː ɻ v
+en die deze		æ n dː θ zː			and thee days vague and for shook
+week zijn		d ɛ zː
+verzoek			v ɻ ɛ kː sː eɪ tʰ dː f lː ɻ ʃ q
+tot euthanasie zag in-	ɛ tː u l t aʊ ɪ t ɪ z n ɛə d ʒ zː a n	dot alt an a sie sock im
+-gewilligd het is	h ɪ tː sː v ɪ l æ sː θ h æ tː kː	havilat haviche
+voor			f ɒ ɻ					for it ish or an auto mo seat
+het			t
+eerst			ɛə ɻ ɪ
+dat een			tː tː s n d dː æ lː t ɻ œ
+euthanasiever-		oʊ tʰ s ɛ nː
+-zoek			ʃ q				jook from the bell he refine ah
+van een			fː nː ə v θ
+belgische		bː lː h ʃ ʌ
+gevangene		l dː f m ʌ ŋ nː θ
+is goed-		ɒ zː jː sː i oʊ u t		that is hot a gert
+-gekeurd		h u b ə ɻ d
+van den			f oʊ ɻ mː ə			formenblake hamain
+bleeke			bː l q h ə
+meent			m eɪ
+dat hij een		s tː l tʰ nː q			still tiny for fire is
+gevaar			fː ɻ f ɻ
+is voor de		œ sː ɑɻ f ɪ tʰ
+samenleving		s æ m œ lː eɪ v ŋ		sah muh lay veeng
+ook vindt hij dat hij	æ lː fː nː t h t lː tː		ofen taiga enta bell
+in de			ŋ dː
+bel-			b ɛə l tː
+gische cel nooit de jui	q s dː sː ɛ lː nː ɑ d s d ə	achus sell nort dee eyet
+als het gaat om		d zː ʌ t fː ɻ p n		doesn't hat ohna buhana
+de behan-		d bː i tː nː dː ɛ tː
+-deling van gevangenen	n f ɻ mː fː oʊ fː f ɪ n		infala family deep sea fo
+die psych-		d s ɻ nː
+-ologische		ɒ lː f ʃː œ sː pʰ		alf shif a problam ihavea
+problemen		p ɻ b lː ɛ mː œ
+hebben			h v
+volgens van den		f ɑɻ ɻ hː ʌ l d zː fː ɻ m z	falls from the blade
+blee			b l eɪ d
