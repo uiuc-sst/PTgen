@@ -6,10 +6,13 @@
 # This script is split into stages.
 # See $startstage and $endstage in the settings file.
 
-# If the settings file has mcasr=1, then for each short mp3 clip this reads,
-# instead of English-letter transcripts,
-# mcasr/s5c/data/LANGUAGE/lang/phones.txt phone-string transcripts
-# computed by https://github.com/uiuc-sst/mcasr.
+# If the settings file has mcasr=1 then, for each short mp3 clip,
+# this script reads, instead of nonsense-English-word transcripts,
+# phone-string transcripts,
+# originally in data/lorelei/mcasr/s5c/data/LANGUAGE/lang/phones.txt
+# that were computed by https://github.com/uiuc-sst/mcasr,
+# copied to PTgen/mcasr/stage1-$INCIDENT_LANG.txt.
+# These phones are indices into PTgen/mcasr/phones.txt.
 
 SCRIPTPATH=$(dirname $(readlink --canonicalize-existing $0))
 SRCDIR=$SCRIPTPATH/steps
