@@ -109,28 +109,32 @@ def main():
       outfile.write("  <{label}>{value}</{label}>\n".format(label=label, value=value))
     outfile.write("  <DIRECTION>%s</DIRECTION>\n" % args.direction)
     currstart = 0
-    for ln, line in enumerate(prepfile(infile, 'r')):
-      line = line.strip()
-      segroot = ET.Element('SEGMENT')
-      xroot = ET.SubElement(segroot, 'SOURCE')
-      currend = currstart+len(line)-1
-      xroot.set('id', "{}.{}".format(fullid, ln))
-      xroot.set('start_char', str(currstart))
-      xroot.set('end_char', str(currend))
-      currstart=currend+2 # follows most widely seen convention in LDC files
-      subelements = []
-      subelements.append(("FULL_ID_SOURCE", fullid))
-      subelements.append(("ORIG_SEG_ID", "segment-{}".format(ln))) # for nistification
-      subelements.append(("ORIG_FILENAME", os.path.basename(infile))) # for nistification
-      subelements.append(("MD5_HASH_SOURCE",
-                          hashlib.md5(line.encode('utf-8')).hexdigest()))
-      subelements.append(("ORIG_RAW_SOURCE", line))
-      for key, text in subelements:
-        se = ET.SubElement(xroot, key)
-        se.text = text
-      xmlstr = ET.tostring(segroot, pretty_print=True, encoding='utf-8',
-                           xml_declaration=False).decode('utf-8')
-      outfile.write(xmlstr)
+    try:
+      for ln, line in enumerate(prepfile(infile, 'r')):
+        line = line.strip()
+        segroot = ET.Element('SEGMENT')
+        xroot = ET.SubElement(segroot, 'SOURCE')
+        currend = currstart+len(line)-1
+        xroot.set('id', "{}.{}".format(fullid, ln))
+        xroot.set('start_char', str(currstart))
+        xroot.set('end_char', str(currend))
+        currstart=currend+2 # follows most widely seen convention in LDC files
+        subelements = []
+        subelements.append(("FULL_ID_SOURCE", fullid))
+        subelements.append(("ORIG_SEG_ID", "segment-{}".format(ln))) # for nistification
+        subelements.append(("ORIG_FILENAME", os.path.basename(infile))) # for nistification
+        subelements.append(("MD5_HASH_SOURCE",
+                            hashlib.md5(line.encode('utf-8')).hexdigest()))
+        subelements.append(("ORIG_RAW_SOURCE", line))
+        for key, text in subelements:
+          se = ET.SubElement(xroot, key)
+          se.text = text
+        xmlstr = ET.tostring(segroot, pretty_print=True, encoding='utf-8',
+                             xml_declaration=False).decode('utf-8')
+        outfile.write(xmlstr)
+    except:
+      sys.stderr.write("{} had a problem.\n".format(infile))
+      # For Tagalog, fix this problem by filtering the input with sed -e 's/Ñ/N/g'.
     outfile.write("</DOCUMENT>\n")
   outfile.write("</ELISA_LRLP_CORPUS>\n")
 
