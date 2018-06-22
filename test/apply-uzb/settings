@@ -12,6 +12,7 @@ INCIDENT_LANG=UZB
 TESTTYPE=eval
 LANG_CODE=UZB # Used by stage 1, and stage 15's hyp2jonmay.rb.
 DATE_USC=20171110 # yyyymmdd.  Used by stage 15's hyp2jonmay.rb.
+jonmayVersion=1 # Used by stage 15's hyp2jonmay.rb.
 
 # Input test DATA and output EXPeriment results.
 DATA=data

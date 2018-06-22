@@ -11,7 +11,9 @@ if [[ -n $mcasr ]]; then
   [ ! -z $LANG_CODE ] || { >&2 echo "$0: no variable LANG_CODE in file '$1'. Aborting."; exit 1; }
   [ ! -z $DATE_USC ] || { >&2 echo "$0: no variable DATE_USC in file '$1'. Aborting."; exit 1; }
   [ ! -z $pronlex ] || { >&2 echo "$0: no variable pronlex in file '$1'. Aborting."; exit 1; }
+  [ ! -z $jonmayVersion ] || { >&2 echo "$0: no variable jonmayVersion in file '$1'. Aborting."; exit 1; }
   [ -s $pronlex ] || { >&2 echo "$0: missing or empty '$pronlex', pronlex in file '$1'. Aborting."; exit 1; }
+  [ -s $jonmayVersion ] || { >&2 echo "$0: missing or empty '$jonmayVersion', jonmayVersion in file '$1'. Aborting."; exit 1; }
 fi
 if [[ -n $evaloracle ]]; then
   hash compute-wer 2>/dev/null || { >&2 echo "$0: missing program compute-wer. Aborting."; exit 1; }
@@ -110,7 +112,9 @@ if [[ -n $mcasr ]]; then
   jonmay=${hypfile}.restitched.txt
   # It's ok for $mtvocab to be unset.
   sort -n < $hypfile | tee $hypfile.phones | phone2word.rb $pronlex $mtvocab > $jonmay
-  hyp2jonmay.rb ${hypfile}.jonmay.dir $LANG_CODE $DATE_USC $EXPLOCAL < $jonmay
+  hyp2jonmay.rb ${hypfile}.jonmay.dir $LANG_CODE $DATE_USC $EXPLOCAL $jonmayVersion < $jonmay
+  # Increment this before each sftp.
+  # Todo: read this from settings file, via ARGV.
 fi
 set +e
 #fi #;;;;
