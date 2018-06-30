@@ -38,12 +38,17 @@ clips = Hash.new {|h,k| h[k] = []} # Map each clip-name to an array of transcrip
 
 ARGF.readlines .map {|l| l.split} .each {|l|
   name = l[0]
-  # IL5_EVAL_001_001_000000000_001238265_003 (MCASR), or
-  # IL5_EVAL_001_001-0-1238265 (Tigrinya alignments from Babel phone set), or
-  # IL5_EVAL_001_001-11144400-12382665-10 (Tigrinya ali, 10-best).
+  # Possibilities:
+  # IL5_EVAL_001_001_000000000_001238265_003 (MCASR)
+  # IL5_EVAL_001_001-0-1238265 (Tigrinya alignments from Babel phone set)
+  # IL5_EVAL_001_001-11144400-12382665-10 (Tigrinya ali, 10-best)
+  # TGL_EVAL_082_014 (brno-phnrec from asr24)
+  isShort = name.size <= 17
   hasSuffix = name =~ /_[0-9][0-9][0-9]$/
   hasSuffix10 = name =~ /\-[0-9]$/ || name =~ /\-[0-9][0-9]$/ 
-  if hasSuffix
+  if isShort
+    # name == TGL_EVAL_082_014; don't change it.
+  elsif hasSuffix
     # name == IL5_EVAL_111_007_023498070_024734810_003
     name = name[0..-5]
     # name == IL5_EVAL_111_007_023498070_024734810
@@ -92,4 +97,7 @@ def iFromPhone(ph)
 end
 
 clips.map! {|name,ss| [name, ss.map {|ss| ss.map {|s| iFromPhone(s)} .join(" ")}]}
-clips.each {|name,ss| puts "#{name}:#{ss.join ' # '}" }
+
+clips.each {|name,ss| puts "#{name}:#{ss.join ' # '}" if !ss.join(' # ').empty? }
+# Omit empty transcriptions, so compute_turker_similarity doesn't see a transcriptionless utterance and abort.
+# todo: if empty, better to put a "SIL"ence transcription.
