@@ -5,10 +5,12 @@
 #
 # Usage: flat2elisa.py -h
 #
-# To install this script's prerequisites, either apt-get install python3-lxml, or pip install lxml.
+# To install this script's prerequisite "import lxml.etree",
+# either apt-get install python3-lxml, or pip install lxml.
 # (Python 3, because Python 2 has Unicode bugs.)
 #
 # Author: Jon May, ISI
+# Reviser: Camille Goudeseune, UIUC
 
 import argparse
 import sys
@@ -26,10 +28,9 @@ import tempfile
 import shutil
 import atexit
 import hashlib
-import lxml.etree as ET # pip install lxml
+import lxml.etree as ET
 
 scriptdir = os.path.dirname(os.path.abspath(__file__))
-
 reader = codecs.getreader('utf8')
 writer = codecs.getwriter('utf8')
 
@@ -77,6 +78,7 @@ def main():
   else:
     atexit.register(cleanwork)
 
+  #os.system("rm -f /tmp/ptgen-flat2elisa-problems.txt") # See below.
   outfile = prepfile(args.outfile, 'w')
   
   infilenames = []
@@ -135,6 +137,9 @@ def main():
     except:
       sys.stderr.write("{} had a problem.\n".format(infile))
       # For Tagalog, fix this problem by filtering the input with sed -e 's/Ñ/N/g'.
+      # For Swahili, sed -e "s/’/'/g".
+      # To isolate such problems, uncomment the next line, and the similar line at the top:
+      #os.system("cat " + infile + " >> /tmp/ptgen-flat2elisa-problems.txt")
     outfile.write("</DOCUMENT>\n")
   outfile.write("</ELISA_LRLP_CORPUS>\n")
 
