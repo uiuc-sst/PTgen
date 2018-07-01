@@ -34,7 +34,7 @@ if ARGV.size == 2
 end
 
 # Read all of $stdin into RAM, because it's not even a few megabytes.
-Lines = $stdin.readlines.map {|l| l.split /\s/}
+Lines = $stdin.set_encoding(Encoding::UTF_8).readlines.map {|l| l.split /\s/}
 
 if Lines[0][0].size < 20
   # Don't restitch.  Build $scrips directly from each l.  l[0] == "uzbek_019_006"
@@ -80,7 +80,7 @@ i = 0
 
 STDERR.puts "#{File.basename $0}: reading prondict #{Prondict}..."
 begin
-  pd = File.readlines(Prondict) .map {|l| l.chomp.strip }
+  pd = File.readlines(Prondict, :encoding => 'utf-8') .map {|l| l.chomp.strip }
   # If the prondict's lines are [word SPACE spacedelimited-phones], change them to [word TAB spacedelimited-phones].
   pd.map! {|l| l =~ /\t/ ? l : l.sub(" ", "\t")}
   pd.map! {|l| l.split("\t") }
@@ -133,7 +133,7 @@ begin
   	]
   pd.map! {|w,p| [w, p.split(" ").map {|ph| r=Restrict[ph]; r ? r : ph}]}
   STDERR.puts "#{File.basename $0} warning: prondict has only #{pd.size} words." if pd.size < 10
-  Phones = Hash[*File.read($phoneFile).split(/\s+/)]
+  Phones = Hash[*File.read($phoneFile, :encoding => 'utf-8').split(/\s+/)]
 
   if true
     # Soft match, like https://en.wikipedia.org/wiki/Soundex.
