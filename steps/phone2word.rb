@@ -210,7 +210,7 @@ h.each {|pron,words|
 h = hNew
 # Now trie has all the pronunciations, and h has all the homonyms.
 
-File.open("/tmp/prondict-reconstituted-uzb.txt", "w") {|f| h.each {|pron,words| f.puts "#{pron}\t\t#{words.join(' ')}"} }
+File.open("/tmp/prondict-reconstituted.txt", "w") {|f| h.each {|pron,words| f.puts "#{pron}\t\t#{words.join(' ')}"} }
 
 STDERR.puts "#{File.basename $0}: Converting utterance transcriptions from phones to words..."
 # Output the restitched and phone2word'ed transcriptions.
@@ -287,7 +287,7 @@ $scrips.each {|uttid,phones|
     STDERR.puts "#$0: failed to soft(#{bar}). Crash imminent." if !zip
     prefixPrev = prefix.rstrip
     prefix += zip + " "
-    STDERR.puts "\t\t\tFound #{foo} = #{zip}."
+#   STDERR.puts "\t\t\tFound #{foo} = #{zip}."
     if trie.has_children?(prefix.rstrip)
 =begin
       # HACK to choose more words with just 2 to 4 phones (for Tigrinya):
@@ -352,7 +352,7 @@ $scrips.each {|uttid,phones|
       # Trie has no word starting with prefixPrev.  Skip this phone.
       # Resume searching, one phone past that skipped phone.
       STDERR.puts "Skipped #{phones[iStart]}."
-      print "#{phones[iStart]}_ " # debug
+      #print "#{phones[iStart]}_ " # debug (but this breaks everything downstream!)
       iStart = i = iStart+1
     end
     prefix = ""
