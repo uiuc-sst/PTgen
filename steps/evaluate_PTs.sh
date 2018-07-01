@@ -107,13 +107,15 @@ if [[ -n $mcasr ]]; then
   # to compute word error rate rather than phone error rate.
   >&2 echo "Converting $hypfile from phone strings to word strings."
   # Restitch clips, then convert phone strings to word strings.
+  # Remove letters that break hyp2jonmay.rb's flat2elisa.py, with sed.
   # Update $hypfile too, for compute-wer?
   jonmay=${hypfile}.restitched.txt
   # It's ok for $mtvocab to be unset.
-  sort -n < $hypfile | tee $hypfile.phones | phone2word.rb $pronlex $mtvocab > $jonmay
-  hyp2jonmay.rb ${hypfile}.jonmay.dir $LANG_CODE $DATE_USC $EXPLOCAL $jonmayVersion < $jonmay
-  # Increment this before each sftp.
-  # Todo: read this from settings file, via ARGV.
+  sort -n < $hypfile | tee $hypfile.phones | phone2word.rb $pronlex $mtvocab |
+    sed -e "s/’/'/g" -e 's/Ñ/N/g' -e 's/ [ ]*/ /g' > $jonmay
+  # When run as usual from PTgen/test/apply-LANG/ as ../../apply.sh settings,
+  # force this to call PTgen's hyp2jonmay.rb instead of ASR24's.
+  ../../steps/hyp2jonmay.rb ${hypfile}.jonmay.dir $LANG_CODE $DATE_USC $EXPLOCAL $jonmayVersion < $jonmay
 fi
 set +e
 #fi #;;;;
