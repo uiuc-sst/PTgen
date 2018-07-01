@@ -17,7 +17,7 @@ if ARGV.size != 1
 end
 
 $lookup = Hash.new
-File.read(ARGV[0]).split(/\s+/).each_slice(2) {|phone,i| $lookup[phone] = i.to_i }
+File.read(ARGV[0], :encoding => 'utf-8').split(/\s+/).each_slice(2) {|phone,i| $lookup[phone] = i.to_i }
 Three = $lookup["#3"] # Likely 88.
 
 # Fewer vowels than consonants.
