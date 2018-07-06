@@ -131,7 +131,7 @@ def main():
         for key, text in subelements:
           se = ET.SubElement(xroot, key)
           se.text = text
-        xmlstr = ET.tostring(segroot, pretty_print=True, encoding='utf-8',
+        xmlstr = ET.tostring(segroot, pretty_print=True,
                              xml_declaration=False).decode('utf-8')
         outfile.write(xmlstr)
     except:
